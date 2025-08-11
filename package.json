@@ -1,6 +1,6 @@
 {
     "name": "@stackone/mcp-connectors",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "MCP connectors for disco.dev",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
@@ -10,7 +10,11 @@
         "./package.json": "./package.json"
     },
     "type": "module",
-    "files": ["dist", "README.md", "LICENSE"],
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "start": "bun run --watch ./scripts/start-server.ts",
         "start:test": "bun run --watch ./scripts/test-server.ts",
@@ -65,6 +69,8 @@
     "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
     "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme",
     "lint-staged": {
-        "*": ["biome check --fix --no-errors-on-unmatched"]
+        "*": [
+            "biome check --fix --no-errors-on-unmatched"
+        ]
     }
 }
