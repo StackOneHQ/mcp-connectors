@@ -18,7 +18,8 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release-please
         with:
-          release-type: node
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   publish-package:
     runs-on: ubuntu-latest
