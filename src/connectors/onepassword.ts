@@ -1,6 +1,6 @@
 import { ItemBuilder, OnePasswordConnect } from '@1password/connect';
-import { mcpConnectorConfig } from '../config-types';
 import { z } from 'zod';
+import { mcpConnectorConfig } from '../config-types';
 import { createIndex, search } from './utils/lexical-search';
 
 export const OnePasswordConnectorConfig = mcpConnectorConfig({

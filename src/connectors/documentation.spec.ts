@@ -1,7 +1,7 @@
-import type { MCPToolDefinition } from '../config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { describe, expect, it, vi } from 'vitest';
+import type { MCPToolDefinition } from '../config-types';
 import { createMockConnectorContext } from './__mocks__/context';
 import { DocumentationConnectorConfig } from './documentation';
 
