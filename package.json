@@ -15,7 +15,7 @@
         "prepare": "husky",
         "build": "bun -b tsdown",
         "prepublishOnly": "bun run build",
-        "test": "bun test",
+        "test": "vitest --run",
         "check": "biome check .",
         "check:fix": "biome check --fix .",
         "typecheck": "tsgo --noEmit"
@@ -25,8 +25,8 @@
         "@linear/sdk": "^55.0.0",
         "@modelcontextprotocol/sdk": "^1.0.6",
         "@notionhq/client": "^4.0.1",
+        "@orama/orama": "^3.1.11",
         "node-html-parser": "^7.0.1",
-        "okapibm25": "^1.4.1",
         "openai": "^5.12.1",
         "zod": "^3.23.8"
     },
