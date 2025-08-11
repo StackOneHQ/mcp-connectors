@@ -1,0 +1,41 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+# Dependency Management Standard
+
+This rule defines the standard for managing dependencies across the monorepo.
+
+## Adding Dependencies
+
+- **MUST** use `bun add <package-name> [-D|--save-dev]` to add dependencies.
+- **NEVER** manually edit `package.json` to add or update dependencies.
+- Run `bun add` from the specific package directory (`packages/*` or `remote/*`) for package-specific dependencies.
+- Run `bun add -w <package-name> [-D|--save-dev]` from the workspace root for root-level/shared development dependencies.
+
+## Rationale
+
+Using `bun add` ensures that:
+
+1. The lockfile (`bun.lock`) is correctly updated.
+2. Dependencies are installed correctly within the workspace.
+3. Version constraints are handled consistently.
+
+## Examples
+
+### ✅ Correct Usage
+
+```bash
+# Add a production dependency
+bun add lodash
+
+# Add a development dependency
+bun add -D typescript
+```
+
+### ❌ Incorrect Usage
+
+- Manually adding `"lodash": "^4.17.21"` to `package.json`.
+- Running `npm install` or `yarn add`.

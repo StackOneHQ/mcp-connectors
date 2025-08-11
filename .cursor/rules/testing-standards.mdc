@@ -1,0 +1,159 @@
+---
+description: 
+globs: *.test.ts,*.spec.ts
+alwaysApply: false
+---
+# Testing Standards
+
+This rule defines the testing standards and best practices for all tests in the monorepo. All tests must follow these guidelines strictly.
+
+## Core Testing Framework
+
+- Use `vitest` exclusively for all testing
+- Never use Jest or other testing frameworks
+- Use `vitest-mock-extended` for mocking dependencies
+- Never use `vi.mock()` or other mocking tools
+
+## Test Structure
+
+### File Organization
+- Test files should be stored in a `tests` directory closest to the files they test
+- Test files should be named `*.spec.ts`
+- One test file per implementation file
+
+### Test Structure Rules
+
+```typescript
+// ✅ Correct Structure
+describe("#ClassName", () => {
+  describe(".methodName", () => {
+    describe("when condition is met", () => {
+      describe("and another condition is true", () => {
+        it("returns expected result", () => {
+          const actual = method();
+          expect(actual).toBe(expected);
+        });
+      });
+    });
+  });
+});
+
+// ❌ Incorrect Structure
+describe("ClassName", () => {
+  beforeEach(() => {
+    // Don't use beforeEach
+  });
+  
+  it("should do something", () => {
+    // Don't use "should"
+  });
+});
+```
+
+## Test Writing Rules
+
+### Naming Conventions
+- Global describe: Use `#` prefix with class name or filename
+- Method describes: Use `.` prefix with method/function name
+- Condition describes: Start with "when..."
+- Nested condition describes: Start with "and..."
+- Test descriptions: Describe the outcome, not the implementation
+
+### Test Content Rules
+- One assertion/expect per test
+- No `beforeAll`, `beforeEach`, `afterAll`, or `afterEach` hooks
+- Tests must be isolated and independent
+- Use `vitest-mock-extended` for mocking
+- Avoid spying on methods unless absolutely necessary
+- Name assertion results as `actual`
+
+### Examples
+
+```typescript
+// ✅ Correct Example
+describe("#UserService", () => {
+  describe(".createUser", () => {
+    describe("when email is valid", () => {
+      describe("and password meets requirements", () => {
+        it("creates a new user in the database", () => {
+          const mockDb = mock<Database>();
+          const service = new UserService(mockDb);
+          
+          const actual = service.createUser({
+            email: "test@example.com",
+            password: "validPassword123"
+          });
+          
+          expect(actual).toBeDefined();
+          expect(mockDb.users.create).toHaveBeenCalledWith({
+            email: "test@example.com",
+            passwordHash: expect.any(String)
+          });
+        });
+      });
+    });
+  });
+});
+
+// ❌ Incorrect Examples
+describe("UserService", () => {
+  beforeEach(() => {
+    // Don't use beforeEach
+  });
+  
+  it("should create user", () => {
+    // Don't use "should"
+  });
+  
+  it("tests multiple things", () => {
+    // Don't test multiple things
+    expect(service.method1()).toBe(true);
+    expect(service.method2()).toBe(false);
+  });
+  
+  vi.mock("./database"); // Don't use vi.mock
+});
+```
+
+## Mocking Guidelines
+
+### Correct Mocking
+```typescript
+// ✅ Correct
+const mockDb = mock<Database>();
+mockDb.users.create.mockResolvedValue(newUser);
+```
+
+### Incorrect Mocking
+```typescript
+// ❌ Incorrect
+vi.mock("./database");
+const spy = vi.spyOn(service, "method");
+```
+
+## Test Independence
+
+- Each test must be able to run independently
+- No shared state between tests
+- No dependencies on test execution order
+- No side effects between tests
+
+## Documentation
+
+Tests should serve as documentation:
+- Clear, descriptive names
+- Focus on behavior, not implementation
+- Avoid technical jargon in descriptions
+- Make the test's purpose immediately clear
+
+## Required Dependencies
+
+Add to root package.json:
+```json
+{
+  "devDependencies": {
+    "vitest": "~3.0.0",
+    "vitest-mock-extended": "^1.3.1"
+  }
+}
+``` 
