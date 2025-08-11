@@ -40,7 +40,8 @@
         "msw": "^2.10.4",
         "publint": "^0.3.12",
         "tsdown": "^0.13.0",
-        "unplugin-unused": "^0.5.1"
+        "unplugin-unused": "^0.5.1",
+        "vitest": "^3.2.4"
     },
     "repository": {
         "type": "git",
@@ -52,7 +53,8 @@
         "connectors",
         "stackone",
         "saas",
-        "integrations"
+        "integrations",
+        "disco"
     ],
     "author": "StackOne",
     "license": "Apache-2.0",
