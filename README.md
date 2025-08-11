@@ -3,10 +3,9 @@
   
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
   [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-connectors.svg)](https://badge.fury.io/js/@stackone%2Fmcp-connectors)
+</div>
 
 > Pre-built MCP connectors for popular SaaS tools - used by [disco.dev](https://disco.dev)
-
-</div>
 
 ## Features
 
@@ -15,7 +14,8 @@ The @stackone/mcp-connectors package is built with TypeScript and Zod. It is des
 - typesafe wrapper around mcp capabilities
 - schemas for credentials and setup fields
 - local development with auto-reload
-- no dependencies on the server runtime or the transport.
+- no dependencies on the server runtime or the transport
+- runs on bun, node and cloudflare workers
 
 ## Usage
 
@@ -39,7 +39,7 @@ No credentials needed:
 bun start --connector test
 ```
 
-Production connectors with credentials
+Production connectors with credentials:
 
 ```bash
 bun start --connector asana --credentials '{"apiKey":"your-api-key"}'
