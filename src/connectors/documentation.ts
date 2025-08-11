@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import type { ConnectorContext } from '../config-types';
 import { mcpConnectorConfig } from '../config-types';
-import { simpleSearch } from './utils/lexical-search';
+
+import { type AnySearchableObject, createIndex, search } from './utils/lexical-search';
+import { splitTextIntoSmartChunks } from './utils/text-chunking';
 
 enum DocumentationCategory {
   AI = 'ai',
@@ -22,13 +23,37 @@ enum DocumentationCategory {
   OTHER = 'other',
 }
 
-interface DocumentationProvider {
-  key: string;
-  name: string;
-  description: string;
-  llmsFullUrl: string;
-  category: DocumentationCategory;
-}
+const documentationProviderSchema = z.object({
+  key: z.string().describe('Documentation provider identifier'),
+  name: z.string().describe('Service or platform name'),
+  description: z.string().describe("Short summary of the provider's purpose"),
+  llmsFullUrl: z.string().url().describe('Source URL of the documentation content'),
+  category: z
+    .nativeEnum(DocumentationCategory)
+    .describe('Type of service (AI, Database, Framework, etc.)'),
+});
+
+type DocumentationProvider = z.infer<typeof documentationProviderSchema> &
+  AnySearchableObject;
+
+const generateProviderExplanation = () => {
+  const schema = documentationProviderSchema.shape;
+  const explanations = Object.entries(schema).map(([key, field]) => {
+    const description = field.description || 'No description available';
+    return `- ${key.charAt(0).toUpperCase() + key.slice(1)}: ${description}`;
+  });
+
+  return `Available Documentation Providers:
+
+Each result includes:
+${explanations.join('\n')}
+
+For best results, select providers based on name match and relevance to your documentation needs.
+
+----------
+
+`;
+};
 
 // Collection of providers mapped to their llms-full.txt endpoints
 const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
@@ -42,8 +67,7 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
   {
     key: 'hono',
     name: 'Hono',
-    description:
-      'Hono is a fast, lightweight, web framework built on Web Standards. Support for any JavaScript runtime.',
+    description: 'Hono is a fast, lightweight, web framework built on Web Standards.',
     llmsFullUrl: 'https://hono.dev/llms-full.txt',
     category: DocumentationCategory.FRAMEWORK,
   },
@@ -237,323 +261,14 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
     llmsFullUrl: 'https://humanloop.com/docs/llms-full.txt',
     category: DocumentationCategory.AI,
   },
+  {
+    key: 'orama',
+    name: 'Orama',
+    description: 'Javascript search engine',
+    llmsFullUrl: 'https://docs.orama.com/llms-full.txt',
+    category: DocumentationCategory.DATABASE,
+  },
 ];
-
-const fuzzySearchProviders = (query?: string): DocumentationProvider[] => {
-  if (!query || query.trim() === '') {
-    return DOCUMENTATION_PROVIDERS; // Return all providers if no search query
-  }
-
-  return simpleSearch(
-    DOCUMENTATION_PROVIDERS as unknown as Record<string, unknown>[],
-    query,
-    {
-      fields: ['key', 'name', 'description'],
-      caseSensitive: false,
-      maxResults: 50,
-      threshold: 0.1,
-    }
-  ) as unknown as DocumentationProvider[];
-};
-
-const searchDocumentation = async (
-  providerKey: string,
-  query: string,
-  maxResults = 5,
-  context?: ConnectorContext
-): Promise<string> => {
-  const provider = DOCUMENTATION_PROVIDERS.find((p) => p.key === providerKey);
-
-  if (!provider) {
-    return `Provider "${providerKey}" not found. Use get_provider_key to find available providers.`;
-  }
-
-  try {
-    // Try to get cached documentation first
-    let text: string | null = null;
-    const cache = context?.cache;
-    const cacheKey = `docs:${providerKey}:v2`;
-
-    if (cache) {
-      try {
-        text = await cache.get(cacheKey);
-      } catch (error) {
-        console.warn(`KV cache read error for ${providerKey}:`, error);
-      }
-    }
-
-    // If not cached, fetch from external URL
-    if (!text) {
-      const res = await fetch(provider.llmsFullUrl);
-
-      if (!res.ok) {
-        return `Error fetching documentation for ${provider.name}: ${res.status} ${res.statusText}`;
-      }
-
-      text = await res.text();
-
-      // Cache the fetched documentation (24 hour TTL)
-      if (cache && text && text.length > 100) {
-        try {
-          await cache.put(cacheKey, text, { expirationTtl: 86400 });
-        } catch (error) {
-          console.warn(`KV cache write error for ${providerKey}:`, error);
-        }
-      }
-    }
-
-    const searchTerms = tokenize(query);
-
-    if (searchTerms.length === 0) {
-      return 'No valid search terms provided. Please provide a query to search for.';
-    }
-
-    const chunks = splitIntoChunks(text);
-
-    const scoredChunks = chunks.map((chunk) => ({
-      chunk,
-      score: scoreChunk(chunk, searchTerms, chunks),
-    }));
-
-    const relevantChunks = scoredChunks
-      .filter((item) => item.score !== 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxResults);
-
-    if (relevantChunks.length === 0) {
-      return `No relevant documentation found in ${provider.name} for query: "${query}". Try different or more general search terms.`;
-    }
-
-    const results = relevantChunks
-      .map(
-        (item, idx) =>
-          `### Search Result ${idx + 1} (Relevance Score: ${item.score.toFixed(2)})\n\n${item.chunk.trim()}`
-      )
-      .join(`\n\n${'---'.repeat(20)}\n\n`);
-
-    return `Found ${relevantChunks.length} relevant sections in ${provider.name} documentation for "${query}":\n\n${results}\n\n**Search Quality:** ${getSearchQualityIndicator(relevantChunks)}\n**Best Match Score:** ${relevantChunks[0]?.score.toFixed(2) || '0.00'}\n**Coverage:** ${relevantChunks.length}/${maxResults} possible results`;
-  } catch (error) {
-    return `Error searching ${provider.name} documentation: ${error instanceof Error ? error.message : 'Unknown error'}`;
-  }
-};
-
-const getSearchQualityIndicator = (chunks: Array<{ score: number }>): string => {
-  const bestScore = Math.abs(chunks[0]?.score || 0);
-  const avgScore = Math.abs(
-    chunks.reduce((sum, chunk) => sum + chunk.score, 0) / chunks.length
-  );
-
-  if (bestScore >= 10 && avgScore >= 5) return 'Excellent - High confidence matches';
-  if (bestScore >= 3 && avgScore >= 2) return 'Good - Relevant matches found';
-  if (bestScore >= 2 && avgScore >= 1) return 'Fair - Some relevant content';
-  if (bestScore >= 1) return 'Low - Weak matches, consider refining search terms';
-  return 'Very Low - No strong matches found';
-};
-
-const splitIntoChunks = (text: string): string[] => {
-  const maxChunkSize = 1000;
-  const minChunkSize = 250;
-  const overlapSize = 200;
-
-  // First, split by major separators (headers, code blocks, etc.)
-  const majorSections = text.split(/\n(?=#{1,6}\s|\n\s*\n|\`\`\`)/);
-  const chunks: string[] = [];
-
-  for (const section of majorSections) {
-    if (section.trim().length < minChunkSize) {
-      // If section is too small, try to combine with previous chunk
-      const lastChunk = chunks[chunks.length - 1];
-      if (
-        chunks.length > 0 &&
-        lastChunk &&
-        lastChunk.length + section.length <= maxChunkSize
-      ) {
-        chunks[chunks.length - 1] = `${lastChunk}\n${section}`;
-        continue;
-      }
-    }
-
-    if (section.length <= maxChunkSize) {
-      chunks.push(section.trim());
-    } else {
-      // Split large sections into smaller chunks with overlap
-      const words = section.split(/\s+/);
-      let currentChunk = '';
-      let wordIndex = 0;
-
-      while (wordIndex < words.length) {
-        const word = words[wordIndex];
-
-        if (word && currentChunk.length + word.length + 1 <= maxChunkSize) {
-          currentChunk += (currentChunk ? ' ' : '') + word;
-          wordIndex++;
-        } else {
-          if (currentChunk.trim()) {
-            chunks.push(currentChunk.trim());
-          }
-
-          // Start new chunk with overlap
-          const overlapWords = currentChunk
-            .split(/\s+/)
-            .slice(-Math.floor(overlapSize / 10));
-          currentChunk = overlapWords.join(' ');
-
-          // Don't increment wordIndex to retry adding the current word
-        }
-      }
-
-      if (currentChunk.trim()) {
-        chunks.push(currentChunk.trim());
-      }
-    }
-  }
-
-  // Final filtering and cleanup
-  return chunks
-    .filter((chunk) => chunk.trim().length >= minChunkSize)
-    .map((chunk) => chunk.trim())
-    .filter((chunk) => {
-      // Filter out chunks that are mostly punctuation or whitespace
-      const alphanumericChars = chunk.replace(/[^a-zA-Z0-9]/g, '').length;
-      return alphanumericChars > chunk.length * 0.3;
-    });
-};
-
-// Common English stop words to filter out
-const STOP_WORDS = new Set([
-  'a',
-  'an',
-  'and',
-  'are',
-  'as',
-  'at',
-  'be',
-  'by',
-  'for',
-  'from',
-  'has',
-  'he',
-  'in',
-  'is',
-  'it',
-  'its',
-  'of',
-  'on',
-  'or',
-  'that',
-  'the',
-  'to',
-  'was',
-  'were',
-  'will',
-  'with',
-  'you',
-  'your',
-  'this',
-  'but',
-  'not',
-  'have',
-  'had',
-  'what',
-  'when',
-  'where',
-  'who',
-  'which',
-  'why',
-  'how',
-  'all',
-  'any',
-  'both',
-  'each',
-  'few',
-  'more',
-  'most',
-  'other',
-  'some',
-  'such',
-  'no',
-  'nor',
-  'only',
-  'own',
-  'same',
-  'so',
-  'than',
-  'too',
-  'very',
-  'can',
-  'could',
-  'may',
-  'might',
-  'must',
-  'shall',
-  'should',
-  'would',
-]);
-
-const tokenize = (text: string): string[] => {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, ' ')
-    .split(/\s+/)
-    .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
-};
-
-const calculateTermFrequency = (term: string, tokens: string[]): number => {
-  return tokens.filter((token) => token === term).length;
-};
-
-const calculateBM25Score = (
-  queryTerms: string[],
-  documentTokens: string[],
-  allDocuments: string[][],
-  k1 = 1.2,
-  b = 0.75
-): number => {
-  const N = allDocuments.length;
-  const dl = documentTokens.length;
-  const avgdl = allDocuments.reduce((sum, doc) => sum + doc.length, 0) / N;
-
-  let score = 0;
-
-  for (const term of queryTerms) {
-    const tf = calculateTermFrequency(term, documentTokens);
-
-    if (tf === 0) continue;
-
-    // Calculate document frequency (number of documents containing the term)
-    const df = allDocuments.filter((doc) => doc.includes(term)).length;
-
-    // Calculate IDF (Inverse Document Frequency)
-    // Add small epsilon to prevent IDF from being exactly 0
-    const idf = Math.log((N - df + 0.5) / (df + 0.5)) || 0.1;
-
-    // BM25 formula
-    const numerator = tf * (k1 + 1);
-    const denominator = tf + k1 * (1 - b + b * (dl / avgdl));
-
-    score += idf * (numerator / denominator);
-  }
-
-  return score;
-};
-
-const scoreChunk = (
-  chunk: string,
-  searchTerms: string[],
-  allChunks: string[]
-): number => {
-  const documentTokens = tokenize(chunk);
-  const queryTerms = searchTerms.filter((term) => term.length > 2);
-
-  if (queryTerms.length === 0 || documentTokens.length === 0) {
-    return 0;
-  }
-
-  // Tokenize all chunks for BM25 calculation
-  const allDocuments = allChunks.map((c) => tokenize(c));
-
-  return calculateBM25Score(queryTerms, documentTokens, allDocuments);
-};
 
 export const DocumentationConnectorConfig = mcpConnectorConfig({
   name: 'Documentation',
@@ -579,40 +294,38 @@ export const DocumentationConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, _context) => {
         try {
-          const providers = fuzzySearchProviders(args.provider_name);
+          // try be as token efficient as possible
+          if (!args.provider_name || args.provider_name.trim() === '') {
+            const providerList = DOCUMENTATION_PROVIDERS.map(
+              (p) => `- Key: ${p.key}\n- Description: ${p.description}`
+            ).join('\n----------\n');
 
-          if (providers.length === 0) {
-            return JSON.stringify({
-              success: false,
-              message: `No providers found matching "${args.provider_name}".`,
-            });
+            return `${generateProviderExplanation()}${providerList}`;
           }
 
-          // Token-efficient format: just keys if no search, or key:name pairs if searching
-          if (!args.provider_name) {
-            // Return all provider keys in a compact format
-            const keys = providers.map((p) => p.key);
-            return JSON.stringify({
-              success: true,
-              count: providers.length,
-              keys: keys,
-            });
-          }
-          // Return matched providers with minimal info
-          const results = providers.map((p) => ({
-            key: p.key,
-            name: p.name,
-          }));
-          return JSON.stringify({
-            success: true,
-            count: results.length,
-            providers: results,
+          // create an index
+          const index = await createIndex(DOCUMENTATION_PROVIDERS, {
+            fields: ['key', 'name', 'description'],
+            maxResults: 10,
+            threshold: 0.1,
           });
+
+          // do the search
+          const searchResults = await search(index, args.provider_name);
+          if (searchResults.length === 0) {
+            return `No providers found matching "${args.provider_name}". Try a broader search or call get_provider_key without arguments.`;
+          }
+
+          // Return matched providers
+          const results = searchResults.map(
+            (res) =>
+              `- Key: ${res.item.key}\n- Name: ${res.item.name}\n- Description: ${res.item.description}\n- LlmFullUrl: ${res.item.llmsFullUrl}\n- Category: ${res.item.category}`
+          );
+
+          return `${generateProviderExplanation()}Found ${results.length} provider${results.length === 1 ? '' : 's'} matching "${args.provider_name}":\n\n${results.join('\n----------\n')}`;
         } catch (error) {
-          return JSON.stringify({
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
+          console.error('[get_provider_key] Handler error:', error);
+          return `Error getting provider keys: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
       },
     }),
@@ -641,46 +354,89 @@ export const DocumentationConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const result = await searchDocumentation(
-            args.provider_key,
-            args.query,
-            args.max_results || 5,
-            context
+          const maxResults = args.max_results || 5;
+          const provider = DOCUMENTATION_PROVIDERS.find(
+            (p) => p.key === args.provider_key
           );
 
-          // Check if result indicates an error or no results
-          if (result.includes('Provider') && result.includes('not found')) {
-            const response = {
-              success: false,
-              error: `Provider "${args.provider_key}" not found`,
-              recovery_actions: [
-                'Call get_provider_key to see available providers',
-                'Check spelling of provider_key',
-                'Use exact key from get_provider_key response',
-              ],
-              available_providers_hint:
-                'Popular keys: anthropic, ai-sdk, prisma, cursor, zapier',
-            };
-            return JSON.stringify(response, null, 2);
+          if (!provider) {
+            return `Provider "${args.provider_key}" not found. Call get_provider_key to see available providers.`;
           }
 
-          if (result.includes('No relevant documentation found')) {
-            return `No relevant documentation found for "${args.query}" in ${args.provider_key}`;
+          if (!args.query || args.query.trim().length < 2) {
+            return 'Please provide a meaningful search query (at least 2 characters).';
           }
 
-          return result;
+          // Try to get cached documentation first
+          let text: string | null = null;
+
+          // connector level cache in format <connector-key>:<search-key>:<version>
+          const cacheKey = `documentation:${args.provider_key}:v3`;
+
+          try {
+            text = await context.readCache(cacheKey);
+          } catch (error) {
+            console.warn(`KV cache read error for ${args.provider_key}:`, error);
+          }
+
+          // If not cached, fetch from external URL
+          if (!text) {
+            const res = await fetch(provider.llmsFullUrl);
+
+            if (!res.ok) {
+              return `Error fetching documentation for ${provider.name}: ${res.status} ${res.statusText}`;
+            }
+
+            text = await res.text();
+
+            // Cache the fetched documentation (24 hour TTL)
+            if (text && text.length > 100) {
+              try {
+                await context.writeCache(cacheKey, text);
+              } catch (error) {
+                console.warn(`KV cache write error for ${args.provider_key}:`, error);
+              }
+            }
+          }
+
+          // Search the documentation text
+          const chunks = splitTextIntoSmartChunks(text);
+
+          if (chunks.length === 0) {
+            return `No content found in ${provider.name} documentation.`;
+          }
+
+          // Convert chunks to searchable objects
+          const documents = chunks.map((chunk, index) => ({
+            id: String(index),
+            text: chunk,
+          }));
+
+          // Search using our lexical search utility
+          const index = await createIndex(documents, {
+            fields: ['text'],
+            maxResults,
+            threshold: 0.1,
+          });
+
+          const searchResults = await search(index, args.query);
+
+          if (searchResults.length === 0) {
+            return `No relevant documentation found for "${args.query}" in ${provider.name}. Try different search terms.`;
+          }
+
+          // Format search results
+          const results = searchResults
+            .map(
+              (result, idx) =>
+                `### Search Result ${idx + 1}\n\n${((result.item as AnySearchableObject).text as string).trim()}`
+            )
+            .join(`\n\n${'----------'}\n\n`);
+
+          return `Found ${searchResults.length} relevant sections in ${provider.name} documentation for "${args.query}":\n\n${results}`;
         } catch (error) {
-          const response = {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            recovery_actions: [
-              'Verify provider_key is correct using get_provider_key',
-              'Try simpler search query',
-              'Check network connectivity',
-              'Retry the request',
-            ],
-          };
-          return JSON.stringify(response, null, 2);
+          console.error('[search_docs] Handler error:', error);
+          return `Error searching "${args.provider_key}" for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
       },
     }),

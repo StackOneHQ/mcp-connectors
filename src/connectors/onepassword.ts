@@ -1,7 +1,7 @@
 import { ItemBuilder, OnePasswordConnect } from '@1password/connect';
-import { z } from 'zod';
 import { mcpConnectorConfig } from '../config-types';
-import { simpleSearch } from './utils/lexical-search';
+import { z } from 'zod';
+import { createIndex, search } from './utils/lexical-search';
 
 export const OnePasswordConnectorConfig = mcpConnectorConfig({
   name: '1Password',
@@ -121,16 +121,28 @@ export const OnePasswordConnectorConfig = mcpConnectorConfig({
             keepAlive: true,
           });
           const items = await op.listItems(args.vaultId);
-          const filteredItems = simpleSearch(
-            items as unknown as Record<string, unknown>[],
-            args.query,
-            {
-              caseSensitive: false,
-              maxResults: 20,
-              threshold: 0.1,
-            }
-          );
-          return JSON.stringify(filteredItems, null, 2);
+          const index = await createIndex(items as unknown as Record<string, unknown>[], {
+            maxResults: 20,
+            threshold: 0.1,
+          });
+          const searchResults = await search(index, args.query);
+          const filteredItems = searchResults.map((result) => result.item);
+
+          // Format results as readable strings instead of JSON
+          if (filteredItems.length === 0) {
+            return `No items found matching "${args.query}" in vault ${args.vaultId}`;
+          }
+
+          const formattedItems = filteredItems
+            .map((item: unknown, index: number) => {
+              const itemObj = item as Record<string, unknown>;
+              const title = itemObj.title || itemObj.name || 'Untitled';
+              const category = itemObj.category || 'Unknown';
+              return `${index + 1}. ${title} (${category})`;
+            })
+            .join('\n');
+
+          return `Found ${filteredItems.length} item${filteredItems.length === 1 ? '' : 's'}:\n${formattedItems}`;
         } catch (error) {
           return `Failed to search items: ${error instanceof Error ? error.message : String(error)}`;
         }
