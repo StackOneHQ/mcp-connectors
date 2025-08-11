@@ -5,16 +5,15 @@ export interface ConnectorContext<
   TSetup = z.infer<z.ZodType>,
   TOAuth2Schema extends z.ZodType = z.ZodType,
 > {
+  // server level api
   getCredentials(): Promise<TCredentials>;
   getSetup(): Promise<TSetup>;
-  getData<T = unknown>(key?: string): Promise<T | undefined>;
+  getData<T = unknown>(key?: string): Promise<T | null>;
   setData(keyOrData: string | Record<string, unknown>, value?: unknown): Promise<void>;
 
-  // Cache support (optional - implementations may not have caching)
-  cache?: {
-    get(key: string): Promise<string | null>;
-    put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
-  };
+  // connector level cache shared between all tenants
+  readCache(key: string): Promise<string | null>;
+  writeCache(key: string, value: string): Promise<void>;
 
   // OAuth2 support
   getOauth2Credentials?(): Promise<z.infer<TOAuth2Schema>>;
