@@ -1,6 +1,6 @@
+import { StreamableHTTPTransport } from '@hono/mcp';
 // demo server for testing
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StreamableHTTPTransport } from '@hono/mcp';
 import { Hono } from 'hono';
 import { z } from 'zod';
 

@@ -1,6 +1,6 @@
 {
     "name": "@stackone/mcp-connectors",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "description": "MCP connectors for disco.dev",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
@@ -12,7 +12,8 @@
     "type": "module",
     "files": ["dist", "README.md", "LICENSE"],
     "scripts": {
-        "start:test": "bun run ./scripts/test-server.ts --watch",
+        "start": "bun run --watch ./scripts/start-server.ts",
+        "start:test": "bun run --watch ./scripts/test-server.ts",
         "prepare": "husky",
         "build": "bun -b tsdown",
         "prepublishOnly": "bun run build",
