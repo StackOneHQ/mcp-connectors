@@ -305,7 +305,7 @@ describe('#WandbConnector', () => {
   beforeEach(() => {
     server.listen({ onUnhandledRequest: 'error' });
     mockContext = createMockConnectorContext();
-    mockContext.getCredentials.mockResolvedValue({
+    (mockContext.getCredentials as any).mockResolvedValue({
       api_key: 'test-api-key',
       base_url: mockApiUrl,
     });

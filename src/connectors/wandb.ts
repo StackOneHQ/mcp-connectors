@@ -107,13 +107,13 @@ class WandbClient {
 
   async getProjects(entity?: string): Promise<WandbProject[]> {
     const endpoint = entity ? `/api/v1/projects/${entity}` : '/api/v1/projects';
-    const response = await this.makeRequest(endpoint);
+    const response = (await this.makeRequest(endpoint)) as any;
     return response.projects || response;
   }
 
   async getProject(entity: string, project: string): Promise<WandbProject> {
     const endpoint = `/api/v1/projects/${entity}/${project}`;
-    return await this.makeRequest(endpoint);
+    return (await this.makeRequest(endpoint)) as WandbProject;
   }
 
   async createProject(
@@ -128,7 +128,7 @@ class WandbClient {
       description,
       default_access: visibility,
     };
-    return await this.makeRequest(endpoint, { method: 'POST', body });
+    return (await this.makeRequest(endpoint, { method: 'POST', body })) as WandbProject;
   }
 
   async getRuns(
@@ -151,14 +151,14 @@ class WandbClient {
 
     const response = await this.makeRequest(endpoint, { params });
     return {
-      runs: response.runs || [],
-      total: response.total || 0,
+      runs: (response as any).runs || [],
+      total: (response as any).total || 0,
     };
   }
 
   async getRun(entity: string, project: string, runId: string): Promise<WandbRun> {
     const endpoint = `/api/v1/runs/${entity}/${project}/${runId}`;
-    return await this.makeRequest(endpoint);
+    return (await this.makeRequest(endpoint)) as WandbRun;
   }
 
   async createRun(
@@ -175,7 +175,7 @@ class WandbClient {
     }
   ): Promise<WandbRun> {
     const endpoint = `/api/v1/runs/${entity}/${project}`;
-    return await this.makeRequest(endpoint, { method: 'POST', body: data });
+    return (await this.makeRequest(endpoint, { method: 'POST', body: data })) as WandbRun;
   }
 
   async updateRun(
@@ -190,7 +190,7 @@ class WandbClient {
     }
   ): Promise<WandbRun> {
     const endpoint = `/api/v1/runs/${entity}/${project}/${runId}`;
-    return await this.makeRequest(endpoint, { method: 'PUT', body: data });
+    return (await this.makeRequest(endpoint, { method: 'PUT', body: data })) as WandbRun;
   }
 
   async deleteRun(entity: string, project: string, runId: string): Promise<void> {
@@ -236,8 +236,8 @@ class WandbClient {
 
     const response = await this.makeRequest(endpoint, { params });
     return {
-      artifacts: response.artifacts || [],
-      total: response.total || 0,
+      artifacts: (response as any).artifacts || [],
+      total: (response as any).total || 0,
     };
   }
 
@@ -249,7 +249,7 @@ class WandbClient {
   ): Promise<WandbArtifact> {
     const artifactId = version ? `${artifactName}:${version}` : `${artifactName}:latest`;
     const endpoint = `/api/v1/artifacts/${entity}/${project}/${artifactId}`;
-    return await this.makeRequest(endpoint);
+    return (await this.makeRequest(endpoint)) as WandbArtifact;
   }
 
   async getRunHistory(
@@ -272,12 +272,16 @@ class WandbClient {
     if (options.maxStep !== undefined) params.max_step = options.maxStep.toString();
 
     const response = await this.makeRequest(endpoint, { params });
-    return response.history || [];
+    return (response as any).history || [];
   }
 
   async getMe(): Promise<{ username: string; email: string; teams: string[] }> {
     const endpoint = '/api/v1/viewer';
-    return await this.makeRequest(endpoint);
+    return (await this.makeRequest(endpoint)) as {
+      username: string;
+      email: string;
+      teams: string[];
+    };
   }
 }
 
