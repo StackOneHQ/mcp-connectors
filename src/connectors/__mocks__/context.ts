@@ -1,9 +1,9 @@
 import { vi } from 'vitest';
 import type { ConnectorContext } from '../../config-types/types';
 
-export const createMockConnectorContext = () =>
+export const createMockConnectorContext = (credentials = {}) =>
   ({
-    getCredentials: vi.fn().mockResolvedValue({}),
+    getCredentials: vi.fn().mockResolvedValue(credentials),
     getSetup: vi.fn().mockResolvedValue({}),
     getData: vi.fn().mockResolvedValue(undefined),
     setData: vi.fn().mockResolvedValue(undefined),
