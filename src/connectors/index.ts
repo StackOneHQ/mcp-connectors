@@ -21,6 +21,7 @@ import { LinkedInConnectorConfig } from './linkedin';
 import { LogfireConnectorConfig } from './logfire';
 import { NotionConnectorConfig } from './notion';
 import { OnePasswordConnectorConfig } from './onepassword';
+import { ParallelConnectorConfig } from './parallel';
 import { PerplexityConnectorConfig } from './perplexity';
 import { PylonConnectorConfig } from './pylon';
 import { ReplicateConnectorConfig } from './replicate';
@@ -60,6 +61,7 @@ export const allConnectors = [
   LogfireConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
+  ParallelConnectorConfig,
   PerplexityConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
