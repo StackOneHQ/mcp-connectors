@@ -402,7 +402,7 @@ describe('#ExaConnectorConfig', () => {
 
         server.close();
 
-        expect(requestBody.type).toBe('neural');
+        expect((requestBody as { type: string }).type).toBe('neural');
       });
     });
 
