@@ -11,7 +11,7 @@ interface FPLPlayer {
   element_type: number;
   now_cost: number;
   total_points: number;
-  points_per_game: number;
+  points_per_game: string;
   selected_by_percent: string;
   form: string;
   transfers_in_event: number;
@@ -84,6 +84,18 @@ interface FPLTeam {
   strength_defence_home: number;
   strength_defence_away: number;
   pulse_id: number;
+}
+
+interface FPLFixtureStat {
+  identifier: string;
+  a: Array<{
+    value: number;
+    element: number;
+  }>;
+  h: Array<{
+    value: number;
+    element: number;
+  }>;
 }
 
 interface FPLFixture {
@@ -214,6 +226,78 @@ interface FPLMyTeam {
     bank: number;
     value: number;
   };
+}
+
+interface FPLH2HLeague {
+  id: number;
+  name: string;
+  short_name: string;
+  created: string;
+  closed: boolean;
+  max_entries: number | null;
+  league_type: string;
+}
+
+interface FPLCupMatch {
+  id: number;
+  entry_1_entry: number;
+  entry_1_name: string;
+  entry_1_player_name: string;
+  entry_1_points: number;
+  entry_1_win: number;
+  entry_1_draw: number;
+  entry_1_loss: number;
+  entry_1_total: number;
+  entry_2_entry: number;
+  entry_2_name: string;
+  entry_2_player_name: string;
+  entry_2_points: number;
+  entry_2_win: number;
+  entry_2_draw: number;
+  entry_2_loss: number;
+  entry_2_total: number;
+  is_knockout: boolean;
+  winner: number | null;
+  seed_value: number | null;
+  event: number;
+  tiebreak: number | null;
+}
+
+interface PlayedByEntry {
+  entry: number;
+  entry_name: string;
+  entry_short_name: string;
+  played_time_formatted: string;
+}
+
+interface FPLTransferResponse {
+  id: number;
+  element_in: number;
+  element_out: number;
+  entry: number;
+  event: number;
+  time: string;
+}
+
+interface FPLSetTeamLineupResponse {
+  picks: Array<{
+    element: number;
+    position: number;
+    multiplier: number;
+    is_captain: boolean;
+    is_vice_captain: boolean;
+  }>;
+  chip: string | null;
+  entry: number;
+}
+
+interface PlayerComparisonData {
+  id: number;
+  name: string;
+  web_name: string;
+  team: string;
+  position?: string;
+  [key: string]: unknown;
 }
 
 class FPLClient {

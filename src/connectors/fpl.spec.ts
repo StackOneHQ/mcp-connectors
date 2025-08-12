@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockConnectorContext } from './__mocks__/context';
 import { FPLConnectorConfig } from './fpl';
 
@@ -16,7 +16,7 @@ const mockBootstrapData = {
       element_type: 3,
       now_cost: 130,
       total_points: 180,
-      points_per_game: 6.5,
+      points_per_game: '6.5',
       selected_by_percent: '45.2',
       form: '5.8',
       transfers_in_event: 15000,
@@ -85,7 +85,7 @@ const mockBootstrapData = {
       element_type: 4,
       now_cost: 150,
       total_points: 200,
-      points_per_game: 7.2,
+      points_per_game: '7.2',
       selected_by_percent: '55.8',
       form: '6.2',
       transfers_in_event: 20000,
