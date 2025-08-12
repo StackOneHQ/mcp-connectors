@@ -200,7 +200,7 @@ interface FPLMyTeam {
   }>;
   chips: Array<{
     status_for_entry: string;
-    played_by_entry: any[];
+    played_by_entry: PlayedByEntry[];
     name: string;
     number: number;
     start_event: number;
