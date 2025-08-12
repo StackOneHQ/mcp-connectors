@@ -179,7 +179,7 @@ interface FPLManagerInfo {
     }>;
     h2h: FPLH2HLeague[];
     cup: Record<string, unknown> | null;
-    cup_matches: any[];
+    cup_matches: FPLCupMatch[];
   };
   name: string;
   name_change_blocked: boolean;
