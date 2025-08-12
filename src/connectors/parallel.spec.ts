@@ -77,11 +77,9 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('#ParallelConnectorConfig', () => {
-
   describe('.SEARCH', () => {
     it('should search with objective only', async () => {
       const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
-      const mockContext = createMockContextWithCredentials();
 
       const actual = await tool.handler(
         {
