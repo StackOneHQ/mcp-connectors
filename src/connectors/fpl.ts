@@ -524,7 +524,41 @@ export const FPLConnectorConfig = mcpConnectorConfig({
                 ? Number.parseFloat(b.selected_by_percent)
                 : args.sort_by === 'form'
                   ? Number.parseFloat(b.form)
-                  : (b as any)[args.sort_by];
+          // Type-safe accessor for sort values
+          function getSortValue(player: FPLPlayer, sortBy: string): number {
+            switch (sortBy) {
+              case 'now_cost':
+                return player.now_cost;
+              case 'total_points':
+                return player.total_points;
+              case 'points_per_game':
+                return Number.parseFloat(player.points_per_game);
+              case 'form':
+                return Number.parseFloat(player.form);
+              case 'selected_by_percent':
+                return Number.parseFloat(player.selected_by_percent);
+              case 'transfers_in_event':
+                return player.transfers_in_event;
+              case 'transfers_out_event':
+                return player.transfers_out_event;
+              case 'goals_scored':
+                return player.goals_scored;
+              case 'assists':
+                return player.assists;
+              case 'clean_sheets':
+                return player.clean_sheets;
+              case 'bonus':
+                return player.bonus;
+              case 'ict_index':
+                return Number.parseFloat(player.ict_index);
+              default:
+                return 0;
+            }
+          }
+
+          filteredPlayers.sort((a, b) => {
+            const aValue = getSortValue(a, args.sort_by);
+            const bValue = getSortValue(b, args.sort_by);
             return args.sort_by === 'now_cost' ? aValue - bValue : bValue - aValue;
           });
 
