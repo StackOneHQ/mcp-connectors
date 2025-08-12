@@ -289,7 +289,7 @@ class FPLClient {
       chip?: string;
       event: number;
     }
-  ): Promise<any> {
+  ): Promise<FPLTransferResponse> {
     if (!this.session) {
       throw new Error('Authentication required for transfers');
     }
