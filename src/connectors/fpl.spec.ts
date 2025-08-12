@@ -424,7 +424,7 @@ const server = setupServer(
   http.get('https://fantasy.premierleague.com/api/entry/:id/', ({ params }) => {
     return HttpResponse.json({ ...mockManagerInfo, id: Number(params.id) });
   }),
-  http.get('https://fantasy.premierleague.com/api/my-team/:id/', ({ params }) => {
+  http.get('https://fantasy.premierleague.com/api/my-team/:id/', () => {
     return HttpResponse.json(mockMyTeam);
   })
 );

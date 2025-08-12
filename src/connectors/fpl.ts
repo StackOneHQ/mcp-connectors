@@ -231,7 +231,7 @@ class FPLClient {
     };
 
     if (this.session) {
-      headers['Cookie'] = `sessionid=${this.session}`;
+      headers.Cookie = `sessionid=${this.session}`;
     }
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -328,7 +328,7 @@ class FPLClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Referer: `https://fantasy.premierleague.com/my-team`,
+        Referer: 'https://fantasy.premierleague.com/my-team',
         Origin: 'https://fantasy.premierleague.com',
       },
       body: JSON.stringify(lineupData),
@@ -357,7 +357,7 @@ export const FPLConnectorConfig = mcpConnectorConfig({
       name: 'fpl_get_gameweek_status',
       description: 'Get current gameweek information and deadline status',
       schema: z.object({}),
-      handler: async (args, context) => {
+      handler: async (_args, context) => {
         try {
           const { session } = await context.getCredentials();
           const client = new FPLClient(session);
@@ -399,7 +399,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
 
           const players = data.elements.filter((p) => args.player_ids.includes(p.id));
           const teams = data.teams.reduce(
-            (acc, team) => ({ ...acc, [team.id]: team }),
+            (acc, team) => {
+              acc[team.id] = team;
+              return acc;
+            },
             {} as Record<number, FPLTeam>
           );
 
@@ -434,8 +437,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
             });
 
             const avgDifficulty =
-              fixtureAnalysis.reduce((sum, f) => sum + f.difficulty, 0) /
-              fixtureAnalysis.length;
+              fixtureAnalysis.length > 0
+                ? fixtureAnalysis.reduce((sum, f) => sum + f.difficulty, 0) /
+                  fixtureAnalysis.length
+                : 0;
 
             return {
               player: {
@@ -511,21 +516,8 @@ export const FPLConnectorConfig = mcpConnectorConfig({
             return true;
           });
 
-          // Sort players
-          filteredPlayers.sort((a, b) => {
-            const aValue =
-              args.sort_by === 'selected_by_percent'
-                ? Number.parseFloat(a.selected_by_percent)
-                : args.sort_by === 'form'
-                  ? Number.parseFloat(a.form)
-                  : (a as any)[args.sort_by];
-            const bValue =
-              args.sort_by === 'selected_by_percent'
-                ? Number.parseFloat(b.selected_by_percent)
-                : args.sort_by === 'form'
-                  ? Number.parseFloat(b.form)
           // Type-safe accessor for sort values
-          function getSortValue(player: FPLPlayer, sortBy: string): number {
+          const getSortValue = (player: FPLPlayer, sortBy: string): number => {
             switch (sortBy) {
               case 'now_cost':
                 return player.now_cost;
@@ -554,8 +546,9 @@ export const FPLConnectorConfig = mcpConnectorConfig({
               default:
                 return 0;
             }
-          }
+          };
 
+          // Sort players
           filteredPlayers.sort((a, b) => {
             const aValue = getSortValue(a, args.sort_by);
             const bValue = getSortValue(b, args.sort_by);
@@ -566,7 +559,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
           filteredPlayers = filteredPlayers.slice(0, args.limit);
 
           const teams = data.teams.reduce(
-            (acc, team) => ({ ...acc, [team.id]: team }),
+            (acc, team) => {
+              acc[team.id] = team;
+              return acc;
+            },
             {} as Record<number, FPLTeam>
           );
 
@@ -623,7 +619,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
 
           const players = data.elements.filter((p) => args.player_ids.includes(p.id));
           const teams = data.teams.reduce(
-            (acc, team) => ({ ...acc, [team.id]: team }),
+            (acc, team) => {
+              acc[team.id] = team;
+              return acc;
+            },
             {} as Record<number, FPLTeam>
           );
 
@@ -746,10 +745,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
               const gameweekFixtures = fixtures.filter((fixture) => fixture.event === gw);
               const teamsWithFixtures = new Set<number>();
 
-              gameweekFixtures.forEach((fixture) => {
+              for (const fixture of gameweekFixtures) {
                 teamsWithFixtures.add(fixture.team_h);
                 teamsWithFixtures.add(fixture.team_a);
-              });
+              }
 
               const blankTeams = data.teams.filter(
                 (team) => !teamsWithFixtures.has(team.id)
@@ -813,7 +812,7 @@ export const FPLConnectorConfig = mcpConnectorConfig({
               const gameweekFixtures = fixtures.filter((fixture) => fixture.event === gw);
               const teamFixtureCounts = new Map<number, number>();
 
-              gameweekFixtures.forEach((fixture) => {
+              for (const fixture of gameweekFixtures) {
                 teamFixtureCounts.set(
                   fixture.team_h,
                   (teamFixtureCounts.get(fixture.team_h) || 0) + 1
@@ -822,7 +821,7 @@ export const FPLConnectorConfig = mcpConnectorConfig({
                   fixture.team_a,
                   (teamFixtureCounts.get(fixture.team_a) || 0) + 1
                 );
-              });
+              }
 
               const doubleTeams = Array.from(teamFixtureCounts.entries())
                 .filter(([, count]) => count >= 2)
@@ -899,11 +898,17 @@ export const FPLConnectorConfig = mcpConnectorConfig({
           ]);
 
           const teams = bootstrapData.teams.reduce(
-            (acc, team) => ({ ...acc, [team.id]: team }),
+            (acc, team) => {
+              acc[team.id] = team;
+              return acc;
+            },
             {} as Record<number, FPLTeam>
           );
           const playersMap = bootstrapData.elements.reduce(
-            (acc, player) => ({ ...acc, [player.id]: player }),
+            (acc, player) => {
+              acc[player.id] = player;
+              return acc;
+            },
             {} as Record<number, FPLPlayer>
           );
 
@@ -1054,7 +1059,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
           const data = await client.getBootstrapData();
 
           const teams = data.teams.reduce(
-            (acc, team) => ({ ...acc, [team.id]: team }),
+            (acc, team) => {
+              acc[team.id] = team;
+              return acc;
+            },
             {} as Record<number, FPLTeam>
           );
 
@@ -1171,7 +1179,10 @@ export const FPLConnectorConfig = mcpConnectorConfig({
           ]);
 
           const teams = bootstrapData.teams.reduce(
-            (acc, team) => ({ ...acc, [team.id]: team }),
+            (acc, team) => {
+              acc[team.id] = team;
+              return acc;
+            },
             {} as Record<number, FPLTeam>
           );
 
