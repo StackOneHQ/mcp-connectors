@@ -429,7 +429,7 @@ const server = setupServer(
   })
 );
 
-beforeEach(() => {
+beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });
 
