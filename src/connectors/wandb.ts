@@ -131,7 +131,9 @@ class WandbClient {
 
   async getProjects(entity?: string): Promise<WandbProject[]> {
     const endpoint = entity ? `/api/v1/projects/${entity}` : '/api/v1/projects';
-    const response = (await this.makeRequest(endpoint)) as WandbProjectsResponse | WandbProject[];
+    const response = (await this.makeRequest(endpoint)) as
+      | WandbProjectsResponse
+      | WandbProject[];
     return Array.isArray(response) ? response : response.projects || [];
   }
 
