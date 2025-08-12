@@ -32,6 +32,7 @@ import { TestConnectorConfig } from './test';
 import { TinybirdConnectorConfig } from './tinybird';
 import { TodoistConnectorConfig } from './todoist';
 import { TurbopufferConnectorConfig } from './turbopuffer';
+import { WandbConnectorConfig } from './wandb';
 import { XeroConnectorConfig } from './xero';
 
 // Auto-export all connectors
@@ -69,5 +70,6 @@ export const allConnectors = [
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
+  WandbConnectorConfig,
   XeroConnectorConfig,
 ] as const;
