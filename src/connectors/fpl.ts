@@ -319,7 +319,7 @@ class FPLClient {
       }>;
       chip?: string;
     }
-  ): Promise<any> {
+  ): Promise<FPLSetTeamLineupResponse> {
     if (!this.session) {
       throw new Error('Authentication required for team lineup');
     }
