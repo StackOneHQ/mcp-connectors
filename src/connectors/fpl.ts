@@ -177,7 +177,7 @@ interface FPLManagerInfo {
       cup_league: number | null;
       cup_qualified: boolean | null;
     }>;
-    h2h: any[];
+    h2h: FPLH2HLeague[];
     cup: any;
     cup_matches: any[];
   };
