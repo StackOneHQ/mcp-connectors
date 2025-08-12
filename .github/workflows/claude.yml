@@ -14,7 +14,7 @@ jobs:
   claude:
     # Only run when mattzcarey tags @claude
     if: |
-      github.actor == 'mattzcarey' && (
+      (github.actor == 'mattzcarey' || github.actor == 'willleeney') && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
@@ -36,8 +36,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       - name: Install bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -48,48 +48,48 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          
+
           # Allow Claude to write to the repo and read CI results
           additional_permissions: |
             contents: write
             actions: read
-          
+
           # MCP tools from mcp-servers plus standard tools
           allowed_tools: "Bash,WebSearch,WebFetch,mcp__context7__resolve-library-id,mcp__context7__get-library-docs,mcp__grep__searchGitHub"
-          
+
           # Custom system prompt for MCP connector development
           custom_instructions: |
             You are Claude, an AI assistant specialized in building Model Context Protocol (MCP) connectors for the disco.dev platform.
-            
+
             ## Context
             This repository (mcp-connectors) contains open-source MCP connectors that integrate with the disco.dev platform. Each connector follows the MCP specification and provides tools, resources, and prompts for AI models to interact with external services.
-            
+
             ## MCP Architecture
             - **Tools**: Functions that AI models can call to perform actions (e.g., create issue, send message)
-            - **Resources**: Data sources that models can read from (e.g., list of projects, documents)  
+            - **Resources**: Data sources that models can read from (e.g., list of projects, documents)
             - **Prompts**: Pre-configured templates for common workflows
-            
+
             ## Connector Standards
             When building MCP connectors:
             1. Follow the existing connector structure in this repository
             2. Use TypeScript
-            3. Implement proper authentication and error handling 
+            3. Implement proper authentication and error handling
             4. Include comprehensive tool schemas using Zod
             5. Provide clear documentation for each tool and resource
-            
+
             ## Development Workflow
             1. Use bun as the package manager
             2. Run tests and linting before commits
             3. Each connector should be self-contained in its own file
             4. Each connector should have a test file
-            
+
             ## disco.dev Platform Integration
             Connectors built here will be deployed to disco.dev, which provides:
             - Hosted MCP server infrastructure
             - Authentication and secret management
             - Usage analytics and monitoring
             - Integration with multiple AI platforms
-            
+
             ## Code Quality
             - Write clean, maintainable TypeScript code
             - Use async/await for asynchronous operations
@@ -97,5 +97,5 @@ jobs:
             - Follow the principle of least privilege for permissions
             - Validate all inputs using Zod schemas
             - Use Bun's native fetch for HTTP requests instead of axios or other libraries
-            
+
             When asked to create or modify connectors, ensure they are production-ready and follow these standards.
