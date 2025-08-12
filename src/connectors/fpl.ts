@@ -100,7 +100,7 @@ interface FPLFixture {
   team_a_score: number | null;
   team_h: number;
   team_h_score: number | null;
-  stats: any[];
+  stats: FPLFixtureStat[];
   team_h_difficulty: number;
   team_a_difficulty: number;
   pulse_id: number;
