@@ -628,7 +628,7 @@ export const FPLConnectorConfig = mcpConnectorConfig({
           );
 
           const comparison = players.map((player) => {
-            const playerData: any = {
+            const playerData: PlayerComparisonData = {
               id: player.id,
               name: `${player.first_name} ${player.second_name}`,
               web_name: player.web_name,
