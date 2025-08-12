@@ -516,8 +516,8 @@ export const FPLConnectorConfig = mcpConnectorConfig({
             return true;
           });
 
-          // Type-safe accessor for sort values
-          const getSortValue = (player: FPLPlayer, sortBy: string): number => {
+          // Sort players using a type-safe accessor function
+          function getSortValue(player: FPLPlayer, sortBy: string): number {
             switch (sortBy) {
               case 'now_cost':
                 return player.now_cost;
@@ -546,7 +546,7 @@ export const FPLConnectorConfig = mcpConnectorConfig({
               default:
                 return 0;
             }
-          };
+          }
 
           // Sort players
           filteredPlayers.sort((a, b) => {
