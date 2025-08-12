@@ -53,6 +53,30 @@ interface WandbMetric {
   values: Record<string, number | string>;
 }
 
+interface WandbProjectsResponse {
+  projects?: WandbProject[];
+}
+
+interface WandbRunsResponse {
+  runs: WandbRun[];
+  total: number;
+}
+
+interface WandbArtifactsResponse {
+  artifacts: WandbArtifact[];
+  total: number;
+}
+
+interface WandbHistoryResponse {
+  history: WandbMetric[];
+}
+
+interface WandbUserResponse {
+  username: string;
+  email: string;
+  teams: string[];
+}
+
 class WandbClient {
   private apiKey: string;
   private baseUrl: string;
@@ -107,8 +131,8 @@ class WandbClient {
 
   async getProjects(entity?: string): Promise<WandbProject[]> {
     const endpoint = entity ? `/api/v1/projects/${entity}` : '/api/v1/projects';
-    const response = (await this.makeRequest(endpoint)) as any;
-    return response.projects || response;
+    const response = (await this.makeRequest(endpoint)) as WandbProjectsResponse | WandbProject[];
+    return Array.isArray(response) ? response : response.projects || [];
   }
 
   async getProject(entity: string, project: string): Promise<WandbProject> {
@@ -151,8 +175,8 @@ class WandbClient {
 
     const response = await this.makeRequest(endpoint, { params });
     return {
-      runs: (response as any).runs || [],
-      total: (response as any).total || 0,
+      runs: (response as WandbRunsResponse).runs || [],
+      total: (response as WandbRunsResponse).total || 0,
     };
   }
 
@@ -236,8 +260,8 @@ class WandbClient {
 
     const response = await this.makeRequest(endpoint, { params });
     return {
-      artifacts: (response as any).artifacts || [],
-      total: (response as any).total || 0,
+      artifacts: (response as WandbArtifactsResponse).artifacts || [],
+      total: (response as WandbArtifactsResponse).total || 0,
     };
   }
 
@@ -272,16 +296,12 @@ class WandbClient {
     if (options.maxStep !== undefined) params.max_step = options.maxStep.toString();
 
     const response = await this.makeRequest(endpoint, { params });
-    return (response as any).history || [];
+    return (response as WandbHistoryResponse).history || [];
   }
 
   async getMe(): Promise<{ username: string; email: string; teams: string[] }> {
     const endpoint = '/api/v1/viewer';
-    return (await this.makeRequest(endpoint)) as {
-      username: string;
-      email: string;
-      teams: string[];
-    };
+    return (await this.makeRequest(endpoint)) as WandbUserResponse;
   }
 }
 

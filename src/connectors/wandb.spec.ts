@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type vi } from 'vitest';
 import type { ConnectorContext } from '../config-types/types';
 import { createMockConnectorContext } from './__mocks__/context';
 import { WandbConnectorConfig } from './wandb';
@@ -305,7 +305,7 @@ describe('#WandbConnector', () => {
   beforeEach(() => {
     server.listen({ onUnhandledRequest: 'error' });
     mockContext = createMockConnectorContext();
-    (mockContext.getCredentials as any).mockResolvedValue({
+    (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
       api_key: 'test-api-key',
       base_url: mockApiUrl,
     });
