@@ -10,6 +10,7 @@ import { DuckDuckGoConnectorConfig } from './duckduckgo';
 import { ElevenLabsConnectorConfig } from './elevenlabs';
 import { FalConnectorConfig } from './fal';
 import { FirefliesConnectorConfig } from './fireflies';
+import { FPLConnectorConfig } from './fpl';
 import { GitHubConnectorConfig } from './github';
 import { GoogleDriveConnectorConfig } from './googledrive';
 import { HiBobConnectorConfig } from './hibob';
@@ -48,6 +49,7 @@ export const allConnectors = [
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   FalConnectorConfig,
+  FPLConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
