@@ -236,7 +236,11 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
         const result = await resource.handler(context);
         const duration = Date.now() - startTime;
         customLogger(`Resource fetched: ${resource.name} (${duration}ms)`, 'info');
-        customLogger(`Resource size: ${result.length} chars`, 'debug');
+        if (typeof result === 'string' || Array.isArray(result)) {
+          customLogger(`Resource size: ${result.length} chars`, 'debug');
+        } else {
+          customLogger(`Resource type: ${typeof result}`, 'debug');
+        }
         
         return {
           contents: [
