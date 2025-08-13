@@ -193,7 +193,18 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
         const result = await tool.handler(args, context);
         const duration = Date.now() - startTime;
         customLogger(`Tool completed: ${tool.name} (${duration}ms)`, 'info');
-        customLogger(`Tool result preview: ${result.substring(0, 200)}${result.length > 200 ? '...' : ''}`, 'debug');
+        {
+          let resultPreview: string;
+          if (typeof result === 'string') {
+            resultPreview = result.substring(0, 200) + (result.length > 200 ? '...' : '');
+          } else if (result !== undefined && result !== null) {
+            const strResult = typeof result === 'object' ? JSON.stringify(result) : String(result);
+            resultPreview = strResult.substring(0, 200) + (strResult.length > 200 ? '...' : '');
+          } else {
+            resultPreview = String(result);
+          }
+          customLogger(`Tool result preview: ${resultPreview}`, 'debug');
+        }
         
         return {
           content: [{ type: 'text' as const, text: result }],
