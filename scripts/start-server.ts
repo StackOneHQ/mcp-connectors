@@ -283,7 +283,7 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
   });
 
   app.all('/mcp', async (c) => {
-    const requestId = Math.random().toString(36).substring(7);
+    const requestId = randomUUID();
     customLogger(`MCP request received [${requestId}] - ${c.req.method} ${c.req.url}`, 'info');
     
     try {
