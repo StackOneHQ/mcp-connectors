@@ -8,6 +8,7 @@ import { DeepseekConnectorConfig } from './deepseek';
 import { DocumentationConnectorConfig } from './documentation';
 import { DuckDuckGoConnectorConfig } from './duckduckgo';
 import { ElevenLabsConnectorConfig } from './elevenlabs';
+import { ExaConnectorConfig } from './exa';
 import { FalConnectorConfig } from './fal';
 import { FirefliesConnectorConfig } from './fireflies';
 import { GitHubConnectorConfig } from './github';
@@ -49,6 +50,7 @@ export const allConnectors = [
   DocumentationConnectorConfig,
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
+  ExaConnectorConfig,
   FalConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
