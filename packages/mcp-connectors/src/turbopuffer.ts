@@ -1,6 +1,6 @@
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import OpenAI from 'openai';
 import { z } from 'zod';
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 
 interface Document {
   id: string;

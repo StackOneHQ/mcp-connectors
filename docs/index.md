@@ -15,7 +15,7 @@ Welcome to the MCP Connectors documentation for disco.dev.
 bun start --connector test
 
 # Start with credentials
-pnpm start --connector asana --credentials '{"apiKey":"your-key"}'
+bun start --connector asana --credentials '{"apiKey":"your-key"}'
 ```
 
 The server will be available at `http://localhost:3000/mcp` using HTTP streaming transport.

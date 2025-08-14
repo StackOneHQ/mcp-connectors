@@ -2,8 +2,8 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { describe, expect, it, type vi } from 'vitest';
 import type { MCPToolDefinition } from '../config-types';
-import { createMockConnectorContext } from './src/__mocks__/context';
 import { ExaConnectorConfig } from './exa';
+import { createMockConnectorContext } from './src/__mocks__/context';
 
 const mockSearchResponse = {
   results: [

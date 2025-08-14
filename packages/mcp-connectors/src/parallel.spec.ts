@@ -2,8 +2,8 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { MCPToolDefinition } from '../config-types';
-import { createMockConnectorContext } from './src/__mocks__/context';
 import { ParallelConnectorConfig } from './parallel';
+import { createMockConnectorContext } from './src/__mocks__/context';
 
 const createMockContextWithCredentials = () => {
   const mockContext = createMockConnectorContext();

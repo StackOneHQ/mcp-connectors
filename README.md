@@ -45,7 +45,7 @@ bun start --connector test
 Production connectors with credentials:
 
 ```bash
-pnpm start --connector asana --credentials '{"apiKey":"your-api-key"}'
+bun start --connector asana --credentials '{"apiKey":"your-api-key"}'
 ```
 
 Server runs at `http://localhost:3000/mcp`
@@ -54,7 +54,7 @@ Server runs at `http://localhost:3000/mcp`
 
 **Popular integrations:** `asana`, `github`, `slack`, `notion`, `jira`, `linear`, `todoist`, `google-drive`, `supabase`
 
-**Full list:** Run `pnpm start --help` to see all 35+ connectors
+**Full list:** Run `bun start --help` to see all 35+ connectors
 
 ## Documentation
 

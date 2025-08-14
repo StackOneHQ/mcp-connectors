@@ -1,6 +1,6 @@
 import { type Issue, type IssueLabel, LinearClient } from '@linear/sdk';
-import { z } from 'zod';
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { z } from 'zod';
 
 class LinearClientWrapper {
   private client: LinearClient;

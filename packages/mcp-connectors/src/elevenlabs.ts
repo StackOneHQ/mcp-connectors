@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { z } from 'zod';
 
 const ELEVENLABS_API_BASE = 'https://api.elevenlabs.io/v1';
 

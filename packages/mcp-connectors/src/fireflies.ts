@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { z } from 'zod';
 
 interface FirefliesTranscript {
   id: string;

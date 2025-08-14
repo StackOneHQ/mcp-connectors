@@ -1,5 +1,5 @@
-import { vi } from 'vitest';
 import type { ConnectorContext } from '@stackone/mcp-config-types';
+import { vi } from 'vitest';
 
 export const createMockConnectorContext = () =>
   ({

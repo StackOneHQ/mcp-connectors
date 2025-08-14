@@ -27,7 +27,7 @@ The MCP connectors use HTTP streaming transport over the `/mcp` endpoint. This a
 ### Basic Command Structure
 
 ```bash
-pnpm start --connector <connector-key> [options]
+bun start --connector <connector-key> [options]
 ```
 
 ### Available Options
@@ -45,19 +45,19 @@ pnpm start --connector <connector-key> [options]
 **Test connector (no credentials needed):**
 
 ```bash
-pnpm start --connector test
+bun start --connector test
 ```
 
 **Asana connector with API key:**
 
 ```bash
-pnpm start --connector asana --credentials '{"apiKey":"your-api-key"}'
+bun start --connector asana --credentials '{"apiKey":"your-api-key"}'
 ```
 
 **GitHub connector with token and setup:**
 
 ```bash
-pnpm start --connector github \
+bun start --connector github \
   --credentials '{"token":"ghp_your-token"}' \
   --setup '{"org":"your-org"}'
 ```
@@ -65,12 +65,12 @@ pnpm start --connector github \
 **Custom port:**
 
 ```bash
-pnpm start --connector slack --port 4000 --credentials '{"botToken":"xoxb-your-token"}'
+bun start --connector slack --port 4000 --credentials '{"botToken":"xoxb-your-token"}'
 ```
 
 ## Available Connectors
 
-Run `pnpm start --help` to see all available connectors. Some popular ones include:
+Run `bun start --help` to see all available connectors. Some popular ones include:
 
 - `test` - Simple test connector for development
 - `asana` - Asana project management
@@ -138,7 +138,7 @@ The server automatically reloads when you make changes to the code:
 
 ```bash
 # This command includes --watch for auto-reloading
-pnpm start --connector test
+bun start --connector test
 ```
 
 ### Debug Output
@@ -179,14 +179,14 @@ The server provides helpful error messages:
 lsof -i :3000
 
 # Use a different port
-pnpm start --connector test --port 3001
+bun start --connector test --port 3001
 ```
 
 **Connector not found:**
 
 ```bash
 # List all available connectors
-pnpm start --help
+bun start --help
 ```
 
 **Credentials issues:**

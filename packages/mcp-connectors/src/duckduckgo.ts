@@ -1,6 +1,6 @@
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { parse as parseHTML } from 'node-html-parser';
 import { z } from 'zod';
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 
 interface SearchResult {
   title: string;
