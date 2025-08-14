@@ -1,5 +1,5 @@
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import { mcpConnectorConfig } from '../config-types';
 
 interface WandbProject {
   id: string;

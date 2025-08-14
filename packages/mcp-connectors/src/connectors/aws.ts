@@ -414,39 +414,59 @@ class AwsClient {
   }
 
   private parseXmlResponse(xml: string): Record<string, unknown> {
-    // Simple XML parser for basic AWS responses
-    const result: Record<string, unknown> = {};
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, 'text/xml');
+    // Simple regex-based XML parser for basic AWS responses
+    const parseXmlString = (xmlStr: string): Record<string, unknown> => {
+      const obj: Record<string, unknown> = {};
+      const tagRegex = /<([^>\/\s]+)(?:[^>]*)>([^<]*(?:<(?!\1[>\s])[^<]*)*)<\/\1>/g;
+      const selfClosingRegex = /<([^>\/\s]+)(?:[^>]*)\s*\/>/g;
 
-    const parseElement = (element: Element): unknown => {
-      if (element.children.length === 0) {
-        return element.textContent || '';
+      let match: RegExpExecArray | null;
+
+      // Handle self-closing tags
+      match = selfClosingRegex.exec(xmlStr);
+      while (match !== null) {
+        const key = match[1];
+        obj[key] = '';
+        match = selfClosingRegex.exec(xmlStr);
       }
 
-      const obj: Record<string, unknown> = {};
-      for (const child of Array.from(element.children)) {
-        const key = child.tagName;
-        const value = parseElement(child);
+      // Handle regular tags
+      tagRegex.lastIndex = 0;
+      match = tagRegex.exec(xmlStr);
+      while (match !== null) {
+        const key = match[1];
+        const content = match[2].trim();
 
-        if (obj[key]) {
-          if (Array.isArray(obj[key])) {
-            obj[key].push(value);
+        // Check if content contains nested XML
+        if (content.includes('<')) {
+          const nestedValue = parseXmlString(content);
+          if (obj[key]) {
+            if (Array.isArray(obj[key])) {
+              obj[key].push(nestedValue);
+            } else {
+              obj[key] = [obj[key], nestedValue];
+            }
           } else {
-            obj[key] = [obj[key], value];
+            obj[key] = nestedValue;
           }
         } else {
-          obj[key] = value;
+          if (obj[key]) {
+            if (Array.isArray(obj[key])) {
+              obj[key].push(content);
+            } else {
+              obj[key] = [obj[key], content];
+            }
+          } else {
+            obj[key] = content;
+          }
         }
+        match = tagRegex.exec(xmlStr);
       }
+
       return obj;
     };
 
-    if (doc.documentElement) {
-      return parseElement(doc.documentElement) as Record<string, unknown>;
-    }
-
-    return result;
+    return parseXmlString(xml);
   }
 
   async listEC2Instances(): Promise<EC2Instance[]> {

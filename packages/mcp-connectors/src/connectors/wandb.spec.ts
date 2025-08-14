@@ -2,7 +2,7 @@ import type { ConnectorContext } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterEach, beforeEach, describe, expect, it, type vi } from 'vitest';
-import { createMockConnectorContext } from './__mocks__/context';
+import { createMockConnectorContext } from '../__mocks__/context';
 import { WandbConnectorConfig } from './wandb';
 
 const mockApiUrl = 'https://api.wandb.ai';

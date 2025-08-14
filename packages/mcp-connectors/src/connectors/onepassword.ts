@@ -1,7 +1,7 @@
 import { ItemBuilder, OnePasswordConnect } from '@1password/connect';
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import { createIndex, search } from './utils/lexical-search';
+import { createIndex, search } from '../utils/lexical-search';
 
 export const OnePasswordConnectorConfig = mcpConnectorConfig({
   name: '1Password',
