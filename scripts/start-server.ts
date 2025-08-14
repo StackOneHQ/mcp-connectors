@@ -30,7 +30,9 @@ const customLogger = (
 };
 
 const getConnectorByKey = (connectorKey: string): MCPConnectorConfig | null => {
-  const connector = allConnectors.find((c) => c.key === connectorKey) as MCPConnectorConfig;
+  const connector = allConnectors.find(
+    (c) => c.key === connectorKey
+  ) as MCPConnectorConfig;
   return connector || null;
 };
 
@@ -74,7 +76,7 @@ const createRuntimeConnectorContext = (
 const printUsage = () => {
   console.log('🚀 MCP Connector Server');
   console.log('');
-  console.log('Usage: pnpm start --connector <connector-key> [options]');
+  console.log('Usage: bun start --connector <connector-key> [options]');
   console.log('');
   console.log('Options:');
   console.log('  --connector    Connector key (required)');
@@ -88,10 +90,10 @@ const printUsage = () => {
   console.log(sortedConnectors.join(', '));
   console.log('');
   console.log('Examples:');
-  console.log('  pnpm start --connector test');
-  console.log('  pnpm start --connector asana --credentials \'{"apiKey":"sk-xxx"}\'');
+  console.log('  bun start --connector test');
+  console.log('  bun start --connector asana --credentials \'{"apiKey":"sk-xxx"}\'');
   console.log(
-    '  pnpm start --connector github --credentials \'{"token":"ghp_xxx"}\' --setup \'{"org":"myorg"}\''
+    '  bun start --connector github --credentials \'{"token":"ghp_xxx"}\' --setup \'{"org":"myorg"}\''
   );
 };
 

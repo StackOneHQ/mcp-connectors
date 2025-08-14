@@ -12,8 +12,8 @@
     "type": "module",
     "files": ["dist", "README.md", "LICENSE"],
     "scripts": {
-        "build": "pnpm -b tsdown",
-        "prepublishOnly": "pnpm run build",
+        "build": "bun -b tsdown",
+        "prepublishOnly": "bun run build",
         "test": "vitest --run",
         "typecheck": "tsgo --noEmit"
     },

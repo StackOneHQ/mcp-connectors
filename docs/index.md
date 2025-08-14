@@ -12,7 +12,7 @@ Welcome to the MCP Connectors documentation for disco.dev.
 
 ```bash
 # Start a test connector
-pnpm start --connector test
+bun start --connector test
 
 # Start with credentials
 pnpm start --connector asana --credentials '{"apiKey":"your-key"}'

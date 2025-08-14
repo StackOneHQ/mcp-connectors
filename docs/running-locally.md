@@ -11,7 +11,7 @@ The MCP connectors use HTTP streaming transport over the `/mcp` endpoint. This a
 1. **Start a connector server:**
 
    ```bash
-   pnpm start --connector test
+   bun start --connector test
    ```
 
 2. **Server will be available at:**

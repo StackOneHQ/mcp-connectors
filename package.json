@@ -1,6 +1,9 @@
 {
     "name": "mcp-connectors",
+    "version": "0.1.0",
+    "private": true,
     "description": "monorepo for mcp connectors for disco.dev",
+    "workspaces": ["packages/*", "apps/*"],
     "module": "./dist/index.js",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -54,5 +57,5 @@
     "lint-staged": {
         "*": ["biome check --fix --no-errors-on-unmatched"]
     },
-    "packageManager": "pnpm@9.15.0"
+    "packageManager": "bun@1.2.18"
 }

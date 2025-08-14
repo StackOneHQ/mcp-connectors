@@ -35,23 +35,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 9
+          bun-version: latest
 
       - name: Setup Node.js for npm
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
-          cache: pnpm
 
       - name: 💫 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: 🏡 Build package
-        run: pnpm run --filter ${{ matrix.package_path }} build
+        run: bun run --filter ${{ matrix.package_path }} build
 
       - name: 🚀 Publish package
         working-directory: ${{ matrix.package_path }}
