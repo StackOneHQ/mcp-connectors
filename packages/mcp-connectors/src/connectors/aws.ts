@@ -118,7 +118,6 @@ class AwsClient {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    throw new Error('Max retries exceeded');
   }
 
   private isRetryableError(error: unknown): boolean {
