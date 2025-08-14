@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'vitest';
-import { allConnectors } from './index';
+import { Connectors } from './index';
 
-describe('allConnectors', () => {
+describe('Connectors', () => {
   test('should export an array of connectors', () => {
-    expect(Array.isArray(allConnectors)).toBe(true);
-    expect(allConnectors.length).toBeGreaterThan(0);
+    expect(Array.isArray(Connectors)).toBe(true);
+    expect(Connectors.length).toBeGreaterThan(0);
   });
 
   test('each connector should have required properties', () => {
-    for (const connector of allConnectors) {
+    for (const connector of Connectors) {
       expect(connector).toHaveProperty('name');
       expect(connector).toHaveProperty('key');
       expect(connector).toHaveProperty('version');

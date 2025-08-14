@@ -157,7 +157,7 @@ class PylonClient {
       );
     }
 
-    const issue: PylonIssue = await response.json();
+    const issue: PylonIssue = (await response.json()) as PylonIssue;
 
     if (includeMessages) {
       const messages = await this.getIssueMessages(issueId);

@@ -1,9 +1,9 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { describe, expect, it, vi } from 'vitest';
-import type { MCPToolDefinition } from '../config-types';
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { DocumentationConnectorConfig } from './documentation';
-import { createMockConnectorContext } from './src/__mocks__/context';
+import { createMockConnectorContext } from '../__mocks__/context';
 
 describe('#DocumentationConnectorConfig', () => {
   describe('.GET_PROVIDER_KEY', () => {

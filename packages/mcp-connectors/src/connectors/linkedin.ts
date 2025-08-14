@@ -113,7 +113,7 @@ class LinkedInClient {
       `${this.baseUrl}/companies/${companyId}`
     );
 
-    return response.json();
+    return response.json() as Promise<LinkedInCompany>;
   }
 
   async getOrganization(organizationId: string): Promise<LinkedInOrganization> {
@@ -121,7 +121,7 @@ class LinkedInClient {
       `${this.baseUrl}/organizations/${organizationId}`
     );
 
-    return response.json();
+    return response.json() as Promise<LinkedInOrganization>;
   }
 
   async searchOrganizations(
