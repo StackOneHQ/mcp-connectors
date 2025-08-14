@@ -118,6 +118,7 @@ class AwsClient {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
+    throw new Error('Max retries exceeded');
   }
 
   private isRetryableError(error: unknown): boolean {
@@ -426,7 +427,9 @@ class AwsClient {
       match = selfClosingRegex.exec(xmlStr);
       while (match !== null) {
         const key = match[1];
-        obj[key] = '';
+        if (key) {
+          obj[key] = '';
+        }
         match = selfClosingRegex.exec(xmlStr);
       }
 
@@ -435,29 +438,35 @@ class AwsClient {
       match = tagRegex.exec(xmlStr);
       while (match !== null) {
         const key = match[1];
-        const content = match[2].trim();
+        const rawContent = match[2];
 
-        // Check if content contains nested XML
-        if (content.includes('<')) {
-          const nestedValue = parseXmlString(content);
-          if (obj[key]) {
-            if (Array.isArray(obj[key])) {
-              obj[key].push(nestedValue);
+        if (key && rawContent !== undefined) {
+          const content = rawContent.trim();
+
+          // Check if content contains nested XML
+          if (content.includes('<')) {
+            const nestedValue = parseXmlString(content);
+            const currentValue = obj[key];
+            if (currentValue !== undefined) {
+              if (Array.isArray(currentValue)) {
+                currentValue.push(nestedValue);
+              } else {
+                obj[key] = [currentValue, nestedValue];
+              }
             } else {
-              obj[key] = [obj[key], nestedValue];
+              obj[key] = nestedValue;
             }
           } else {
-            obj[key] = nestedValue;
-          }
-        } else {
-          if (obj[key]) {
-            if (Array.isArray(obj[key])) {
-              obj[key].push(content);
+            const currentValue = obj[key];
+            if (currentValue !== undefined) {
+              if (Array.isArray(currentValue)) {
+                currentValue.push(content);
+              } else {
+                obj[key] = [currentValue, content];
+              }
             } else {
-              obj[key] = [obj[key], content];
+              obj[key] = content;
             }
-          } else {
-            obj[key] = content;
           }
         }
         match = tagRegex.exec(xmlStr);

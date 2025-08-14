@@ -154,6 +154,10 @@ const formatSearchResultsForLLM = (
 
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
+    if (!result) {
+      continue;
+    }
+
     output.push(`${i + 1}. ${result.title}`);
     output.push(`   URL: ${result.url}`);
     output.push(`   Score: ${result.score.toFixed(3)}`);

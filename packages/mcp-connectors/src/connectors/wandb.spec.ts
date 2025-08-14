@@ -1,4 +1,4 @@
-import type { ConnectorContext } from '@stackone/mcp-config-types';
+import type { ConnectorContext, MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterEach, beforeEach, describe, expect, it, type vi } from 'vitest';
@@ -203,7 +203,7 @@ const server = setupServer(
     ({ request }) => {
       const url = new URL(request.url);
       // Keys parameter can be used for filtering, but not implemented in this mock
-      const _keys = url.searchParams.get('keys')?.split(',');
+      void url.searchParams.get('keys')?.split(',');
 
       return HttpResponse.json({
         history: [
@@ -319,7 +319,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_me', () => {
     describe('when credentials are valid', () => {
       it('returns user information', async () => {
-        const result = await WandbConnectorConfig.tools.GET_ME.handler({}, mockContext);
+        const result = await (
+          WandbConnectorConfig.tools.GET_ME as MCPToolDefinition
+        ).handler({}, mockContext);
 
         expect(result).toContain('testuser');
         expect(result).toContain('test@example.com');
@@ -335,7 +337,9 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const result = await WandbConnectorConfig.tools.GET_ME.handler({}, mockContext);
+        const result = await (
+          WandbConnectorConfig.tools.GET_ME as MCPToolDefinition
+        ).handler({}, mockContext);
 
         expect(result).toContain('Error:');
         expect(result).toContain('401');
@@ -346,10 +350,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_list_projects', () => {
     describe('when projects exist', () => {
       it('returns list of projects', async () => {
-        const result = await WandbConnectorConfig.tools.LIST_PROJECTS.handler(
-          {},
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.LIST_PROJECTS as MCPToolDefinition
+        ).handler({}, mockContext);
 
         expect(result).toContain('test-project');
         expect(result).toContain('testuser');
@@ -365,10 +368,9 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const result = await WandbConnectorConfig.tools.LIST_PROJECTS.handler(
-          {},
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.LIST_PROJECTS as MCPToolDefinition
+        ).handler({}, mockContext);
 
         expect(result).toContain('[]');
       });
@@ -378,10 +380,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_project', () => {
     describe('when project exists', () => {
       it('returns project details', async () => {
-        const result = await WandbConnectorConfig.tools.GET_PROJECT.handler(
-          { entity: 'testuser', project: 'test-project' },
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.GET_PROJECT as MCPToolDefinition
+        ).handler({ entity: 'testuser', project: 'test-project' }, mockContext);
 
         expect(result).toContain('test-project');
         expect(result).toContain('proj_123');
@@ -397,10 +398,9 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const result = await WandbConnectorConfig.tools.GET_PROJECT.handler(
-          { entity: 'testuser', project: 'nonexistent' },
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.GET_PROJECT as MCPToolDefinition
+        ).handler({ entity: 'testuser', project: 'nonexistent' }, mockContext);
 
         expect(result).toContain('Error:');
         expect(result).toContain('404');
@@ -411,7 +411,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_create_project', () => {
     describe('when creating a new project', () => {
       it('creates project successfully', async () => {
-        const result = await WandbConnectorConfig.tools.CREATE_PROJECT.handler(
+        const result = await (
+          WandbConnectorConfig.tools.CREATE_PROJECT as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             name: 'new-project',
@@ -435,7 +437,9 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const result = await WandbConnectorConfig.tools.CREATE_PROJECT.handler(
+        const result = await (
+          WandbConnectorConfig.tools.CREATE_PROJECT as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             name: 'existing-project',
@@ -452,10 +456,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_list_runs', () => {
     describe('when runs exist', () => {
       it('returns list of runs', async () => {
-        const result = await WandbConnectorConfig.tools.LIST_RUNS.handler(
-          { entity: 'testuser', project: 'test-project' },
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.LIST_RUNS as MCPToolDefinition
+        ).handler({ entity: 'testuser', project: 'test-project' }, mockContext);
 
         expect(result).toContain('test-run-1');
         expect(result).toContain('finished');
@@ -465,7 +468,9 @@ describe('#WandbConnector', () => {
 
     describe('when filtering by state', () => {
       it('returns only runs with specified state', async () => {
-        const result = await WandbConnectorConfig.tools.LIST_RUNS.handler(
+        const result = await (
+          WandbConnectorConfig.tools.LIST_RUNS as MCPToolDefinition
+        ).handler(
           { entity: 'testuser', project: 'test-project', state: 'finished' },
           mockContext
         );
@@ -478,10 +483,9 @@ describe('#WandbConnector', () => {
 
     describe('when limiting results', () => {
       it('respects limit parameter', async () => {
-        const result = await WandbConnectorConfig.tools.LIST_RUNS.handler(
-          { entity: 'testuser', project: 'test-project', limit: 1 },
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.LIST_RUNS as MCPToolDefinition
+        ).handler({ entity: 'testuser', project: 'test-project', limit: 1 }, mockContext);
 
         const parsed = JSON.parse(result);
         expect(parsed.runs).toHaveLength(1);
@@ -492,7 +496,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_create_run', () => {
     describe('when creating a new run', () => {
       it('creates run successfully', async () => {
-        const result = await WandbConnectorConfig.tools.CREATE_RUN.handler(
+        const result = await (
+          WandbConnectorConfig.tools.CREATE_RUN as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -516,7 +522,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_log_metrics', () => {
     describe('when logging metrics', () => {
       it('logs metrics successfully', async () => {
-        const result = await WandbConnectorConfig.tools.LOG_METRICS.handler(
+        const result = await (
+          WandbConnectorConfig.tools.LOG_METRICS as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -542,7 +550,9 @@ describe('#WandbConnector', () => {
           )
         );
 
-        const result = await WandbConnectorConfig.tools.LOG_METRICS.handler(
+        const result = await (
+          WandbConnectorConfig.tools.LOG_METRICS as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -561,7 +571,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_run_history', () => {
     describe('when run has history', () => {
       it('returns metrics history', async () => {
-        const result = await WandbConnectorConfig.tools.GET_RUN_HISTORY.handler(
+        const result = await (
+          WandbConnectorConfig.tools.GET_RUN_HISTORY as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -579,7 +591,9 @@ describe('#WandbConnector', () => {
 
     describe('when filtering by keys', () => {
       it('respects keys parameter', async () => {
-        const result = await WandbConnectorConfig.tools.GET_RUN_HISTORY.handler(
+        const result = await (
+          WandbConnectorConfig.tools.GET_RUN_HISTORY as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -597,10 +611,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_list_artifacts', () => {
     describe('when artifacts exist', () => {
       it('returns list of artifacts', async () => {
-        const result = await WandbConnectorConfig.tools.LIST_ARTIFACTS.handler(
-          { entity: 'testuser', project: 'test-project' },
-          mockContext
-        );
+        const result = await (
+          WandbConnectorConfig.tools.LIST_ARTIFACTS as MCPToolDefinition
+        ).handler({ entity: 'testuser', project: 'test-project' }, mockContext);
 
         expect(result).toContain('model');
         expect(result).toContain('dataset');
@@ -610,7 +623,9 @@ describe('#WandbConnector', () => {
 
     describe('when filtering by type', () => {
       it('returns only artifacts of specified type', async () => {
-        const result = await WandbConnectorConfig.tools.LIST_ARTIFACTS.handler(
+        const result = await (
+          WandbConnectorConfig.tools.LIST_ARTIFACTS as MCPToolDefinition
+        ).handler(
           { entity: 'testuser', project: 'test-project', type: 'model' },
           mockContext
         );
@@ -624,7 +639,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_artifact', () => {
     describe('when artifact exists', () => {
       it('returns artifact details', async () => {
-        const result = await WandbConnectorConfig.tools.GET_ARTIFACT.handler(
+        const result = await (
+          WandbConnectorConfig.tools.GET_ARTIFACT as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -651,7 +668,9 @@ describe('#WandbConnector', () => {
           )
         );
 
-        const result = await WandbConnectorConfig.tools.GET_ARTIFACT.handler(
+        const result = await (
+          WandbConnectorConfig.tools.GET_ARTIFACT as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -669,7 +688,9 @@ describe('#WandbConnector', () => {
   describe('.wandb_delete_run', () => {
     describe('when run exists', () => {
       it('deletes run successfully', async () => {
-        const result = await WandbConnectorConfig.tools.DELETE_RUN.handler(
+        const result = await (
+          WandbConnectorConfig.tools.DELETE_RUN as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',
@@ -684,7 +705,9 @@ describe('#WandbConnector', () => {
 
     describe('when run does not exist', () => {
       it('handles not found error', async () => {
-        const result = await WandbConnectorConfig.tools.DELETE_RUN.handler(
+        const result = await (
+          WandbConnectorConfig.tools.DELETE_RUN as MCPToolDefinition
+        ).handler(
           {
             entity: 'testuser',
             project: 'test-project',

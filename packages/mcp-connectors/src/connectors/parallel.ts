@@ -166,13 +166,15 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
 
   for (let i = 0; i < response.results.length; i++) {
     const result = response.results[i];
-    output.push(`${i + 1}. ${result.title}`);
-    output.push(`   URL: ${result.url}`);
-    if (result.relevance_score) {
-      output.push(`   Relevance: ${result.relevance_score}`);
+    if (result) {
+      output.push(`${i + 1}. ${result.title}`);
+      output.push(`   URL: ${result.url}`);
+      if (result.relevance_score) {
+        output.push(`   Relevance: ${result.relevance_score}`);
+      }
+      output.push(`   Content: ${result.content.substring(0, 200)}...`);
+      output.push(''); // Empty line between results
     }
-    output.push(`   Content: ${result.content.substring(0, 200)}...`);
-    output.push(''); // Empty line between results
   }
 
   output.push(`Search completed in ${response.search_time}s`);
@@ -337,9 +339,11 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
             output += '\n\nSources:\n';
             for (let i = 0; i < result.sources.length; i++) {
               const source = result.sources[i];
-              output += `${i + 1}. ${source.title}\n`;
-              output += `   URL: ${source.url}\n`;
-              output += `   Snippet: ${source.snippet}\n\n`;
+              if (source) {
+                output += `${i + 1}. ${source.title}\n`;
+                output += `   URL: ${source.url}\n`;
+                output += `   Snippet: ${source.snippet}\n\n`;
+              }
             }
           }
 
