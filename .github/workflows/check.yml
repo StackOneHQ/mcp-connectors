@@ -21,6 +21,9 @@ jobs:
       - name: 💫 Install dependencies
         run: bun i
 
+      - name: Run build
+        run: bun run build
+
       - name: 🔍 Run Biome
         run: bun run check
 
