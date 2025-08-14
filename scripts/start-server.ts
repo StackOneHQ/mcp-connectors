@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { StreamableHTTPTransport } from '@hono/mcp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -10,13 +11,16 @@ import { allConnectors } from '../src/connectors/index.js';
 const getTimestamp = () => new Date().toISOString();
 
 // Custom logger format
-const customLogger = (message: string, level: 'info' | 'error' | 'debug' | 'warn' = 'info') => {
+const customLogger = (
+  message: string,
+  level: 'info' | 'error' | 'debug' | 'warn' = 'info'
+) => {
   const timestamp = getTimestamp();
   const prefix = {
     info: '📘',
     error: '❌',
     debug: '🔍',
-    warn: '⚠️'
+    warn: '⚠️',
   }[level];
   console.log(`[${timestamp}] ${prefix} ${message}`);
 };
@@ -87,13 +91,15 @@ const printUsage = () => {
   );
 };
 
-const startServer = async (): Promise<{ app: Hono, port: number }> => {
+const startServer = async (): Promise<{ app: Hono; port: number }> => {
   const app = new Hono();
-  
+
   // Add request logging middleware
-  app.use(logger((str, ...rest) => {
-    customLogger(`Request: ${str}`, 'info');
-  }));
+  app.use(
+    logger((str, ..._rest) => {
+      customLogger(`Request: ${str}`, 'info');
+    })
+  );
   const { values } = parseArgs({
     args: Bun.argv,
     options: {
@@ -188,7 +194,7 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
       const startTime = Date.now();
       customLogger(`Tool invoked: ${tool.name}`, 'info');
       customLogger(`Tool args: ${JSON.stringify(args, null, 2)}`, 'debug');
-      
+
       try {
         const result = await tool.handler(args, context);
         const duration = Date.now() - startTime;
@@ -198,22 +204,27 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
           if (typeof result === 'string') {
             resultPreview = result.substring(0, 200) + (result.length > 200 ? '...' : '');
           } else if (result !== undefined && result !== null) {
-            const strResult = typeof result === 'object' ? JSON.stringify(result) : String(result);
-            resultPreview = strResult.substring(0, 200) + (strResult.length > 200 ? '...' : '');
+            const strResult =
+              typeof result === 'object' ? JSON.stringify(result) : String(result);
+            resultPreview =
+              strResult.substring(0, 200) + (strResult.length > 200 ? '...' : '');
           } else {
             resultPreview = String(result);
           }
           customLogger(`Tool result preview: ${resultPreview}`, 'debug');
         }
-        
+
         return {
-          content: [{ type: 'text' as const, text: result }],
+          content: [{ type: 'text' as const, text: String(result) }],
         };
       } catch (error) {
         const duration = Date.now() - startTime;
         customLogger(`Tool failed: ${tool.name} (${duration}ms)`, 'error');
-        customLogger(`Error details: ${error instanceof Error ? error.stack : String(error)}`, 'error');
-        
+        customLogger(
+          `Error details: ${error instanceof Error ? error.stack : String(error)}`,
+          'error'
+        );
+
         return {
           content: [
             {
@@ -231,7 +242,7 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
       const startTime = Date.now();
       customLogger(`Resource accessed: ${resource.name}`, 'info');
       customLogger(`Resource URI: ${uri.toString()}`, 'debug');
-      
+
       try {
         const result = await resource.handler(context);
         const duration = Date.now() - startTime;
@@ -241,12 +252,12 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
         } else {
           customLogger(`Resource type: ${typeof result}`, 'debug');
         }
-        
+
         return {
           contents: [
             {
               type: 'text' as const,
-              text: result,
+              text: String(result),
               uri: uri.toString(),
             },
           ],
@@ -254,8 +265,11 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
       } catch (error) {
         const duration = Date.now() - startTime;
         customLogger(`Resource failed: ${resource.name} (${duration}ms)`, 'error');
-        customLogger(`Error details: ${error instanceof Error ? error.stack : String(error)}`, 'error');
-        
+        customLogger(
+          `Error details: ${error instanceof Error ? error.stack : String(error)}`,
+          'error'
+        );
+
         return {
           contents: [
             {
@@ -273,31 +287,43 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
 
   let isConnected = false;
   customLogger('Connecting MCP server to transport...', 'info');
-  
-  const connectedToServer = server.connect(transport).then(() => {
-    isConnected = true;
-    customLogger('MCP server connected successfully', 'info');
-  }).catch((error) => {
-    customLogger(`Failed to connect MCP server: ${error instanceof Error ? error.message : String(error)}`, 'error');
-    throw error;
-  });
+
+  const connectedToServer = server
+    .connect(transport)
+    .then(() => {
+      isConnected = true;
+      customLogger('MCP server connected successfully', 'info');
+    })
+    .catch((error) => {
+      customLogger(
+        `Failed to connect MCP server: ${error instanceof Error ? error.message : String(error)}`,
+        'error'
+      );
+      throw error;
+    });
 
   app.all('/mcp', async (c) => {
     const requestId = randomUUID();
-    customLogger(`MCP request received [${requestId}] - ${c.req.method} ${c.req.url}`, 'info');
-    
+    customLogger(
+      `MCP request received [${requestId}] - ${c.req.method} ${c.req.url}`,
+      'info'
+    );
+
     try {
       if (!isConnected) {
         customLogger(`Waiting for MCP connection [${requestId}]...`, 'debug');
         await connectedToServer;
       }
-      
+
       customLogger(`Processing MCP request [${requestId}]`, 'debug');
       const response = await transport.handleRequest(c);
       customLogger(`MCP request completed [${requestId}]`, 'info');
       return response;
     } catch (error) {
-      customLogger(`MCP request failed [${requestId}]: ${error instanceof Error ? error.message : String(error)}`, 'error');
+      customLogger(
+        `MCP request failed [${requestId}]: ${error instanceof Error ? error.message : String(error)}`,
+        'error'
+      );
       if (error instanceof Error) {
         customLogger(`Stack trace: ${error.stack}`, 'error');
       }
@@ -321,7 +347,7 @@ const startServer = async (): Promise<{ app: Hono, port: number }> => {
 
   if (Object.keys(setup).length > 0) {
     customLogger(`Setup: ${Object.keys(setup).length} config keys provided`, 'info');
-    customLogger(`Setup config: ${JSON.stringify(setup, null, 2)}`, 'debug');
+    customLogger('Setup config detected (values redacted for security)', 'debug');
   }
 
   if (connectorConfig.examplePrompt) {
