@@ -1,7 +1,6 @@
 {
-    "name": "@stackone/mcp-connectors",
-    "version": "0.0.2",
-    "description": "MCP connectors for disco.dev",
+    "name": "mcp-connectors",
+    "description": "monorepo for mcp connectors for disco.dev",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -12,29 +11,23 @@
     "type": "module",
     "files": ["dist", "README.md", "LICENSE"],
     "scripts": {
-        "start": "bun run --watch ./scripts/start-server.ts",
-        "start:test": "bun run --watch ./scripts/test-server.ts",
+        "start": "tsx --watch ./scripts/start-server.ts",
+        "start:test": "tsx --watch ./scripts/test-server.ts",
         "prepare": "husky",
-        "build": "bun -b tsdown",
-        "prepublishOnly": "bun run build",
-        "test": "vitest --run",
+        "build": "turbo build",
+        "test": "turbo test",
         "check": "biome check .",
         "check:fix": "biome check --fix .",
-        "typecheck": "tsgo --noEmit"
+        "typecheck": "turbo typecheck"
     },
     "dependencies": {
-        "@1password/connect": "^1.4.2",
-        "@linear/sdk": "^55.0.0",
-        "@notionhq/client": "^4.0.1",
-        "@orama/orama": "^3.1.11",
-        "node-html-parser": "^7.0.1",
-        "openai": "^5.12.1",
-        "zod": "^3.23.8"
+        "@stackone/mcp-config-types": "workspace:*",
+        "@stackone/mcp-connectors": "workspace:*"
     },
     "devDependencies": {
         "@biomejs/biome": "^1.5.3",
         "@hono/mcp": "^0.1.1",
-        "@types/bun": "^1.2.4",
+        "@hono/node-server": "^0.6.0",
         "@types/node": "^22.13.5",
         "@typescript/native-preview": "^7.0.0-dev.20250623.1",
         "@modelcontextprotocol/sdk": "^1.17.2",
@@ -45,26 +38,21 @@
         "publint": "^0.3.12",
         "tsdown": "^0.13.0",
         "unplugin-unused": "^0.5.1",
-        "vitest": "^3.2.4"
+        "typescript": "^5.9.0",
+        "vitest": "^3.2.4",
+        "turbo": "latest",
+        "tsx": "^4.20.0"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
     },
-    "keywords": [
-        "mcp",
-        "model-context-protocol",
-        "connectors",
-        "stackone",
-        "saas",
-        "integrations",
-        "disco"
-    ],
     "author": "StackOne",
     "license": "Apache-2.0",
     "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
     "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme",
     "lint-staged": {
         "*": ["biome check --fix --no-errors-on-unmatched"]
-    }
+    },
+    "packageManager": "pnpm@9.15.0"
 }

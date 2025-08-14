@@ -11,7 +11,7 @@ The MCP connectors use HTTP streaming transport over the `/mcp` endpoint. This a
 1. **Start a connector server:**
 
    ```bash
-   bun start --connector test
+   pnpm start --connector test
    ```
 
 2. **Server will be available at:**
@@ -27,7 +27,7 @@ The MCP connectors use HTTP streaming transport over the `/mcp` endpoint. This a
 ### Basic Command Structure
 
 ```bash
-bun start --connector <connector-key> [options]
+pnpm start --connector <connector-key> [options]
 ```
 
 ### Available Options
@@ -45,19 +45,19 @@ bun start --connector <connector-key> [options]
 **Test connector (no credentials needed):**
 
 ```bash
-bun start --connector test
+pnpm start --connector test
 ```
 
 **Asana connector with API key:**
 
 ```bash
-bun start --connector asana --credentials '{"apiKey":"your-api-key"}'
+pnpm start --connector asana --credentials '{"apiKey":"your-api-key"}'
 ```
 
 **GitHub connector with token and setup:**
 
 ```bash
-bun start --connector github \
+pnpm start --connector github \
   --credentials '{"token":"ghp_your-token"}' \
   --setup '{"org":"your-org"}'
 ```
@@ -65,12 +65,12 @@ bun start --connector github \
 **Custom port:**
 
 ```bash
-bun start --connector slack --port 4000 --credentials '{"botToken":"xoxb-your-token"}'
+pnpm start --connector slack --port 4000 --credentials '{"botToken":"xoxb-your-token"}'
 ```
 
 ## Available Connectors
 
-Run `bun start --help` to see all available connectors. Some popular ones include:
+Run `pnpm start --help` to see all available connectors. Some popular ones include:
 
 - `test` - Simple test connector for development
 - `asana` - Asana project management
@@ -138,7 +138,7 @@ The server automatically reloads when you make changes to the code:
 
 ```bash
 # This command includes --watch for auto-reloading
-bun start --connector test
+pnpm start --connector test
 ```
 
 ### Debug Output
@@ -179,14 +179,14 @@ The server provides helpful error messages:
 lsof -i :3000
 
 # Use a different port
-bun start --connector test --port 3001
+pnpm start --connector test --port 3001
 ```
 
 **Connector not found:**
 
 ```bash
 # List all available connectors
-bun start --help
+pnpm start --help
 ```
 
 **Credentials issues:**
@@ -219,39 +219,8 @@ The server logs all activity to stdout with clear formatting and status indicato
 
 ## Production Deployment
 
-For production deployments:
-
-1. **Use environment variables** instead of CLI arguments:
-
-   ```bash
-   CONNECTOR_KEY=github \
-   CREDENTIALS='{"token":"ghp_xxx"}' \
-   SETUP='{"org":"myorg"}' \
-   bun start
-   ```
-
-2. **Configure proper security:**
-
-   - Use HTTPS in production
-   - Implement authentication headers
-   - Set up proper CORS policies
-   - Use secure credential storage
-
-3. **Monitor and logging:**
-
-   - Set up structured logging
-   - Monitor server health
-   - Track MCP request metrics
-   - Alert on errors
-
-4. **Scale considerations:**
-   - Load balance multiple instances
-   - Use persistent connections
-   - Implement connection pooling
-   - Cache frequently accessed data
+tbc.
 
 ## Next Steps
 
-- Explore [individual connector documentation](./connectors/) for specific setup requirements
-- Learn about [writing custom connectors](./custom-connectors.md)
 - See [MCP protocol documentation](https://spec.modelcontextprotocol.io/) for advanced usage

@@ -1,0 +1,13 @@
+packages:
+  - packages/*
+  - apps/*
+  - "!**/test/**"
+
+onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - esbuild
+  - msw
+  - sharp
+  - workerd
+
+useNodeVersion: 22.16.0

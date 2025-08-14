@@ -1,0 +1,49 @@
+{
+    "name": "@stackone/mcp-connectors",
+    "version": "0.0.2",
+    "description": "MCP connectors for disco.dev",
+    "module": "./dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
+    "type": "module",
+    "files": ["dist", "README.md", "LICENSE"],
+    "scripts": {
+        "build": "pnpm -b tsdown",
+        "prepublishOnly": "pnpm run build",
+        "test": "vitest --run",
+        "typecheck": "tsgo --noEmit"
+    },
+    "dependencies": {
+        "@1password/connect": "^1.4.2",
+        "@linear/sdk": "^55.0.0",
+        "@notionhq/client": "^4.0.1",
+        "@orama/orama": "^3.1.11",
+        "node-html-parser": "^7.0.1",
+        "openai": "^5.12.1",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@stackone/mcp-config-types": "workspace:*"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
+    },
+    "keywords": [
+        "mcp",
+        "model-context-protocol",
+        "connectors",
+        "stackone",
+        "saas",
+        "integrations",
+        "disco"
+    ],
+    "author": "StackOne",
+    "license": "Apache-2.0",
+    "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
+    "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme"
+}

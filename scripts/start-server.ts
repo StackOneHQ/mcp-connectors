@@ -1,11 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { StreamableHTTPTransport } from '@hono/mcp';
+import { serve } from '@hono/node-server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
-import type { ConnectorContext, MCPConnectorConfig } from '../src/config-types/types.js';
-import { allConnectors } from '../src/connectors/index.js';
+import type {
+  ConnectorContext,
+  MCPConnectorConfig,
+} from '../packages/mcp-config-types/src/types.js';
+import { allConnectors } from '@stackone/mcp-connectors';
 
 // Helper to format timestamps for logs
 const getTimestamp = () => new Date().toISOString();
@@ -26,7 +30,7 @@ const customLogger = (
 };
 
 const getConnectorByKey = (connectorKey: string): MCPConnectorConfig | null => {
-  const connector = allConnectors.find((c) => c.key === connectorKey);
+  const connector = allConnectors.find((c) => c.key === connectorKey) as MCPConnectorConfig;
   return connector || null;
 };
 
@@ -70,7 +74,7 @@ const createRuntimeConnectorContext = (
 const printUsage = () => {
   console.log('🚀 MCP Connector Server');
   console.log('');
-  console.log('Usage: bun start --connector <connector-key> [options]');
+  console.log('Usage: pnpm start --connector <connector-key> [options]');
   console.log('');
   console.log('Options:');
   console.log('  --connector    Connector key (required)');
@@ -84,10 +88,10 @@ const printUsage = () => {
   console.log(sortedConnectors.join(', '));
   console.log('');
   console.log('Examples:');
-  console.log('  bun start --connector test');
-  console.log('  bun start --connector asana --credentials \'{"apiKey":"sk-xxx"}\'');
+  console.log('  pnpm start --connector test');
+  console.log('  pnpm start --connector asana --credentials \'{"apiKey":"sk-xxx"}\'');
   console.log(
-    '  bun start --connector github --credentials \'{"token":"ghp_xxx"}\' --setup \'{"org":"myorg"}\''
+    '  pnpm start --connector github --credentials \'{"token":"ghp_xxx"}\' --setup \'{"org":"myorg"}\''
   );
 };
 
@@ -101,7 +105,7 @@ const startServer = async (): Promise<{ app: Hono; port: number }> => {
     })
   );
   const { values } = parseArgs({
-    args: Bun.argv,
+    args: process.argv.slice(2),
     options: {
       connector: {
         type: 'string',
@@ -361,10 +365,4 @@ const startServer = async (): Promise<{ app: Hono; port: number }> => {
 };
 
 const { app, port } = await startServer();
-
-// Export the app with port configuration for Bun
-export default {
-  port,
-  fetch: app.fetch,
-  hostname: 'localhost',
-};
+serve({ fetch: app.fetch, port, hostname: 'localhost' });

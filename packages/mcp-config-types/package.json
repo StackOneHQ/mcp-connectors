@@ -1,0 +1,31 @@
+{
+    "name": "@stackone/mcp-config-types",
+    "version": "0.0.1",
+    "description": "MCP config types for disco.dev connectors",
+    "module": "./dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
+    "type": "module",
+    "files": ["dist", "README.md", "LICENSE"],
+    "scripts": {
+        "build": "pnpm -b tsdown",
+        "prepublishOnly": "pnpm run build",
+        "test": "vitest --run",
+        "typecheck": "tsgo --noEmit"
+    },
+    "dependencies": {
+        "zod": "^3.23.8"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
+    },
+    "author": "StackOne",
+    "license": "Apache-2.0",
+    "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
+    "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme"
+}

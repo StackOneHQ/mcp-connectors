@@ -1,3 +1,4 @@
 {
-    ".": "0.0.2"
+    "packages/mcp-connectors": "0.0.2",
+    "packages/mcp-config-types": "0.0.1"
 }
