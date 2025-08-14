@@ -6,10 +6,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { allConnectors } from '@stackone/mcp-connectors';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
-import type {
-  ConnectorContext,
-  MCPConnectorConfig,
-} from '../packages/mcp-config-types/src/types.js';
+import type { ConnectorContext, MCPConnectorConfig } from '@stackone/mcp-config-types';
 
 // Helper to format timestamps for logs
 const getTimestamp = () => new Date().toISOString();
