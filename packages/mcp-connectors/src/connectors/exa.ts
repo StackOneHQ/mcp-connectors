@@ -86,7 +86,7 @@ const performSearch = async (
       throw new Error(`Exa API error (${response.status}): ${errorText}`);
     }
 
-    const data: ExaSearchResponse = await response.json();
+    const data = (await response.json()) as ExaSearchResponse;
     console.info(`Successfully found ${data.results.length} results from Exa`);
     return data;
   } catch (error) {
@@ -133,7 +133,7 @@ const getContents = async (
       throw new Error(`Exa API error (${response.status}): ${errorText}`);
     }
 
-    const data: { results: ExaSearchResult[] } = await response.json();
+    const data = (await response.json()) as { results: ExaSearchResult[] };
     console.info(`Successfully retrieved content for ${data.results.length} results`);
     return data.results;
   } catch (error) {
