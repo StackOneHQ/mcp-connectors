@@ -1,9 +1,9 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
-import { ParallelConnectorConfig } from './parallel';
 import { createMockConnectorContext } from '../__mocks__/context';
+import { ParallelConnectorConfig } from './parallel';
 
 const createMockContextWithCredentials = () => {
   const mockContext = createMockConnectorContext();
