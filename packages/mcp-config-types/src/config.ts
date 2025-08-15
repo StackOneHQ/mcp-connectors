@@ -6,44 +6,47 @@ import type {
   MCPToolDefinition,
 } from './types';
 
-export const mcpConnectorConfig = <
-  TCredentials extends z.ZodType,
-  TSetup extends z.ZodType,
-  TOAuth2Schema extends z.ZodType = z.ZodType,
+// Simple type helper to extract Zod types
+type ZodInfer<T> = T extends z.ZodType<infer U> ? U : never;
+
+// Simplified connector config function to avoid infinite recursion
+export function mcpConnectorConfig<
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  C extends z.ZodType<any> = z.ZodType<any>,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  S extends z.ZodType<any> = z.ZodType<any>
 >(config: {
   name: string;
   key: string;
   version: string;
   logo?: string;
   description?: string;
-  credentials: TCredentials;
-  setup: TSetup;
+  credentials: C;
+  setup: S;
   initialState?: Record<string, unknown>;
   examplePrompt?: string;
   oauth2?: {
-    schema: TOAuth2Schema;
-    token: (credentials: z.infer<TCredentials>) => Promise<z.infer<TOAuth2Schema>>;
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    schema: z.ZodType<any>;
+    token: (credentials: ZodInfer<C>) => Promise<unknown>;
     refresh: (
-      credentials: z.infer<TCredentials>,
-      oauth2Credentials: z.infer<TOAuth2Schema>
-    ) => Promise<z.infer<TOAuth2Schema>>;
+      credentials: ZodInfer<C>,
+      oauth2Credentials: unknown
+    ) => Promise<unknown>;
   };
   tools: (
-    // biome-ignore lint/suspicious/noExplicitAny: schema is not typed
-    tool: <TSchema extends z.ZodObject<any>>(config: {
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    tool: <I extends z.ZodType<any> = z.ZodType<any>>(config: {
       name: string;
       description: string;
-      schema: TSchema;
+      schema: I;
       handler: (
-        args: z.infer<TSchema>,
-        context: ConnectorContext<
-          z.infer<TCredentials>,
-          z.infer<TSetup>,
-          z.infer<TOAuth2Schema>
-        >
+        args: ZodInfer<I>,
+        context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
       ) => string | Promise<string>;
-    }) => MCPToolDefinition<z.infer<TCredentials>, z.infer<TSetup>>
-  ) => Record<string, MCPToolDefinition<z.infer<TCredentials>, z.infer<TSetup>>>;
+    }) => MCPToolDefinition<ZodInfer<I>>
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  ) => Record<string, MCPToolDefinition<any>>;
   prompts?: Record<string, unknown>;
   resources?: (
     resource: (config: {
@@ -53,32 +56,27 @@ export const mcpConnectorConfig = <
       description?: string;
       mimeType?: string;
       handler: (
-        context: ConnectorContext<
-          z.infer<TCredentials>,
-          z.infer<TSetup>,
-          z.infer<TOAuth2Schema>
-        >
+        context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
       ) => string | Promise<string>;
-    }) => MCPResourceDefinition<z.infer<TCredentials>, z.infer<TSetup>>
-  ) => Record<string, MCPResourceDefinition<z.infer<TCredentials>, z.infer<TSetup>>>;
-}) => {
-  // biome-ignore lint/suspicious/noExplicitAny: schema is not typed
-  const typedTool = <TSchema extends z.ZodObject<any>>(toolConfig: {
+    }) => MCPResourceDefinition
+  ) => Record<string, MCPResourceDefinition>;
+}): MCPConnectorConfig<ZodInfer<C>, ZodInfer<S>> {
+  
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    const typedTool = <I extends z.ZodType<any>>(toolConfig: {
     name: string;
     description: string;
-    schema: TSchema;
+    schema: I;
     handler: (
-      args: z.infer<TSchema>,
-      context: ConnectorContext<z.infer<TCredentials>, z.infer<TSetup>>
+      args: ZodInfer<I>,
+      context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
     ) => string | Promise<string>;
-  }): MCPToolDefinition<z.infer<TCredentials>, z.infer<TSetup>> => ({
+  }): MCPToolDefinition<ZodInfer<I>> => ({
     name: toolConfig.name,
     description: toolConfig.description,
     schema: toolConfig.schema,
-    handler: toolConfig.handler as (
-      args: unknown,
-      context: ConnectorContext
-    ) => string | Promise<string>,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    handler: toolConfig.handler as any,
   });
 
   const typedResource = (resourceConfig: {
@@ -88,17 +86,16 @@ export const mcpConnectorConfig = <
     description?: string;
     mimeType?: string;
     handler: (
-      context: ConnectorContext<z.infer<TCredentials>, z.infer<TSetup>>
+      context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
     ) => string | Promise<string>;
-  }): MCPResourceDefinition<z.infer<TCredentials>, z.infer<TSetup>> => ({
+  }): MCPResourceDefinition => ({
     name: resourceConfig.name,
     uri: resourceConfig.uri,
     title: resourceConfig.title,
     description: resourceConfig.description,
     mimeType: resourceConfig.mimeType,
-    handler: resourceConfig.handler as (
-      context: ConnectorContext
-    ) => string | Promise<string>,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    handler: resourceConfig.handler as any,
   });
 
   return {
@@ -115,5 +112,5 @@ export const mcpConnectorConfig = <
     resources: config.resources ? config.resources(typedResource) : {},
     examplePrompt: config.examplePrompt,
     oauth2: config.oauth2,
-  } satisfies MCPConnectorConfig;
-};
+  };
+}

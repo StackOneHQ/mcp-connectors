@@ -1,9 +1,13 @@
 import type { z } from 'zod';
 
+// Context interface with typed credentials and setup
 export interface ConnectorContext<
-  TCredentials = z.infer<z.ZodType>,
-  TSetup = z.infer<z.ZodType>,
-  TOAuth2Schema extends z.ZodType = z.ZodType,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  TCredentials = any,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  TSetup = any,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  TOAuth2 = any
 > {
   // server level api
   getCredentials(): Promise<TCredentials>;
@@ -16,61 +20,61 @@ export interface ConnectorContext<
   writeCache(key: string, value: string): Promise<void>;
 
   // OAuth2 support
-  getOauth2Credentials?(): Promise<z.infer<TOAuth2Schema>>;
-  refreshOauth2Credentials?(): Promise<z.infer<TOAuth2Schema>>;
+  getOauth2Credentials?(): Promise<TOAuth2>;
+  refreshOauth2Credentials?(): Promise<TOAuth2>;
 }
 
-export interface MCPResourceDefinition<
-  TCredentials = z.infer<z.ZodType>,
-  TSetup = z.infer<z.ZodType>,
-> {
+// Resource definition uses standard TypeScript types (no parsing needed)
+export interface MCPResourceDefinition {
   name: string;
   uri: string;
   title?: string;
   description?: string;
   mimeType?: string;
-  handler: (context: ConnectorContext<TCredentials, TSetup>) => string | Promise<string>;
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  handler: (context: ConnectorContext<any, any>) => string | Promise<string>;
 }
 
-export interface MCPConnectorConfig {
+// Tool definition with typed input and context
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+export interface MCPToolDefinition<TInput = any> {
+  name: string;
+  description: string;
+  schema: z.ZodType<TInput>; // Keep Zod schema for parsing
+  handler: (
+    args: TInput, // Typed args from schema inference
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    context: ConnectorContext<any, any> // Will be typed in the config function
+  ) => string | Promise<string>;
+}
+
+// Connector config with typed credentials and setup
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+export interface MCPConnectorConfig<TCredentials = any, TSetup = any> {
   name: string;
   key: string;
   version: string;
   logo?: string;
   description?: string;
-  credentials: z.ZodType;
-  setup: z.ZodType;
+  credentials: z.ZodType<TCredentials>; // Keep Zod for parsing
+  setup: z.ZodType<TSetup>; // Keep Zod for parsing
   initialState?: Record<string, unknown>;
-  tools: Record<string, MCPToolDefinition>;
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  tools: Record<string, MCPToolDefinition<any>>;
   prompts: Record<string, unknown>;
   resources: Record<string, MCPResourceDefinition>;
   examplePrompt?: string;
-  oauth2?: OAuth2ConnectorConfig<z.ZodType, z.ZodType>;
+  oauth2?: OAuth2ConnectorConfig<TCredentials>;
 }
 
-export interface MCPToolDefinition<
-  TCredentials = z.infer<z.ZodType>,
-  TSetup = z.infer<z.ZodType>,
-> {
-  name: string;
-  description: string;
-  // biome-ignore lint/suspicious/noExplicitAny: schema is not typed
-  schema: z.ZodObject<any>;
-  handler: (
-    args: unknown,
-    context: ConnectorContext<TCredentials, TSetup>
-  ) => string | Promise<string>;
-}
-
-// OAuth2 connector configuration with functions
-export interface OAuth2ConnectorConfig<
-  TCredentials extends z.ZodType = z.ZodType,
-  TSchema extends z.ZodType = z.ZodType,
-> {
-  schema: TSchema;
-  token: (credentials: z.infer<TCredentials>) => Promise<z.infer<TSchema>>;
+// OAuth2 config with typed credentials
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+export interface OAuth2ConnectorConfig<TCredentials = any> {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  schema: z.ZodType<any>; // Keep Zod for parsing
+  token: (credentials: TCredentials) => Promise<unknown>;
   refresh: (
-    credentials: z.infer<TCredentials>,
-    oauth2Credentials: z.infer<TSchema>
-  ) => Promise<z.infer<TSchema>>;
+    credentials: TCredentials,
+    oauth2Credentials: unknown
+  ) => Promise<unknown>;
 }
