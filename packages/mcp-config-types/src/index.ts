@@ -7,3 +7,4 @@ export type {
 } from './types';
 
 export { mcpConnectorConfig } from './config';
+export { buildServerFromConnector } from './server';
