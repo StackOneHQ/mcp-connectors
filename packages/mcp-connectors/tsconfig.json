@@ -17,6 +17,7 @@
         "types": ["node"],
         "isolatedModules": true,
         "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "declaration": true,
         "outDir": "./dist",
         "rootDir": "./src"
