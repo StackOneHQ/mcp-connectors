@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.4...mcp-connectors-v0.0.5) (2025-08-15)
+
+
+### Bug Fixes
+
+* move to build packages from dev ([#24](https://github.com/StackOneHQ/mcp-connectors/issues/24)) ([95be04c](https://github.com/StackOneHQ/mcp-connectors/commit/95be04cb19864f8f59520079a5ff3a817f7b235a))
+
 ## [0.0.4](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.3...mcp-connectors-v0.0.4) (2025-08-15)
 
 
