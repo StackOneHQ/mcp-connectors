@@ -6,8 +6,9 @@ import type {
   MCPToolDefinition,
 } from './types';
 
-// Simple type helper to extract Zod types
-type ZodInfer<T> = T extends z.ZodType<infer U> ? U : never;
+// Simple type helper to extract Zod output types
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+type ZodInfer<T> = T extends z.ZodType<any, any, any> ? z.output<T> : never;
 
 // Simplified connector config function to avoid infinite recursion
 export function mcpConnectorConfig<
@@ -89,7 +90,6 @@ export function mcpConnectorConfig<
     title: resourceConfig.title,
     description: resourceConfig.description,
     mimeType: resourceConfig.mimeType,
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     handler: resourceConfig.handler as (
       context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
     ) => string | Promise<string>,
