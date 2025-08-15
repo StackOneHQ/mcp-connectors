@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
+import type {
+  CallToolResult,
+  ReadResourceResult,
+} from '@modelcontextprotocol/sdk/types.js';
 import type { ConnectorContext, MCPConnectorConfig } from './types.js';
 
 export const buildServerFromConnector = async (
@@ -20,7 +23,7 @@ export const buildServerFromConnector = async (
         const result = await tool.handler(args, context);
         return {
           content: [{ type: 'text' as const, text: result }],
-        } satisfies CallToolResult
+        } satisfies CallToolResult;
       } catch (error) {
         return {
           content: [
@@ -30,7 +33,7 @@ export const buildServerFromConnector = async (
               text: `Error: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
-        } satisfies CallToolResult
+        } satisfies CallToolResult;
       }
     });
   }
@@ -47,7 +50,7 @@ export const buildServerFromConnector = async (
               uri: uri.toString(),
             },
           ],
-        } satisfies ReadResourceResult
+        } satisfies ReadResourceResult;
       } catch (error) {
         return {
           contents: [
@@ -57,7 +60,7 @@ export const buildServerFromConnector = async (
               uri: uri.toString(),
             },
           ],
-        } satisfies ReadResourceResult
+        } satisfies ReadResourceResult;
       }
     });
   }
