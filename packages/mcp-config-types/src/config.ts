@@ -72,7 +72,7 @@ export function mcpConnectorConfig<
     description: toolConfig.description,
     schema: toolConfig.schema,
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    handler: toolConfig.handler as any,
+    handler: toolConfig.handler as MCPToolDefinition<ZodInfer<I>>['handler'],
   });
 
   const typedResource = (resourceConfig: {
