@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.4...mcp-config-types-v0.0.5) (2025-08-15)
+
+
+### Features
+
+* build server from connector ([#26](https://github.com/StackOneHQ/mcp-connectors/issues/26)) ([3769cfa](https://github.com/StackOneHQ/mcp-connectors/commit/3769cfaf0728e34e54ea0e7d6eb1b74a6777f1fa))
+
 ## [0.0.4](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.3...mcp-config-types-v0.0.4) (2025-08-15)
 
 
