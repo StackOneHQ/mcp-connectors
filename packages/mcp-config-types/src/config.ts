@@ -8,7 +8,7 @@ import type {
 
 // Simple type helper to extract Zod output types
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-type ZodInfer<T> = T extends z.ZodType<any, any, any> ? z.output<T> : never;
+type ZodInfer<T> = T extends z.ZodType<any, any, any> ? z.infer<z.TypeOf<T>> : never;
 
 // Simplified connector config function to avoid infinite recursion
 export function mcpConnectorConfig<
