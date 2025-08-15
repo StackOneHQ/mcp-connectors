@@ -109,5 +109,5 @@ export function mcpConnectorConfig<
     resources: config.resources ? config.resources(typedResource) : {},
     examplePrompt: config.examplePrompt,
     oauth2: config.oauth2,
-  };
+  } satisfies MCPConnectorConfig<ZodInfer<C>, ZodInfer<S>>;
 }
