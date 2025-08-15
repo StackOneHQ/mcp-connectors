@@ -18,10 +18,10 @@
         "typecheck": "tsgo --noEmit"
     },
     "peerDependencies": {
-        "zod": "^3"
+        "zod": "^3.25"
     },
     "devDependencies": {
-        "zod": "^3"
+        "zod": "^3.25"
     },
     "repository": {
         "type": "git",

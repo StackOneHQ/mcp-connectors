@@ -6,9 +6,8 @@ import type {
   MCPToolDefinition,
 } from './types';
 
-// Use Zod's built-in type inference to properly handle defaults and optional values
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-type ZodInfer<T> = T extends z.ZodType<any> ? z.infer<T> : never;
+// Simple type helper to extract Zod types
+type ZodInfer<T> = T extends z.ZodType<infer U> ? U : never;
 
 // Simplified connector config function to avoid infinite recursion
 export function mcpConnectorConfig<

@@ -30,10 +30,10 @@
       "name": "@stackone/mcp-config-types",
       "version": "0.0.2",
       "devDependencies": {
-        "zod": "^3",
+        "zod": "^3.25",
       },
       "peerDependencies": {
-        "zod": "^3",
+        "zod": "^3.25",
       },
     },
     "packages/mcp-connectors": {
@@ -46,7 +46,7 @@
         "@orama/orama": "^3.1.11",
         "node-html-parser": "^7.0.1",
         "openai": "^5.12.1",
-        "zod": "^3",
+        "zod": "^3.25",
       },
       "devDependencies": {
         "@stackone/mcp-config-types": "workspace:*",
