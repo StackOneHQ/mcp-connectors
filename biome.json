@@ -41,6 +41,6 @@
     },
     "files": {
         "ignoreUnknown": false,
-        "ignore": ["node_modules", "dist"]
+        "ignore": ["node_modules", "dist", "bun.lock"]
     }
 }

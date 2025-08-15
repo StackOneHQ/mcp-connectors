@@ -29,7 +29,7 @@
         "node-html-parser": "^7.0.1",
         "openai": "^5.12.1",
         "zod": "^3.25",
-        "@stackone/mcp-config-types": "workspace:*"
+        "@stackone/mcp-config-types": "^0.0.5"
     },
     "repository": {
         "type": "git",
