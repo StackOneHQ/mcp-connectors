@@ -14,7 +14,7 @@ export function mcpConnectorConfig<
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   C extends z.ZodType<any> = z.ZodType<any>,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  S extends z.ZodType<any> = z.ZodType<any>
+  S extends z.ZodType<any> = z.ZodType<any>,
 >(config: {
   name: string;
   key: string;
@@ -29,10 +29,7 @@ export function mcpConnectorConfig<
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     schema: z.ZodType<any>;
     token: (credentials: ZodInfer<C>) => Promise<unknown>;
-    refresh: (
-      credentials: ZodInfer<C>,
-      oauth2Credentials: unknown
-    ) => Promise<unknown>;
+    refresh: (credentials: ZodInfer<C>, oauth2Credentials: unknown) => Promise<unknown>;
   };
   tools: (
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -45,7 +42,7 @@ export function mcpConnectorConfig<
         context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
       ) => string | Promise<string>;
     }) => MCPToolDefinition<ZodInfer<I>>
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   ) => Record<string, MCPToolDefinition<any>>;
   prompts?: Record<string, unknown>;
   resources?: (
@@ -61,9 +58,8 @@ export function mcpConnectorConfig<
     }) => MCPResourceDefinition
   ) => Record<string, MCPResourceDefinition>;
 }): MCPConnectorConfig<ZodInfer<C>, ZodInfer<S>> {
-  
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    const typedTool = <I extends z.ZodType<any>>(toolConfig: {
+  const typedTool = <I extends z.ZodType<any>>(toolConfig: {
     name: string;
     description: string;
     schema: I;

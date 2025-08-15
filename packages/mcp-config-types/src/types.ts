@@ -7,7 +7,7 @@ export interface ConnectorContext<
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   TSetup = any,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  TOAuth2 = any
+  TOAuth2 = any,
 > {
   // server level api
   getCredentials(): Promise<TCredentials>;
@@ -73,8 +73,5 @@ export interface OAuth2ConnectorConfig<TCredentials = any> {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   schema: z.ZodType<any>; // Keep Zod for parsing
   token: (credentials: TCredentials) => Promise<unknown>;
-  refresh: (
-    credentials: TCredentials,
-    oauth2Credentials: unknown
-  ) => Promise<unknown>;
+  refresh: (credentials: TCredentials, oauth2Credentials: unknown) => Promise<unknown>;
 }
