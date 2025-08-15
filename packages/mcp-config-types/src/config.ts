@@ -91,7 +91,9 @@ export function mcpConnectorConfig<
     description: resourceConfig.description,
     mimeType: resourceConfig.mimeType,
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    handler: resourceConfig.handler as any,
+    handler: resourceConfig.handler as (
+      context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
+    ) => string | Promise<string>,
   });
 
   return {
