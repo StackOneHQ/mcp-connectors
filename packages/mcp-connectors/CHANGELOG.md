@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.9](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.8...mcp-connectors-v0.0.9) (2025-08-19)
+
+
+### Features
+
+* education on connectors ([#33](https://github.com/StackOneHQ/mcp-connectors/issues/33)) ([5d8907a](https://github.com/StackOneHQ/mcp-connectors/commit/5d8907a416dfde610b9b31811cd02a02da2852aa))
+
+
+### Bug Fixes
+
+* handle missing/undefined fields in parallel connector ([#36](https://github.com/StackOneHQ/mcp-connectors/issues/36)) ([3b20a9e](https://github.com/StackOneHQ/mcp-connectors/commit/3b20a9e58562681aff78f66ec63c97f7920ebaa1))
+
 ## [0.0.8](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.7...mcp-connectors-v0.0.8) (2025-08-19)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.7...mcp-config-types-v0.0.8) (2025-08-19)
+
+
+### Bug Fixes
+
+* handle missing/undefined fields in parallel connector ([#36](https://github.com/StackOneHQ/mcp-connectors/issues/36)) ([3b20a9e](https://github.com/StackOneHQ/mcp-connectors/commit/3b20a9e58562681aff78f66ec63c97f7920ebaa1))
+
 ## [0.0.7](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.6...mcp-config-types-v0.0.7) (2025-08-19)
 
 
