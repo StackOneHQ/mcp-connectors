@@ -33,3 +33,5 @@ bun-debug.log*
 # Misc
 .turbo/
 *.log
+
+.npmrc

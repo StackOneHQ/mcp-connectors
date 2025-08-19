@@ -11,7 +11,7 @@ export const TestConnectorConfig = mcpConnectorConfig({
   setup: z.object({
     someSetting: z.string().describe('Some setting'),
   }),
-  logo: 'https://stackone-logos.com/api/stackone/filled/svg',
+  logo: 'https://stackone-logos.com/api/disco/filled/svg',
   examplePrompt:
     'Test the connector by running basic tools, persisting some values, and incrementing a counter to verify functionality.',
   tools: (tool) => ({

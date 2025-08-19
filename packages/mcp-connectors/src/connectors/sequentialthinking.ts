@@ -128,7 +128,7 @@ const processThought = (input: Record<string, unknown>): string => {
 export const SequentialThinkingConnectorConfig = mcpConnectorConfig({
   name: 'Sequential Thinking',
   key: 'sequential-thinking',
-  logo: 'https://stackone-logos.com/api/stackone/filled/svg',
+  logo: 'https://stackone-logos.com/api/disco/filled/svg',
   version: '1.0.0',
   credentials: z.object({}),
   setup: z.object({}),

@@ -33,7 +33,9 @@ const searchDocumentation = async (keywords: string): Promise<string> => {
   const results = relevantChunks
     .map(
       (item, idx) =>
-        `### Search Result ${idx + 1} (Score: ${item.score.toFixed(2)})\n\n${item.chunk.trim()}`
+        `### Search Result ${idx + 1} (Score: ${item.score.toFixed(
+          2
+        )})\n\n${item.chunk.trim()}`
     )
     .join(`\n\n${'---'.repeat(20)}\n\n`);
 
@@ -119,7 +121,9 @@ export const StackOneConnectorConfig = mcpConnectorConfig({
         try {
           return await searchDocumentation(args.keywords);
         } catch (error) {
-          return `Error searching StackOne documentation: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          return `Error searching StackOne documentation: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`;
         }
       },
     }),

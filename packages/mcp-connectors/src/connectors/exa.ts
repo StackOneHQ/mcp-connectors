@@ -193,7 +193,7 @@ const formatSearchResultsForLLM = (
 export const ExaConnectorConfig = mcpConnectorConfig({
   name: 'Exa',
   key: 'exa',
-  logo: 'https://exa.ai/favicon.ico',
+  logo: 'https://stackone-logos.com/api/exa/filled/svg',
   version: '1.0.0',
   credentials: z.object({
     apiKey: z.string().describe('Your Exa API key'),

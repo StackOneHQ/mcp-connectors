@@ -278,7 +278,7 @@ export const DocumentationConnectorConfig = mcpConnectorConfig({
   setup: z.object({}),
   examplePrompt:
     'Find documentation for Anthropic Claude API authentication methods, then search for Prisma database schema migration best practices.',
-  logo: 'https://stackone-logos.com/api/stackone/filled/svg',
+  logo: 'https://stackone-logos.com/api/disco/filled/svg',
   tools: (tool) => ({
     GET_PROVIDER_KEY: tool({
       name: 'get_provider_key',
