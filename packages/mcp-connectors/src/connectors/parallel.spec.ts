@@ -116,6 +116,44 @@ describe('#ParallelConnectorConfig', () => {
       expect(actual).toBe('Error: Either objective or searchQueries must be provided.');
     });
 
+    it('should handle search results with missing content field', async () => {
+      server.use(
+        http.post('https://api.parallel.ai/alpha/search', () => {
+          return HttpResponse.json({
+            results: [
+              {
+                url: 'https://example.com/no-content',
+                title: 'Result Without Content',
+                // content field is missing
+              },
+              {
+                url: 'https://example.com/empty-content',
+                title: 'Result With Empty Content',
+                content: '',
+              },
+            ],
+            total_results: 2,
+            search_time: 1.2,
+          });
+        })
+      );
+
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'test search with missing content',
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Found 2 search results');
+      expect(actual).toContain('Result Without Content');
+      expect(actual).toContain('Result With Empty Content');
+      expect(actual).not.toContain('Content: undefined');
+      expect(actual).toContain('Search completed in 1.2s');
+    });
+
     it('should handle API error', async () => {
       server.use(
         http.post('https://api.parallel.ai/alpha/search', () => {
@@ -307,6 +345,79 @@ describe('#ParallelConnectorConfig', () => {
 
       expect(actual).toBe('Response without sources');
       expect(actual).not.toContain('Sources:');
+    });
+
+    it('should handle chat response with missing response field', async () => {
+      server.use(
+        http.post('https://api.parallel.ai/alpha/chat', () => {
+          return HttpResponse.json({
+            // response field is missing
+            sources: [
+              {
+                url: 'https://example.com',
+                title: 'Example',
+                snippet: 'Test snippet',
+              },
+            ],
+          });
+        })
+      );
+
+      const tool = ParallelConnectorConfig.tools.CHAT as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          message: 'Test message',
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('No response received');
+      expect(actual).toContain('Sources:');
+      expect(actual).toContain('Example');
+    });
+
+    it('should handle chat response with incomplete source fields', async () => {
+      server.use(
+        http.post('https://api.parallel.ai/alpha/chat', () => {
+          return HttpResponse.json({
+            response: 'Test response',
+            sources: [
+              {
+                // title is missing
+                url: 'https://example1.com',
+                snippet: 'Snippet 1',
+              },
+              {
+                title: 'Title 2',
+                // url is missing
+                snippet: 'Snippet 2',
+              },
+              {
+                title: 'Title 3',
+                url: 'https://example3.com',
+                // snippet is missing
+              },
+            ],
+          });
+        })
+      );
+
+      const tool = ParallelConnectorConfig.tools.CHAT as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          message: 'Test message',
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Test response');
+      expect(actual).toContain('Untitled'); // For missing title
+      expect(actual).toContain('No URL'); // For missing URL
+      expect(actual).toContain('Snippet 1');
+      expect(actual).toContain('Title 2');
+      expect(actual).toContain('Title 3');
     });
   });
 });

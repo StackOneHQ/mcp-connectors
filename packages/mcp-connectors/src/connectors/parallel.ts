@@ -172,7 +172,13 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
       if (result.relevance_score) {
         output.push(`   Relevance: ${result.relevance_score}`);
       }
-      output.push(`   Content: ${result.content.substring(0, 200)}...`);
+      if (result.content) {
+        const contentPreview =
+          result.content.length > 200
+            ? `${result.content.substring(0, 200)}...`
+            : result.content;
+        output.push(`   Content: ${contentPreview}`);
+      }
       output.push(''); // Empty line between results
     }
   }
@@ -333,16 +339,20 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
             args.maxTokens
           );
 
-          let output = result.response;
+          let output = result.response || 'No response received';
 
           if (result.sources && result.sources.length > 0) {
             output += '\n\nSources:\n';
             for (let i = 0; i < result.sources.length; i++) {
               const source = result.sources[i];
               if (source) {
-                output += `${i + 1}. ${source.title}\n`;
-                output += `   URL: ${source.url}\n`;
-                output += `   Snippet: ${source.snippet}\n\n`;
+                output += `${i + 1}. ${source.title || 'Untitled'}\n`;
+                output += `   URL: ${source.url || 'No URL'}\n`;
+                if (source.snippet) {
+                  output += `   Snippet: ${source.snippet}\n\n`;
+                } else {
+                  output += '\n';
+                }
               }
             }
           }
