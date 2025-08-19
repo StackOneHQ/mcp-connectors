@@ -291,7 +291,9 @@ export const PylonConnectorConfig = mcpConnectorConfig({
   credentials: z.object({
     apiToken: z
       .string()
-      .describe('Pylon API Token :: pyl_1234567890abcdefghijklmnopqrstuvwxyz'),
+      .describe(
+        'Pylon API Token :: pyl_1234567890abcdefghijklmnopqrstuvwxyz :: https://app.usepylon.com/settings/api-tokens'
+      ),
   }),
   logo: 'https://stackone-logos.com/api/pylon/filled/svg',
   setup: z.object({}),

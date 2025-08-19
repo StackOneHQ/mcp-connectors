@@ -226,9 +226,11 @@ export const LangsmithConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'Langsmith API key from your LangChain Smith dashboard :: lsv2_pt_1234567890abcdef1234567890abcdef_123456'
+        'Langsmith API key from your dashboard :: lsv2_pt_1234567890abcdef1234567890abcdef_123456 :: https://docs.smith.langchain.com/administration/how_to_guides/organization_management/create_account_api_key'
       ),
   }),
+  description:
+    'LangSmith is a platform for monitoring and managing LLM applications. It allows you to create datasets, iterate on prompts, and run evaluations.',
   setup: z.object({}),
   examplePrompt:
     'Get my recent prompts, pull the "customer-support-agent" prompt, and search for all successful LLM runs from the last 24 hours in my main session.',

@@ -403,14 +403,14 @@ class GoogleDriveClient {
 
 export const GoogleDriveConnectorConfig = mcpConnectorConfig({
   name: 'Google Drive',
-  key: 'googledrive',
+  key: 'google_drive',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/google-drive/filled/svg',
   credentials: z.object({
     accessToken: z
       .string()
       .describe(
-        'Google OAuth 2.0 Access Token with Drive API scope. Get from OAuth 2.0 Playground: Go to https://developers.google.com/oauthplayground/ → Select Drive API v3 scopes (https://www.googleapis.com/auth/drive) → Authorize APIs → Sign in with Google account → Exchange authorization code for tokens → Copy the Access Token value. Note: Token expires after 1 hour. :: ya29.a0AfH6SMBa1234567890abcdefghijklmnopqrstuvwxyz'
+        'Google OAuth 2.0 Access Token with Drive API scope from OAuth 2.0 Playground (https://developers.google.com/oauthplayground/) :: ya29.a0AfH6SMBa1234567890abcdefghijklmnopqrstuvwxyz ::https://developers.google.com/identity/protocols/oauth2'
       ),
   }),
   setup: z.object({}),
@@ -418,7 +418,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
     'List all files in my Drive, create a new document called "Meeting Notes", and share it with my team member at john@company.com with edit permissions.',
   tools: (tool) => ({
     GET_ABOUT: tool({
-      name: 'googledrive_get_about',
+      name: 'google_drive_get_about',
       description: 'Get information about the user and their Drive storage',
       schema: z.object({}),
       handler: async (_args, context) => {
@@ -433,7 +433,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_FILES: tool({
-      name: 'googledrive_list_files',
+      name: 'google_drive_list_files',
       description: 'List files and folders in Google Drive',
       schema: z.object({
         query: z
@@ -466,7 +466,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_FILE: tool({
-      name: 'googledrive_get_file',
+      name: 'google_drive_get_file',
       description: 'Get metadata for a specific file or folder',
       schema: z.object({
         fileId: z.string().describe('File ID'),
@@ -487,7 +487,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_FILE_CONTENT: tool({
-      name: 'googledrive_get_file_content',
+      name: 'google_drive_get_file_content',
       description: 'Download and return the text content of a file',
       schema: z.object({
         fileId: z.string().describe('File ID'),
@@ -504,7 +504,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     CREATE_FILE: tool({
-      name: 'googledrive_create_file',
+      name: 'google_drive_create_file',
       description: 'Create a new file in Google Drive',
       schema: z.object({
         name: z.string().describe('File name'),
@@ -529,7 +529,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     UPDATE_FILE: tool({
-      name: 'googledrive_update_file',
+      name: 'google_drive_update_file',
       description: 'Update a file in Google Drive',
       schema: z.object({
         fileId: z.string().describe('File ID'),
@@ -553,7 +553,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     DELETE_FILE: tool({
-      name: 'googledrive_delete_file',
+      name: 'google_drive_delete_file',
       description: 'Delete a file or folder from Google Drive',
       schema: z.object({
         fileId: z.string().describe('File ID'),
@@ -570,7 +570,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     COPY_FILE: tool({
-      name: 'googledrive_copy_file',
+      name: 'google_drive_copy_file',
       description: 'Copy a file to create a duplicate',
       schema: z.object({
         fileId: z.string().describe('Source file ID'),
@@ -593,7 +593,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     CREATE_FOLDER: tool({
-      name: 'googledrive_create_folder',
+      name: 'google_drive_create_folder',
       description: 'Create a new folder in Google Drive',
       schema: z.object({
         name: z.string().describe('Folder name'),
@@ -611,7 +611,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     SHARE_FILE: tool({
-      name: 'googledrive_share_file',
+      name: 'google_drive_share_file',
       description: 'Share a file with a user, group, or make it public',
       schema: z.object({
         fileId: z.string().describe('File ID'),
@@ -644,7 +644,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_PERMISSIONS: tool({
-      name: 'googledrive_list_permissions',
+      name: 'google_drive_list_permissions',
       description: 'List sharing permissions for a file',
       schema: z.object({
         fileId: z.string().describe('File ID'),
@@ -661,7 +661,7 @@ export const GoogleDriveConnectorConfig = mcpConnectorConfig({
       },
     }),
     REMOVE_PERMISSION: tool({
-      name: 'googledrive_remove_permission',
+      name: 'google_drive_remove_permission',
       description: 'Remove a sharing permission from a file',
       schema: z.object({
         fileId: z.string().describe('File ID'),

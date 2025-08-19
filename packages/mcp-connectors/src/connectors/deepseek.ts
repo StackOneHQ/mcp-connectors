@@ -45,7 +45,7 @@ export const DeepseekConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'DeepSeek API key from platform.deepseek.com :: sk-1234567890abcdef1234567890abcdef'
+        'DeepSeek API Key from platform.deepseek.com :: sk-1234567890abcdef1234567890abcdef :: https://platform.deepseek.com/api-keys'
       ),
   }),
   setup: z.object({}),

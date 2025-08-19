@@ -244,22 +244,24 @@ class LogfireClient {
 
 export const LogfireConnectorConfig = mcpConnectorConfig({
   name: 'Pydantic Logfire',
-  key: 'pydantic-logfire',
+  key: 'pydantic_logfire',
   logo: 'https://stackone-logos.com/api/pydantic-logfire/filled/svg',
   version: '1.0.0',
   credentials: z.object({
     readToken: z
       .string()
       .describe(
-        'Logfire read token from your project dashboard :: lgf_read_1234567890abcdefghijklmnopqrstuv'
+        'Logfire read token from your project dashboard :: lgf_read_1234567890abcdefghijklmnopqrstuv :: https://logfire-pydantic.readthedocs.io/en/latest/getting-started/authentication.html :: https://logfire.pydantic.dev/docs/how-to-guides/query-api/#how-to-create-a-read-token'
       ),
   }),
   setup: z.object({}),
+  description:
+    'Logfire is a platform for monitoring and observability based on OpenTelemetry data. Logfire is made by the Pydantic team.',
   examplePrompt:
     'Find all exceptions from the last 24 hours, show me detailed traces for errors in my main.py file, and get performance metrics for my authentication service.',
   tools: (tool) => ({
     FIND_EXCEPTIONS: tool({
-      name: 'logfire_find_exceptions',
+      name: 'pydantic_logfire_find_exceptions',
       description: 'Get exception counts grouped by file over a time range',
       schema: z.object({
         timeRange: z
@@ -280,7 +282,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     FIND_EXCEPTIONS_IN_FILE: tool({
-      name: 'logfire_find_exceptions_in_file',
+      name: 'pydantic_logfire_find_exceptions_in_file',
       description: 'Get detailed trace information for exceptions in a specific file',
       schema: z.object({
         filePath: z.string().describe('The file path to search for exceptions in'),
@@ -306,7 +308,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     ARBITRARY_QUERY: tool({
-      name: 'logfire_arbitrary_query',
+      name: 'pydantic_logfire_arbitrary_query',
       description: 'Execute a custom SQL query on OpenTelemetry data',
       schema: z.object({
         query: z.string().describe('SQL query to execute on the records table'),
@@ -323,7 +325,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_SCHEMA: tool({
-      name: 'logfire_get_schema',
+      name: 'pydantic_logfire_get_schema',
       description: 'Get the OpenTelemetry schema for the records table',
       schema: z.object({}),
       handler: async (_args, context) => {
@@ -338,7 +340,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     SEARCH_RECORDS: tool({
-      name: 'logfire_search_records',
+      name: 'pydantic_logfire_search_records',
       description: 'Search log records by text content',
       schema: z.object({
         searchTerm: z
@@ -371,7 +373,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_SERVICE_METRICS: tool({
-      name: 'logfire_get_service_metrics',
+      name: 'pydantic_logfire_get_service_metrics',
       description: 'Get aggregated metrics for services',
       schema: z.object({
         serviceName: z.string().optional().describe('Specific service name to filter by'),
@@ -395,7 +397,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_TRACE_DETAILS: tool({
-      name: 'logfire_get_trace_details',
+      name: 'pydantic_logfire_get_trace_details',
       description: 'Get all records for a specific trace ID',
       schema: z.object({
         traceId: z.string().describe('The trace ID to get details for'),
@@ -412,7 +414,7 @@ export const LogfireConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_PERFORMANCE_METRICS: tool({
-      name: 'logfire_get_performance_metrics',
+      name: 'pydantic_logfire_get_performance_metrics',
       description: 'Get performance metrics over time',
       schema: z.object({
         timeRange: z

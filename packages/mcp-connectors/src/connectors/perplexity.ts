@@ -148,7 +148,7 @@ export const PerplexityConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'Perplexity API key from your developer dashboard :: pplx-1234567890abcdef1234567890abcdef'
+        'Perplexity API key from your developer dashboard :: pplx-1234567890abcdef1234567890abcdef :: https://www.perplexity.ai/help-center/en/articles/10352995-api-settings'
       ),
   }),
   setup: z.object({}),

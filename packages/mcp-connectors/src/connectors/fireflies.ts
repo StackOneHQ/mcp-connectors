@@ -222,7 +222,9 @@ export const FirefliesConnectorConfig = mcpConnectorConfig({
   credentials: z.object({
     apiKey: z
       .string()
-      .describe('Fireflies API Key from Settings > API Keys :: ff_api_1234567890abcdef'),
+      .describe(
+        'Fireflies API Key from Settings > API Keys :: ff_api_1234567890abcdef :: https://docs.fireflies.ai/fundamentals/authorization'
+      ),
   }),
   logo: 'https://stackone-logos.com/api/fireflies/filled/svg',
   setup: z.object({
@@ -235,7 +237,7 @@ export const FirefliesConnectorConfig = mcpConnectorConfig({
     'Find all meetings I attended last week, search for meetings about "product roadmap", and get detailed transcript summaries with action items.',
   tools: (tool) => ({
     GET_MEETINGS_BY_EMAIL: tool({
-      name: 'get_meetings_by_email',
+      name: 'fireflies_get_meetings_by_email',
       description:
         'Gets meetings by participant email address. Returns full transcript data for meetings where the specified email was a participant. Uses the default user email from setup if no email is provided. Essential for finding all meetings involving a specific person, tracking participant involvement, or analyzing meeting patterns by attendee.',
       schema: z.object({
@@ -267,7 +269,7 @@ export const FirefliesConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_TRANSCRIPT_DETAILS: tool({
-      name: 'get_transcript_details',
+      name: 'fireflies_get_transcript_details',
       description:
         'Retrieve comprehensive summary and metadata about a specific transcript. Returns meeting details, participant info, and extensive summary data including overview, action items, topics discussed, and meeting insights. Optimized for extracting actionable information and meeting outcomes without full conversation text.',
       schema: z.object({
@@ -285,7 +287,7 @@ export const FirefliesConnectorConfig = mcpConnectorConfig({
       },
     }),
     SEARCH_TRANSCRIPTS: tool({
-      name: 'search_transcripts',
+      name: 'fireflies_search_transcripts',
       description:
         'Search for transcripts containing specific keywords in the title, with optional date filtering. Returns a list of matching transcripts with metadata and summary information. Perfect for finding meetings about specific topics, projects, or containing particular keywords.',
       schema: z.object({

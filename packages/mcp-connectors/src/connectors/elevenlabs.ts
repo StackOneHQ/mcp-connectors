@@ -100,7 +100,9 @@ export const ElevenLabsConnectorConfig = mcpConnectorConfig({
   credentials: z.object({
     apiKey: z
       .string()
-      .describe('ElevenLabs API Key :: xi_1234567890abcdefghijklmnopqrstuv'),
+      .describe(
+        'ElevenLabs API Key :: xi_1234567890abcdefghijklmnopqrstuv :: https://elevenlabs.io/docs/api-reference/authentication'
+      ),
   }),
   setup: z.object({}),
   examplePrompt:
