@@ -12,6 +12,15 @@ Rules:
 - write good descriptions for all capabilities on the connector config.
 - describes for the credentials and setup will be user facing so keep them short and descriptive for a user.
 
+## Naming Conventions
+
+- connectors keys should be named all lower case with no .io or .ai for example `incident` not `Incident` or `incident_io`
+- connectors keys which are known as a product of an already established company should be named like <company name>\_<product name> for example `google_drive` not `GoogleDrive` or `googledrive`
+- connector names should be human readable with capital letters. They should resemble the name the company or product is known by. For example `Google Drive` not `GoogleDrive` or `googledrive` but `Incident.io` not `IncidentIo` or `incident` since Incident.io is the common name for the company.
+- connector files should take the same name as the connector key. the exception maybe if the name starts with a number which is illegal in a file name. In that case turn the number into a word eg. `onepassword` not `1password`
+
+- capabilities should be named like `<connector name>_<tool name>` or `<connector name>_<resource name>`
+
 ## Testing Requirements
 
 ### File Organization
