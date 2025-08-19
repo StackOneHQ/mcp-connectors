@@ -43,7 +43,8 @@
         "turbo": "latest",
         "typescript": "^5.9.0",
         "unplugin-unused": "^0.5.1",
-        "vitest": "^3.2.4"
+        "vitest": "^3.2.4",
+        "vitest-mock-extended": "^3.1.0"
     },
     "repository": {
         "type": "git",

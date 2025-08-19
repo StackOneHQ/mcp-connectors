@@ -1,50 +1,59 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
-import OpenAI from 'openai';
 import { z } from 'zod';
 
+class EmbeddingsClient {
+  private baseUrl = 'https://api.openai.com/v1/embeddings';
+  private apiKey: string;
+  private model: string;
+
+  constructor(openaiApiKey: string, model: string) {
+    this.apiKey = openaiApiKey;
+    this.model = model;
+  }
+
+  async getEmbedding(text: string): Promise<number[]> {
+    const response = await fetch(this.baseUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        input: text,
+        model: this.model,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} - ${error}`);
+    }
+
+    const data = (await response.json()) as { data: Array<{ embedding: number[] }> };
+
+    if (!data.data[0]?.embedding) {
+      throw new Error('No embedding found in response');
+    }
+
+    return data.data[0].embedding;
+  }
+}
+
 interface TurbopufferQueryResult {
-  vectors: Array<{
+  rows: Array<{
     id: string;
-    vector?: number[];
-    attributes?: Record<string, unknown>;
-    dist: number;
+    $dist?: number;
+    [key: string]: unknown;
   }>;
 }
 
 interface TurbopufferNamespace {
   id: string;
-  dimensions: number;
-  approx_count: number;
-  vectors_per_list?: number;
 }
 
-interface TurbopufferUpsertData {
-  id: string;
-  vector?: number[];
-  attributes?: Record<string, unknown>;
-}
-
-class EmbeddingsClient {
-  private openai: OpenAI;
-  private model: string;
-
-  constructor(openaiApiKey: string, model: string) {
-    this.openai = new OpenAI({ apiKey: openaiApiKey });
-    this.model = model;
-  }
-
-  async getEmbedding(text: string): Promise<number[]> {
-    const response = await this.openai.embeddings.create({
-      input: text,
-      model: this.model,
-    });
-
-    if (!response.data[0]?.embedding) {
-      throw new Error('No embedding found');
-    }
-
-    return response.data[0].embedding;
-  }
+interface TurbopufferNamespacesResponse {
+  namespaces: TurbopufferNamespace[];
+  next_cursor?: string;
 }
 
 class TurbopufferClient {
@@ -76,7 +85,8 @@ class TurbopufferClient {
   }
 
   async listNamespaces(): Promise<TurbopufferNamespace[]> {
-    return this.request<TurbopufferNamespace[]>('/v1/namespaces');
+    const response = await this.request<TurbopufferNamespacesResponse>('/v1/namespaces');
+    return response.namespaces;
   }
 
   async query(
@@ -84,35 +94,39 @@ class TurbopufferClient {
     vector: number[],
     options: {
       top_k?: number;
-      distance_metric?: 'cosine_distance' | 'euclidean_squared';
-      include_attributes?: string[];
-      include_vectors?: boolean;
-      filters?: Record<string, unknown>;
+      include_attributes?: string[] | boolean;
+      filters?: unknown;
     } = {}
   ): Promise<TurbopufferQueryResult> {
     return this.request<TurbopufferQueryResult>(`/v2/namespaces/${namespace}/query`, {
       method: 'POST',
       body: JSON.stringify({
-        vector,
+        rank_by: ['vector', 'ANN', vector],
         top_k: options.top_k ?? 10,
-        distance_metric: options.distance_metric ?? 'cosine_distance',
         include_attributes: options.include_attributes,
-        include_vectors: options.include_vectors ?? false,
         filters: options.filters,
       }),
     });
   }
 
-  async upsert(
+  async write(
     namespace: string,
-    vectors: TurbopufferUpsertData[]
-  ): Promise<{ status: string }> {
-    return this.request<{ status: string }>(`/v1/namespaces/${namespace}/upsert`, {
-      method: 'POST',
-      body: JSON.stringify({
-        vectors,
-      }),
-    });
+    documents: Array<{
+      id: string;
+      vector: number[];
+      [key: string]: unknown;
+    }>
+  ): Promise<{ status: string; rows_affected?: number }> {
+    return this.request<{ status: string; rows_affected?: number }>(
+      `/v2/namespaces/${namespace}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          upsert_rows: documents,
+          distance_metric: 'cosine_distance',
+        }),
+      }
+    );
   }
 }
 
@@ -130,11 +144,11 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
     openaiApiKey: z
       .string()
       .describe(
-        'OpenAI API key to use for embeddings :: sk-1234567890abcdefghijklmnopqrstuvwxyz'
+        'OpenAI API key for embeddings :: sk-1234567890abcdefghijklmnopqrstuvwxyz'
       ),
   }),
   description:
-    'Turbopuffer is a serverless vector database. This connector provides tools to manage namespaces, search vectors, and upsert data using OpenAI embeddings.',
+    'Turbopuffer is a serverless vector database. This connector provides tools to manage namespaces, search vectors, and write data using OpenAI embeddings.',
   setup: z.object({
     embeddingModel: z
       .string()
@@ -148,7 +162,7 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
       .default(['page_content', 'metadata']),
   }),
   examplePrompt:
-    'List all available namespaces, then search the docs namespace for authentication information, and upsert a new document about API keys.',
+    'List all available namespaces, then search the docs namespace for authentication information with filters like ["And", [["category", "Eq", "auth"], ["public", "Eq", true]]], and write a new document about API keys.',
   tools: (tool) => ({
     LIST_NAMESPACES: tool({
       name: 'turbopuffer_list_namespaces',
@@ -165,12 +179,7 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
             return 'No namespaces found.';
           }
 
-          return namespaces
-            .map(
-              (ns) =>
-                `Namespace: ${ns.id}\n  Dimensions: ${ns.dimensions}\n  Approximate vectors: ${ns.approx_count}`
-            )
-            .join('\n\n');
+          return namespaces.map((ns) => `Namespace: ${ns.id}`).join('\n');
         } catch (error) {
           return `Failed to list namespaces: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
@@ -180,20 +189,37 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
     VECTOR_SEARCH: tool({
       name: 'turbopuffer_vector_search',
       description:
-        'Perform semantic search across a Turbopuffer namespace using text queries.',
+        'Perform semantic vector search across a Turbopuffer namespace using text queries. The text is automatically converted to embeddings. Supports filtering by metadata attributes.',
       schema: z.object({
         query: z
           .string()
           .describe('Text query to search for semantically similar documents'),
         namespace: z.string().describe('The Turbopuffer namespace to search in'),
         top_k: z.number().describe('Number of results to return').default(10),
-        include_vectors: z
-          .boolean()
-          .describe('Whether to include vectors in the response')
-          .default(false),
         filters: z
-          .record(z.unknown())
-          .describe('Optional filters to apply to the search')
+          .unknown()
+          .describe(
+            `Optional filters to apply to the search. Filters use array syntax with operators.
+            
+Examples:
+- Exact match: ["status", "Eq", "active"]
+- Multiple conditions with And: ["And", [["age", "Gte", 18], ["age", "Lt", 65]]]
+- Or conditions: ["Or", [["category", "Eq", "tech"], ["category", "Eq", "science"]]]
+- Array contains: ["tags", "Contains", "javascript"]
+- Array intersection: ["permissions", "ContainsAny", ["read", "write"]]
+- Pattern matching: ["filename", "Glob", "*.tsx"]
+- Null checks: ["deleted_at", "Eq", null]
+- Nested conditions: ["And", [["public", "Eq", true], ["Or", [["author", "Eq", "alice"], ["editor", "Eq", "bob"]]]]]
+
+Operators:
+- Comparison: Eq, NotEq, Lt, Lte, Gt, Gte
+- Array: Contains, NotContains, ContainsAny, NotContainsAny
+- Pattern: Glob, NotGlob, IGlob (case-insensitive), NotIGlob
+- List: In, NotIn
+- Logic: And, Or, Not
+- Text: ContainsAllTokens (requires full-text search enabled)
+- Regex: Regex (requires regex enabled in schema)`
+          )
           .optional(),
       }),
       handler: async (args, context) => {
@@ -208,26 +234,25 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
           const results = await turbopufferClient.query(args.namespace, vector, {
             top_k: args.top_k,
             include_attributes: includeAttributes,
-            include_vectors: args.include_vectors,
             filters: args.filters,
           });
 
-          if (results.vectors.length === 0) {
+          if (results.rows.length === 0) {
             return 'No results found for the search query.';
           }
 
-          return results.vectors
-            .map((result) => {
-              const attributes = result.attributes
-                ? Object.entries(result.attributes)
-                    .map(([key, value]) => {
-                      const stringValue =
-                        typeof value === 'object' ? JSON.stringify(value) : String(value);
-                      return `${key}="${stringValue.replace(/"/g, '&quot;')}"`;
-                    })
-                    .join(' ')
-                : '';
-              return `<doc id="${result.id}" distance="${result.dist}" ${attributes}/>`;
+          return results.rows
+            .map((row) => {
+              const { id, $dist, ...attributes } = row;
+              const attributeString = Object.entries(attributes)
+                .map(([key, value]) => {
+                  const stringValue =
+                    typeof value === 'object' ? JSON.stringify(value) : String(value);
+                  return `${key}="${stringValue.replace(/"/g, '&quot;')}"`;
+                })
+                .join(' ');
+              const distanceAttr = $dist !== undefined ? ` distance="${$dist}"` : '';
+              return `<doc id="${id}"${distanceAttr}${attributeString ? ` ${attributeString}` : ''}/>`;
             })
             .join('\n');
         } catch (error) {
@@ -236,26 +261,25 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
       },
     }),
 
-    UPSERT_DOCUMENTS: tool({
-      name: 'turbopuffer_upsert_documents',
+    WRITE_DOCUMENTS: tool({
+      name: 'turbopuffer_write_documents',
       description:
-        'Insert or update documents in a Turbopuffer namespace with text content that will be embedded.',
+        'Write documents to a Turbopuffer namespace with text content that will be embedded. Documents are automatically indexed by their content hash for deduplication. Metadata fields are automatically indexed and can be used for filtering in queries.',
       schema: z.object({
-        namespace: z
-          .string()
-          .describe('The Turbopuffer namespace to upsert documents into'),
+        namespace: z.string().describe('The Turbopuffer namespace to write documents to'),
         documents: z
           .array(
             z.object({
-              id: z.string().describe('Unique identifier for the document'),
-              content: z.string().describe('Text content to be embedded'),
-              attributes: z
+              page_content: z.string().describe('Text content to be embedded'),
+              metadata: z
                 .record(z.unknown())
-                .describe('Additional attributes to store with the document')
+                .describe(
+                  'Additional metadata to store with the document. These attributes can be used for filtering in queries. For example, author, source_url, etc.'
+                )
                 .optional(),
             })
           )
-          .describe('Documents to upsert'),
+          .describe('Documents to write'),
       }),
       handler: async (args, context) => {
         try {
@@ -265,21 +289,31 @@ export const TurbopufferConnectorConfig = mcpConnectorConfig({
           const embeddingsClient = new EmbeddingsClient(openaiApiKey, embeddingModel);
           const turbopufferClient = new TurbopufferClient(apiKey);
 
-          const vectors: TurbopufferUpsertData[] = await Promise.all(
-            args.documents.map(async (doc) => ({
-              id: doc.id,
-              vector: await embeddingsClient.getEmbedding(doc.content),
-              attributes: {
-                ...doc.attributes,
-                content: doc.content,
-              },
-            }))
+          // Generate content hash for each document to use as ID
+          const crypto = await import('node:crypto');
+
+          const documents = await Promise.all(
+            args.documents.map(async (doc) => {
+              const contentHash = crypto
+                .createHash('sha256')
+                .update(doc.page_content)
+                .digest('hex')
+                .substring(0, 16);
+
+              return {
+                id: contentHash,
+                vector: await embeddingsClient.getEmbedding(doc.page_content),
+                page_content: doc.page_content,
+                metadata: doc.metadata || {},
+                timestamp: new Date().toISOString(),
+              };
+            })
           );
 
-          await turbopufferClient.upsert(args.namespace, vectors);
-          return `Successfully upserted ${vectors.length} document(s) to namespace "${args.namespace}".`;
+          await turbopufferClient.write(args.namespace, documents);
+          return `Successfully wrote ${documents.length} document(s) to namespace "${args.namespace}".`;
         } catch (error) {
-          return `Failed to upsert documents: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          return `Failed to write documents: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
       },
     }),
