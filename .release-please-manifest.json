@@ -1,4 +1,4 @@
 {
-    "packages/mcp-connectors": "0.0.7",
-    "packages/mcp-config-types": "0.0.6"
+    "packages/mcp-connectors": "0.0.8",
+    "packages/mcp-config-types": "0.0.7"
 }

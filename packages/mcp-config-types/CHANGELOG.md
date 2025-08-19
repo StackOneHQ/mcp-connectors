@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.6...mcp-config-types-v0.0.7) (2025-08-19)
+
+
+### Bug Fixes
+
+* logos to use disco ([#31](https://github.com/StackOneHQ/mcp-connectors/issues/31)) ([5c5f734](https://github.com/StackOneHQ/mcp-connectors/commit/5c5f7344e022f33f1d8bdd098c94fcfdfb5e44f1))
+
 ## [0.0.6](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.5...mcp-config-types-v0.0.6) (2025-08-15)
 
 
