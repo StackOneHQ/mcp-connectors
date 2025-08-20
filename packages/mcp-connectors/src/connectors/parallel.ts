@@ -93,7 +93,7 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
 export const ParallelConnectorConfig = mcpConnectorConfig({
   name: 'Parallel.ai',
   key: 'parallel',
-  logo: 'https://parallel.ai/favicon.ico',
+  logo: 'https://stackone-logos.com/api/parallel/filled/svg',
   version: '1.0.0',
   credentials: z.object({
     apiKey: z
@@ -102,7 +102,14 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
         'Parallel.ai API key from platform.parallel.ai :: PARALLEL_API_KEY_1234567890abcdef'
       ),
   }),
-  setup: z.object({}),
+  setup: z.object({
+    processor: z
+      .enum(['base', 'pro'])
+      .default('base')
+      .describe(
+        'Search processor tier: base (2-5s, cost-effective) or pro (15-60s, best quality)'
+      ),
+  }),
   examplePrompt:
     'Search for "latest AI model developments 2024" or search with specific queries like ["machine learning", "transformer models"]',
   tools: (tool) => ({
@@ -118,12 +125,6 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
           .array(z.string())
           .optional()
           .describe('Specific search queries to execute'),
-        processor: z
-          .enum(['base', 'pro'])
-          .default('base')
-          .describe(
-            'Search processor tier: base (2-5s, cost-effective) or pro (15-60s, best quality)'
-          ),
         maxResults: z
           .number()
           .default(5)
@@ -132,6 +133,7 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey } = await context.getCredentials();
+          const { processor } = await context.getSetup();
           const client = new ParallelClient(apiKey);
 
           if (
@@ -144,7 +146,7 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
           const result = await client.search(
             args.objective,
             args.searchQueries,
-            args.processor,
+            processor,
             args.maxResults
           );
           return formatSearchResults(result);
