@@ -4,30 +4,12 @@ import { z } from 'zod';
 interface ParallelSearchResult {
   url: string;
   title: string;
-  content: string;
-  relevance_score?: number;
+  excerpts: string[];
 }
 
 interface ParallelSearchResponse {
+  search_id: string;
   results: ParallelSearchResult[];
-  total_results: number;
-  search_time: number;
-}
-
-interface ParallelTaskResponse {
-  task_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  result?: Record<string, unknown>;
-  error?: string;
-}
-
-interface ParallelChatResponse {
-  response: string;
-  sources?: Array<{
-    url: string;
-    title: string;
-    snippet: string;
-  }>;
 }
 
 class ParallelClient {
@@ -45,13 +27,11 @@ class ParallelClient {
     objective?: string,
     searchQueries?: string[],
     processor: 'base' | 'pro' = 'base',
-    maxResults = 5,
-    maxCharsPerResult = 1500
+    maxResults = 5
   ): Promise<ParallelSearchResponse> {
     const payload: Record<string, unknown> = {
       processor,
       max_results: maxResults,
-      max_chars_per_result: maxCharsPerResult,
     };
 
     if (objective) {
@@ -77,113 +57,33 @@ class ParallelClient {
 
     return response.json() as Promise<ParallelSearchResponse>;
   }
-
-  async createTask(
-    objective: string,
-    entities?: string[],
-    maxResults = 10
-  ): Promise<ParallelTaskResponse> {
-    const payload: Record<string, unknown> = {
-      objective,
-      max_results: maxResults,
-    };
-
-    if (entities && entities.length > 0) {
-      payload.entities = entities;
-    }
-
-    const response = await fetch(`${this.baseUrl}/alpha/task`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Parallel Task API error: ${response.status} ${response.statusText} - ${errorText}`
-      );
-    }
-
-    return response.json() as Promise<ParallelTaskResponse>;
-  }
-
-  async getTaskStatus(taskId: string): Promise<ParallelTaskResponse> {
-    const response = await fetch(`${this.baseUrl}/alpha/task/${taskId}`, {
-      method: 'GET',
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Parallel Task API error: ${response.status} ${response.statusText} - ${errorText}`
-      );
-    }
-
-    return response.json() as Promise<ParallelTaskResponse>;
-  }
-
-  async chat(
-    message: string,
-    systemPrompt?: string,
-    maxTokens = 2000
-  ): Promise<ParallelChatResponse> {
-    const payload: Record<string, unknown> = {
-      message,
-      max_tokens: maxTokens,
-    };
-
-    if (systemPrompt) {
-      payload.system_prompt = systemPrompt;
-    }
-
-    const response = await fetch(`${this.baseUrl}/alpha/chat`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Parallel Chat API error: ${response.status} ${response.statusText} - ${errorText}`
-      );
-    }
-
-    return response.json() as Promise<ParallelChatResponse>;
-  }
 }
 
 const formatSearchResults = (response: ParallelSearchResponse): string => {
-  if (response.results.length === 0) {
+  if (!response.results || response.results.length === 0) {
     return 'No search results found for your query.';
   }
 
-  const output = [
-    `Found ${response.total_results} search results (showing ${response.results.length}):\n`,
-  ];
+  const output = [`Found ${response.results.length} search results:\n`];
 
   for (let i = 0; i < response.results.length; i++) {
     const result = response.results[i];
-    if (result) {
-      output.push(`${i + 1}. ${result.title}`);
-      output.push(`   URL: ${result.url}`);
-      if (result.relevance_score) {
-        output.push(`   Relevance: ${result.relevance_score}`);
-      }
-      if (result.content) {
-        const contentPreview =
-          result.content.length > 200
-            ? `${result.content.substring(0, 200)}...`
-            : result.content;
-        output.push(`   Content: ${contentPreview}`);
-      }
-      output.push(''); // Empty line between results
+    output.push(`${i + 1}. ${result.title}`);
+    output.push(`   URL: ${result.url}`);
+    
+    // Handle excerpts
+    if (result.excerpts && result.excerpts.length > 0) {
+      const contentPreview = result.excerpts.join(' ');
+      const maxLength = 200;
+      const preview = contentPreview.length > maxLength 
+        ? `${contentPreview.substring(0, maxLength)}...`
+        : contentPreview;
+      output.push(`   Content: ${preview}`);
     }
+    
+    output.push(''); // Empty line between results
   }
-
-  output.push(`Search completed in ${response.search_time}s`);
+  
   return output.join('\n');
 };
 
@@ -201,12 +101,12 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
   }),
   setup: z.object({}),
   examplePrompt:
-    'Search for "latest AI model developments 2024", create a research task about "enterprise AI adoption trends", and chat about the implications of these findings.',
+    'Search for "latest AI model developments 2024" or search with specific queries like ["machine learning", "transformer models"]',
   tools: (tool) => ({
     SEARCH: tool({
       name: 'parallel_search',
       description:
-        'Perform AI-native web search using Parallel Search API with ranked URLs and extended content',
+        'Perform AI-native web search using Parallel Search API',
       schema: z.object({
         objective: z
           .string()
@@ -226,10 +126,6 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
           .number()
           .default(5)
           .describe('Maximum number of search results to return'),
-        maxCharsPerResult: z
-          .number()
-          .default(1500)
-          .describe('Maximum characters per search result content'),
       }),
       handler: async (args, context) => {
         try {
@@ -247,119 +143,11 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
             args.objective,
             args.searchQueries,
             args.processor,
-            args.maxResults,
-            args.maxCharsPerResult
+            args.maxResults
           );
           return formatSearchResults(result);
         } catch (error) {
           return `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_TASK: tool({
-      name: 'parallel_create_task',
-      description:
-        'Create a deep research task using Parallel Task API for comprehensive automated research',
-      schema: z.object({
-        objective: z
-          .string()
-          .describe('The research objective or question for deep investigation'),
-        entities: z
-          .array(z.string())
-          .optional()
-          .describe('Optional list of entities to research'),
-        maxResults: z
-          .number()
-          .default(10)
-          .describe('Maximum number of results to include in research'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new ParallelClient(apiKey);
-          const result = await client.createTask(
-            args.objective,
-            args.entities,
-            args.maxResults
-          );
-
-          if (result.status === 'pending' || result.status === 'processing') {
-            return `Task created successfully. Task ID: ${result.task_id}. Status: ${result.status}. Use parallel_get_task_status to check progress.`;
-          }
-
-          return `Task completed immediately. Result: ${JSON.stringify(result.result, null, 2)}`;
-        } catch (error) {
-          return `Failed to create task: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_TASK_STATUS: tool({
-      name: 'parallel_get_task_status',
-      description: 'Check the status and retrieve results of a Parallel research task',
-      schema: z.object({
-        taskId: z.string().describe('The task ID returned from create_task'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new ParallelClient(apiKey);
-          const result = await client.getTaskStatus(args.taskId);
-
-          if (result.status === 'completed' && result.result) {
-            return `Task completed successfully:\n\n${JSON.stringify(result.result, null, 2)}`;
-          }
-          if (result.status === 'failed') {
-            return `Task failed: ${result.error || 'Unknown error'}`;
-          }
-          return `Task status: ${result.status}. Please check again later.`;
-        } catch (error) {
-          return `Failed to get task status: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CHAT: tool({
-      name: 'parallel_chat',
-      description:
-        'Get fast web-researched completions using Parallel Chat API with automatic source citations',
-      schema: z.object({
-        message: z.string().describe('The message or question to ask'),
-        systemPrompt: z
-          .string()
-          .optional()
-          .describe('Optional system prompt to set context and behavior'),
-        maxTokens: z.number().default(2000).describe('Maximum tokens for the response'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new ParallelClient(apiKey);
-          const result = await client.chat(
-            args.message,
-            args.systemPrompt,
-            args.maxTokens
-          );
-
-          let output = result.response || 'No response received';
-
-          if (result.sources && result.sources.length > 0) {
-            output += '\n\nSources:\n';
-            for (let i = 0; i < result.sources.length; i++) {
-              const source = result.sources[i];
-              if (source) {
-                output += `${i + 1}. ${source.title || 'Untitled'}\n`;
-                output += `   URL: ${source.url || 'No URL'}\n`;
-                if (source.snippet) {
-                  output += `   Snippet: ${source.snippet}\n\n`;
-                } else {
-                  output += '\n';
-                }
-              }
-            }
-          }
-
-          return output;
-        } catch (error) {
-          return `Failed to chat: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
