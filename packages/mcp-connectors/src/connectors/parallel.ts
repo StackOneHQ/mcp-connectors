@@ -68,6 +68,8 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
 
   for (let i = 0; i < response.results.length; i++) {
     const result = response.results[i];
+    if (!result) continue;
+
     output.push(`${i + 1}. ${result.title}`);
     output.push(`   URL: ${result.url}`);
 
