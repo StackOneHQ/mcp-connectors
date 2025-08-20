@@ -10,7 +10,7 @@
         "./package.json": "./package.json"
     },
     "type": "module",
-    "files": ["dist"],
+    "files": ["dist", "LICENSE"],
     "scripts": {
         "build": "bun -b tsdown",
         "prepublishOnly": "bun run build",
