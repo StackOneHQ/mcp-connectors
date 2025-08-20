@@ -132,8 +132,9 @@ export const SequentialThinkingConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   credentials: z.object({}),
   setup: z.object({}),
+  description: 'Sequential Thinking is a tool for thinking through problems and ideas.',
   examplePrompt:
-    'Help me think through implementing a new feature by breaking it down into steps, considering potential challenges, and revising my approach as needed.',
+    'Help me think through implementing a concept car which is a hybrid of a car and a plane by breaking it down into steps, considering potential challenges.',
   tools: (tool) => ({
     THINKING: tool({
       name: 'sequential_thinking',

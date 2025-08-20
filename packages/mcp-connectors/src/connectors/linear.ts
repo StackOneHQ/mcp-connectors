@@ -285,10 +285,12 @@ export const LinearConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'Linear API key from Settings > API :: lin_api_1234567890abcdefghijklmnopqrstuvw'
+        'Linear API key from Settings > API :: lin_api_1234567890abcdefghijklmnopqrstuvw :: https://linear.app/docs/api-and-webhooks'
       ),
   }),
   setup: z.object({}),
+  description:
+    'Linear is a project management tool that allows you to create, update, and get issues, projects, and more.',
   examplePrompt:
     'Search for high-priority bugs in the "ENG" team, create a new issue for implementing dark mode, and add a comment to issue ENG-123 about the progress.',
   tools: (tool) => ({

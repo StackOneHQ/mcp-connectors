@@ -105,11 +105,13 @@ export const StackOneConnectorConfig = mcpConnectorConfig({
   logo: 'https://stackone-logos.com/api/stackone/filled/svg',
   credentials: z.object({}),
   setup: z.object({}),
+  description:
+    'StackOne is an integrations platform for building AI agents. It allows you to read and write to various APIs and third party services with a single unified interface.',
   examplePrompt:
     'Search the StackOne documentation for information about authentication methods, API endpoints, and integration best practices.',
   tools: (tool) => ({
     SEARCH_STACKONE_DOCS: tool({
-      name: 'search_stackone_docs',
+      name: 'stackone_search_docs',
       description:
         'Search StackOne documentation using fuzzy search over keywords. Returns relevant large chunks of documentation.',
       schema: z.object({

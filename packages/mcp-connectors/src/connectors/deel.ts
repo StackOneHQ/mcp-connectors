@@ -311,7 +311,7 @@ export const DeelConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'Deel API Key (Bearer token) from Settings > API :: deel_live_1234567890abcdef'
+        'Deel API Key from Settings > API :: deel_live_1234567890abcdef :: https://help.letsdeel.com/hc/en-gb/articles/8801712601233-How-To-Use-Deel-API'
       ),
   }),
   setup: z.object({}),

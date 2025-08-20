@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 // Prompt template for Tinybird
 const PROMPT_TEMPLATE = `
-Tinybird is a real-time data analytics platform. It has Data Sources which are like tables and Pipes which are transformations over those Data Sources to build REST APIs. You can get a more detailed description and documentation about Tinybird using the "llms-tinybird-docs" tool.
+Tinybird is a real-time data analytics platform. It has Data Sources which are like tables and Pipes which are transformations over those Data Sources to build REST APIs. You can get a more detailed description and documentation about Tinybird using the "tinybird_llms_docs" tool.
 The assistants goal is to get insights from a Tinybird Workspace. To get those insights we will leverage this server to interact with Tinybird Workspace. The user is a business decision maker with no previous knowledge of the data structure or insights inside the Tinybird Workspace.
 It is important that you first explain to the user what is going on. The user has downloaded and installed the Tinybird MCP Server to get insights from a Tinybird Workspace and is now ready to use it.
 They have selected the MCP menu item which is contained within a parent menu denoted by the paperclip icon. Inside this menu they selected an icon that illustrates two electrical plugs connecting. This is the MCP menu.
@@ -18,15 +18,15 @@ Resources:
 This server exposes one key resource: "tinybird://insights", which is a business insights memo that gets automatically updated throughout the analysis process. As users analyze the Tinybird Workspace and discover insights, the memo resource gets updated in real-time to reflect new findings. The memo can even be enhanced with Claude's help if an Anthropic API key is provided, turning raw insights into a well-structured business document. Resources act as living documents that provide context to the conversation.
 Tools:
 This server provides several tools to interact with the Tinybird APIs and run analytical queries:
-"list-data-sources": Lists all Data Sources in the Tinybird Workspace
-"list-pipes": Lists all Pipe Endpoints in the Tinybird Workspace
-"get-data-source": Gets the information of a Data Source given its name, including the schema.
-"get-pipe": Gets the information of a Pipe Endpoint given its name, including its nodes and SQL transformation to understand what insights it provides.
-"request-pipe-data": Requests data from a Pipe Endpoints via an HTTP request. Pipe endpoints can have parameters to filter the analytical data.
-"run-select-query": Allows to run a select query over a Data Source to extract insights.
-"append-insight": Adds a new business insight to the memo resource
-"llms-tinybird-docs": Contains the whole Tinybird product documentation, so you can use it to get context about what Tinybird is, what it does, API reference and more.
-"save-event": This allows to send an event to a Tinybird Data Source. Use it to save a user generated prompt to the prompts Data Source. The MCP server feeds from the prompts Data Source on initialization so the user can instruct the LLM the workflow to follow.
+"tinybird_list_data_sources": Lists all Data Sources in the Tinybird Workspace
+"tinybird_list_pipes": Lists all Pipe Endpoints in the Tinybird Workspace
+"tinybird_get_data_source": Gets the information of a Data Source given its name, including the schema.
+"tinybird_get_pipe": Gets the information of a Pipe Endpoint given its name, including its nodes and SQL transformation to understand what insights it provides.
+"tinybird_request_pipe_data": Requests data from a Pipe Endpoints via an HTTP request. Pipe endpoints can have parameters to filter the analytical data.
+"tinybird_run_select_query": Allows to run a select query over a Data Source to extract insights.
+"tinybird_append_insight": Adds a new business insight to the memo resource
+"tinybird_llms_docs": Contains the whole Tinybird product documentation, so you can use it to get context about what Tinybird is, what it does, API reference and more.
+"tinybird_save_event": This allows to send an event to a Tinybird Data Source. Use it to save a user generated prompt to the prompts Data Source. The MCP server feeds from the prompts Data Source on initialization so the user can instruct the LLM the workflow to follow.
 
 Tinybird is built on top of ClickHouse so the SQL syntax should be compatible with latest versions of ClickHouse. Only SQL SELECT statements should be used. Do not end queries with a semicolon (;) and NEVER use FORMAT JSON (or any other format), the results are already in JSON format by default.
 </mcp>
@@ -49,7 +49,7 @@ b. Suggest some possible insights that could be interesting to explore about tha
 a. Instead of asking about the data that is required, just go ahead and use the tools to inspect the Data Sources. Inform the user you are "Inspecting the data".
 b. Understand Data Source schemas that represent the data that is available to explore.
 c. Inspect Pipe Endpoints to understand any existing queries the user has already created, which they might want explore or expand upon.
-d. If a Pipe Endpoint is not available, use the "run-select-query" tool to run queries over Data Sources.
+d. If a Pipe Endpoint is not available, use the "tinybird_run_select_query" tool to run queries over Data Sources.
 
 4. Pause for user input:
 a. Summarize to the user what data we have inspected.
@@ -61,7 +61,7 @@ a. Present 1 additional multiple-choice query options to the user.
 b. Explain the purpose of each query option.
 c. Wait for the user to select one of the query options.
 d. After each query be sure to opine on the results.
-e. Use the append-insight tool to save any insights discovered from the data analysis.
+e. Use the tinybird_append_insight tool to save any insights discovered from the data analysis.
 f. Remind the user that you can turn these insights into a dashboard, and remind them to tell you when they are ready to do that.
 
 6. Generate a dashboard:
@@ -71,7 +71,7 @@ c. Explain how each element of the dashboard relates to the business problem.
 d. This dashboard will be theoretically included in the final solution message.
 
 7. Craft the final solution message:
-a. As you have been using the append-insight tool the resource found at: tinybird://insights has been updated.
+a. As you have been using the tinybird_append_insight tool the resource found at: tinybird://insights has been updated.
 b. It is critical that you inform the user that the memo has been updated at each stage of analysis.
 c. Ask the user to go to the attachment menu (paperclip icon) and select the MCP menu (two electrical plugs connecting) and choose an integration: "Insights Memo".
 d. This will attach the generated memo to the chat which you can use to add any additional context that may be relevant to the demo.
@@ -203,15 +203,17 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
     adminToken: z
       .string()
       .describe(
-        'Tinybird admin token :: p.eyJ1IjogIjEyMzQ1Njc4LTEyMzQtMTIzNC0xMjM0LTEyMzQ1Njc4OTAxMiIsICJpZCI6ICJhYmNkZWZnaCJ9.1234567890abcdefghijklmnopqrstuv'
+        'Tinybird admin token :: p.eyJ1IjogIjEyMzQ1Njc4LTEyMzQtMTIzNC0xMjM0LTEyMzQ1Njc4OTAxMiIsICJpZCI6ICJhYmNkZWZnaCJ9.1234567890abcdefghijklmnopqrstuv :: https://www.tinybird.co/docs/classic/administration/auth-tokens'
       ),
   }),
   setup: z.object({}),
+  description:
+    'Tinybird is a real-time data analytics platform. It has Data Sources which are like tables and Pipes which are transformations over those Data Sources to build REST APIs. You can get a more detailed description and documentation about Tinybird using the "tinybird_llms_docs" tool.',
   examplePrompt:
     'Explore my Tinybird workspace data sources, run analytical queries on user behavior data, and create insights about engagement patterns.',
   tools: (tool) => ({
     DEFAULT_PROMPT: tool({
-      name: 'default-prompt',
+      name: 'tinybird_default_prompt',
       description: 'The default prompt for the Tinybird MCP Server',
       schema: z.object({
         topic: z.string().describe('The topic of the data you want to explore'),
@@ -222,7 +224,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_DATA_SOURCES: tool({
-      name: 'list-data-sources',
+      name: 'tinybird_list_data_sources',
       description: 'List all Data Sources in the Tinybird Workspace',
       schema: z.object({}),
       handler: async (_args, context) => {
@@ -237,7 +239,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_PIPES: tool({
-      name: 'list-pipes',
+      name: 'tinybird_list_pipes',
       description: 'List all Pipe Endpoints in the Tinybird Workspace',
       schema: z.object({}),
       handler: async (_args, context) => {
@@ -252,7 +254,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_DATA_SOURCE: tool({
-      name: 'get-data-source',
+      name: 'tinybird_get_data_source',
       description:
         'Get the information of a Data Source given its name, including the schema.',
       schema: z.object({
@@ -270,7 +272,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_PIPE: tool({
-      name: 'get-pipe',
+      name: 'tinybird_get_pipe',
       description:
         'Get the information of a Pipe Endpoint given its name, including its nodes and SQL transformation to understand what insights it provides.',
       schema: z.object({
@@ -288,7 +290,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     REQUEST_PIPE_DATA: tool({
-      name: 'request-pipe-data',
+      name: 'tinybird_request_pipe_data',
       description:
         'Requests data from a Pipe Endpoints via an HTTP request. Pipe endpoints can have parameters to filter the analytical data.',
       schema: z.object({
@@ -307,7 +309,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     RUN_SELECT_QUERY: tool({
-      name: 'run-select-query',
+      name: 'tinybird_run_select_query',
       description: 'Allows to run a select query over a Data Source to extract insights.',
       schema: z.object({
         select_query: z.string().describe('SQL SELECT query to run'),
@@ -324,7 +326,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     APPEND_INSIGHT: tool({
-      name: 'append-insight',
+      name: 'tinybird_append_insight',
       description: 'Adds a new business insight to the memo resource',
       schema: z.object({
         insight: z.string().describe('Business insight discovered from data analysis'),
@@ -346,7 +348,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     LLMS_TINYBIRD_DOCS: tool({
-      name: 'llms-tinybird-docs',
+      name: 'tinybird_llms_docs',
       description:
         'Contains the whole Tinybird product documentation, so you can use it to get context about what Tinybird is, what it does, API reference and more.',
       schema: z.object({}),
@@ -364,7 +366,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     SAVE_EVENT: tool({
-      name: 'save-event',
+      name: 'tinybird_save_event',
       description:
         'This allows to send an event to a Tinybird Data Source. Use it to save a user generated prompt to the prompts Data Source. The MCP server feeds from the prompts Data Source on initialization so the user can instruct the LLM the workflow to follow.',
       schema: z.object({
@@ -387,7 +389,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     ANALYZE_PIPE: tool({
-      name: 'analyze-pipe',
+      name: 'tinybird_analyze_pipe',
       description: 'Analyze the Pipe Endpoint SQL',
       schema: z.object({
         pipe_name: z.string().describe('The Pipe Endpoint name'),
@@ -434,7 +436,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       },
     }),
     DATASOURCE_DEFINITION_CONTEXT: resource({
-      name: 'datasource-definition-context',
+      name: 'tinybird_datasource_definition_context',
       uri: 'tinybird://datasource-definition-context',
       title: 'Datasource Definition Context',
       description: 'Context and syntax guide for Tinybird datasource definitions',
@@ -442,7 +444,7 @@ export const TinybirdConnectorConfig = mcpConnectorConfig({
       handler: async (_context) => {
         return `
 <context>
-Your answer MUST conform to the Tinybird Datafile syntax. Do NOT use dashes when naming .datasource files. Use llms-tinybird-docs tool to check Tinybird documentation and fix errors.
+Your answer MUST conform to the Tinybird Datafile syntax. Do NOT use dashes when naming .datasource files. Use tinybird_llms_docs tool to check Tinybird documentation and fix errors.
 
 Tinybird schemas include jsonpaths syntax to extract data from json columns. Schemas are not fully compatible with ClickHouse SQL syntax.
 
@@ -555,7 +557,7 @@ For Summing / AggregatingMergeTree all dimensions go to ENGINE_SORTING_KEY
 - Do not use CTEs, only if they return a escalar value, use instead subqueries.
 - When possible filter by columns in the sorting key.
 - Do not create materialized pipes unless the user asks you.
-- To explore data use the run-select-query tool, to build API endpoints push pipes following the Pipe syntax
+- To explore data use the tinybird_run_select_query tool, to build API endpoints push pipes following the Pipe syntax
 
 \`\`\`
 NODE daily_sales

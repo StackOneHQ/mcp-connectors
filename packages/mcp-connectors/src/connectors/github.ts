@@ -319,7 +319,7 @@ export const GitHubConnectorConfig = mcpConnectorConfig({
     token: z
       .string()
       .describe(
-        'GitHub Personal Access Token or GitHub App token :: ghp_1234567890abcdefGHIJKLMNOP'
+        'GitHub Personal Access Token or GitHub App token :: ghp_1234567890abcdefGHIJKLMNOP :: https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api'
       ),
   }),
   setup: z.object({}),

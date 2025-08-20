@@ -385,21 +385,25 @@ class IncidentIoClient {
 }
 
 export const IncidentConnectorConfig = mcpConnectorConfig({
-  name: 'Incident',
+  name: 'Incident.io',
   key: 'incident',
   logo: 'https://stackone-logos.com/api/incident/filled/svg',
   version: '1.0.0',
   credentials: z.object({
     apiKey: z
       .string()
-      .describe('Incident.io API key :: inc_1234567890abcdefghijklmnopqrstuvwxyz'),
+      .describe(
+        'Incident.io API key :: inc_1234567890abcdefghijklmnopqrstuvwxyz :: https://api-docs.incident.io/#section/Making-requests/Authentication'
+      ),
   }),
   setup: z.object({}),
+  description:
+    'Incident.io is a platform for incident management. It allows you to create, update, and get incidents, users, services, teams, escalation paths, and schedules. It is a great tool for incident management and response.',
   examplePrompt:
     'Check all active incidents with high severity, create a new incident for API downtime, and see who is currently on-call for the backend team.',
   tools: (tool) => ({
     LIST_INCIDENTS: tool({
-      name: 'incident_io_list_incidents',
+      name: 'incident_list_incidents',
       description: 'List incidents with optional filtering',
       schema: z.object({
         status: z
@@ -425,7 +429,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_INCIDENT: tool({
-      name: 'incident_io_get_incident',
+      name: 'incident_get_incident',
       description: 'Get detailed information about a specific incident',
       schema: z.object({
         incidentId: z.string().describe('The incident ID to retrieve'),
@@ -442,7 +446,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     CREATE_INCIDENT: tool({
-      name: 'incident_io_create_incident',
+      name: 'incident_create_incident',
       description: 'Create a new incident',
       schema: z.object({
         name: z.string().describe('Name of the incident'),
@@ -472,7 +476,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     UPDATE_INCIDENT: tool({
-      name: 'incident_io_update_incident',
+      name: 'incident_update_incident',
       description: 'Update an existing incident',
       schema: z.object({
         incidentId: z.string().describe('The incident ID to update'),
@@ -504,7 +508,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_USERS: tool({
-      name: 'incident_io_list_users',
+      name: 'incident_list_users',
       description: 'List users in the organization',
       schema: z.object({
         limit: z.number().default(25).describe('Maximum number of users to return'),
@@ -521,7 +525,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_USER: tool({
-      name: 'incident_io_get_user',
+      name: 'incident_get_user',
       description: 'Get details of a specific user',
       schema: z.object({
         userId: z.string().describe('The user ID to retrieve'),
@@ -538,7 +542,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_SERVICES: tool({
-      name: 'incident_io_list_services',
+      name: 'incident_list_services',
       description: 'List services in the catalog',
       schema: z.object({
         limit: z.number().default(25).describe('Maximum number of services to return'),
@@ -555,7 +559,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_TEAMS: tool({
-      name: 'incident_io_list_teams',
+      name: 'incident_list_teams',
       description: 'List teams in the organization',
       schema: z.object({
         limit: z.number().default(25).describe('Maximum number of teams to return'),
@@ -572,7 +576,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_ESCALATION_PATHS: tool({
-      name: 'incident_io_list_escalation_paths',
+      name: 'incident_list_escalation_paths',
       description: 'List escalation paths configured in the system',
       schema: z.object({
         limit: z
@@ -592,7 +596,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     LIST_SCHEDULES: tool({
-      name: 'incident_io_list_schedules',
+      name: 'incident_list_schedules',
       description: 'List on-call schedules',
       schema: z.object({
         limit: z.number().default(25).describe('Maximum number of schedules to return'),
@@ -609,7 +613,7 @@ export const IncidentConnectorConfig = mcpConnectorConfig({
       },
     }),
     GET_ON_CALL_SCHEDULE: tool({
-      name: 'incident_io_get_on_call_schedule',
+      name: 'incident_get_on_call_schedule',
       description: 'Get on-call schedule entries for a specific schedule',
       schema: z.object({
         scheduleId: z.string().describe('The schedule ID to retrieve entries for'),

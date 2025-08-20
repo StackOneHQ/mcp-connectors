@@ -153,7 +153,11 @@ export const LinkedInConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/linkedin/filled/svg',
   credentials: z.object({
-    clientId: z.string().describe('LinkedIn OAuth2 Client ID :: 861abc123def45'),
+    clientId: z
+      .string()
+      .describe(
+        'LinkedIn OAuth2 Client ID :: 861abc123def45 :: https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication#application-authorization-2-legged-oauth-client-credential-flow'
+      ),
     clientSecret: z
       .string()
       .describe('LinkedIn OAuth2 Client Secret :: AbCdEfGhIjKlMnOp'),

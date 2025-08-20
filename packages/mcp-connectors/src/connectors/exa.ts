@@ -196,7 +196,11 @@ export const ExaConnectorConfig = mcpConnectorConfig({
   logo: 'https://stackone-logos.com/api/exa/filled/svg',
   version: '1.0.0',
   credentials: z.object({
-    apiKey: z.string().describe('Your Exa API key'),
+    apiKey: z
+      .string()
+      .describe(
+        'Exa API Key :: sk-1234567890abcdef1234567890abcdef :: https://docs.exa.ai/websets/api/get-started'
+      ),
   }),
   setup: z.object({}),
   examplePrompt:

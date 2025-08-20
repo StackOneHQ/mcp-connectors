@@ -258,7 +258,7 @@ export const DatadogConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'Datadog API key from Organization Settings > API Keys :: 1234567890abcdef1234567890abcdef'
+        'Datadog API key from Organization Settings > API Keys :: 1234567890abcdef1234567890abcdef :: https://docs.datadoghq.com/account_management/api-app-keys/'
       ),
     appKey: z
       .string()

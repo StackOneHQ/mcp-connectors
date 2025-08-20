@@ -14,7 +14,9 @@ export const OnePasswordConnectorConfig = mcpConnectorConfig({
       .describe('1Password Connect server URL :: https://connect.1password.com'),
     token: z
       .string()
-      .describe('1Password Connect API token :: A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6'),
+      .describe(
+        '1Password Connect API token :: A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6 :: https://developer.1password.com/docs/connect/manage-connect/#manage-access-tokens'
+      ),
   }),
   setup: z.object({}),
   examplePrompt:

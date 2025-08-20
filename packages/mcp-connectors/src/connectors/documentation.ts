@@ -276,6 +276,8 @@ export const DocumentationConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   credentials: z.object({}),
   setup: z.object({}),
+  description:
+    'Search the documentation of 30+ services including AI platforms (anthropic), databases (pinecone, prisma), frameworks (astro, expo), and developer tools (cursor, zapier). This connector uses the llms-full.txt endpoint to get the full documentation in markdown format.',
   examplePrompt:
     'Find documentation for Anthropic Claude API authentication methods, then search for Prisma database schema migration best practices.',
   logo: 'https://stackone-logos.com/api/disco/filled/svg',

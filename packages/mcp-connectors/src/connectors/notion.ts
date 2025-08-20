@@ -24,7 +24,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
     token: z
       .string()
       .describe(
-        'Notion Integration Token from Settings > Integrations :: secret_1234567890abcdefghijklmnopqrstuv'
+        'Notion Integration Token from Settings > Integrations :: secret_1234567890abcdefghijklmnopqrstuv :: https://developers.notion.com/docs/authorization'
       ),
   }),
   setup: z.object({}),

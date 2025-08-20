@@ -50,7 +50,8 @@ class HiBobClient {
   private headers: { Authorization: string; 'Content-Type': string };
   private baseUrl = 'https://api.hibob.com/v1';
 
-  constructor(token: string) {
+  constructor(serviceUserId: string, serviceUserToken: string) {
+    const token = Buffer.from(`${serviceUserId}:${serviceUserToken}`).toString('base64');
     this.headers = {
       Authorization: `Basic ${token}`,
       'Content-Type': 'application/json',
@@ -146,15 +147,16 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/hibob/filled/svg',
   credentials: z.object({
-    token: z
+    serviceUserId: z
       .string()
       .describe(
-        'HiBob API Token (Basic authentication) :: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiaGlib2IifQ.1234567890'
+        'HiBob Service User ID :: 1234567890 : https://apidocs.hibob.com/docs/api-service-users'
       ),
+    serviceUserToken: z.string().describe('HiBob Service User Token :: 1234567890'),
   }),
   setup: z.object({}),
   examplePrompt:
-    'Search for employees in the engineering department, submit a vacation request for next week, and check my current tasks and assignments.',
+    'Submit a vacation request for next week and check my current tasks and assignments.',
   tools: (tool) => ({
     PEOPLE_SEARCH: tool({
       name: 'hibob_people_search',
@@ -179,8 +181,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.searchPeople(args.fields, args.filters);
           return JSON.stringify(result, null, 2);
         } catch (error) {
@@ -195,8 +197,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       schema: z.object({}),
       handler: async (_args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.getEmployeeFields();
           return JSON.stringify(result, null, 2);
         } catch (error) {
@@ -218,8 +220,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.updateEmployee(args.employeeId, args.fields);
           return JSON.stringify(result, null, 2);
         } catch (error) {
@@ -234,8 +236,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       schema: z.object({}),
       handler: async (_args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.getTimeoffPolicyTypes();
           return JSON.stringify(result, null, 2);
         } catch (error) {
@@ -271,8 +273,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.submitTimeoffRequest(
             args.employeeId,
             args.requestDetails
@@ -296,8 +298,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.createEmployee(args.fields);
           return JSON.stringify(result, null, 2);
         } catch (error) {
@@ -314,8 +316,8 @@ export const HiBobConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { token } = await context.getCredentials();
-          const client = new HiBobClient(token);
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
           const result = await client.getEmployeeTasks(args.employeeId);
           return JSON.stringify(result, null, 2);
         } catch (error) {

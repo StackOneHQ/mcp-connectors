@@ -265,11 +265,13 @@ export const SlackConnectorConfig = mcpConnectorConfig({
     botToken: z
       .string()
       .describe(
-        'Slack Bot Token from your Slack App :: xoxb-1234567890-1234567890123-abcdefghijklmnopqrstuvwx'
+        'Slack Bot Token from your Slack App :: xoxb-1234567890-1234567890123-abcdefghijklmnopqrstuvwx :: https://api.slack.com/tutorials/tracks/getting-a-token'
       ),
     teamId: z
       .string()
-      .describe('The ID of the Slack team which the bot is a member of :: T1234567890'),
+      .describe(
+        'Slack Team ID (also called Workspace ID) :: T1234567890 :: https://slack.com/intl/en-gb/help/articles/221769328-Locate-your-Slack-URL-or-ID'
+      ),
   }),
   setup: z.object({
     channelIds: z

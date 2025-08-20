@@ -723,17 +723,21 @@ export const JiraConnectorConfig = mcpConnectorConfig({
   credentials: z.object({
     baseUrl: z
       .string()
-      .describe('The Jira API base URL :: https://your-domain.atlassian.net'),
+      .describe(
+        'The Jira API base URL :: https://your-domain.atlassian.net :: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/'
+      ),
     email: z
       .string()
       .describe('The email address associated with the API token :: user@example.com'),
     apiToken: z
       .string()
       .describe(
-        'The Jira API token from Account Settings > Security > API tokens :: ATATT3xFfGF01234567890abcdefghijklmnop'
+        'The Jira API token from Account Settings > Security > API tokens :: ATATT3xFfGF01234567890abcdefghijklmnop :: https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/'
       ),
   }),
   setup: z.object({}),
+  description:
+    'Jira is a project management tool that allows you to create, update, and get issues, projects, and more.',
   examplePrompt:
     'Search for all open bugs in project "PROJ", create a new story for implementing user authentication, and add a comment to ticket PROJ-123.',
   tools: (tool) => ({

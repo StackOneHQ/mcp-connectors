@@ -111,7 +111,7 @@ export const AttioConnectorConfig = mcpConnectorConfig({
     apiKey: z
       .string()
       .describe(
-        'Attio API Key (Bearer token for API authentication) :: sk_live_1234567890abcdefghijklmnopqrstuvwxyz'
+        'Attio API Key from Workspace settings > Developers tab > New access token. :: sk_live_1234567890abcdefghijklmnopqrstuvwxyz :: https://attio.com/help/apps/other-apps/generating-an-api-key'
       ),
   }),
   setup: z.object({}),
