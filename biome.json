@@ -41,6 +41,6 @@
     },
     "files": {
         "ignoreUnknown": false,
-        "ignore": ["node_modules", "dist", "bun.lock"]
+        "ignore": ["node_modules", "dist", "bun.lock", "package.json"]
     }
 }

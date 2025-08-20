@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.8...mcp-config-types-v0.0.9) (2025-08-20)
+
+
+### Bug Fixes
+
+* parallel substring error ([#38](https://github.com/StackOneHQ/mcp-connectors/issues/38)) ([5d0717f](https://github.com/StackOneHQ/mcp-connectors/commit/5d0717f551b8f64487f241570981d866f0f1ebb1))
+
 ## [0.0.8](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.7...mcp-config-types-v0.0.8) (2025-08-19)
 
 
