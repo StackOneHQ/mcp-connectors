@@ -70,20 +70,21 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
     const result = response.results[i];
     output.push(`${i + 1}. ${result.title}`);
     output.push(`   URL: ${result.url}`);
-    
+
     // Handle excerpts
     if (result.excerpts && result.excerpts.length > 0) {
       const contentPreview = result.excerpts.join(' ');
       const maxLength = 200;
-      const preview = contentPreview.length > maxLength 
-        ? `${contentPreview.substring(0, maxLength)}...`
-        : contentPreview;
+      const preview =
+        contentPreview.length > maxLength
+          ? `${contentPreview.substring(0, maxLength)}...`
+          : contentPreview;
       output.push(`   Content: ${preview}`);
     }
-    
+
     output.push(''); // Empty line between results
   }
-  
+
   return output.join('\n');
 };
 
@@ -105,8 +106,7 @@ export const ParallelConnectorConfig = mcpConnectorConfig({
   tools: (tool) => ({
     SEARCH: tool({
       name: 'parallel_search',
-      description:
-        'Perform AI-native web search using Parallel Search API',
+      description: 'Perform AI-native web search using Parallel Search API',
       schema: z.object({
         objective: z
           .string()

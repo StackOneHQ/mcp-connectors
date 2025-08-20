@@ -18,14 +18,14 @@ const mockSearchResponse = {
       url: 'https://example.com/result1',
       title: 'Test Result 1',
       excerpts: [
-        'This is test content for result 1 with detailed information about the topic.'
+        'This is test content for result 1 with detailed information about the topic.',
       ],
     },
     {
       url: 'https://example.com/result2',
       title: 'Test Result 2',
       excerpts: [
-        'This is test content for result 2 with more details about the subject matter.'
+        'This is test content for result 2 with more details about the subject matter.',
       ],
     },
   ],
@@ -146,7 +146,7 @@ describe('#ParallelConnectorConfig', () => {
 
       expect(actual).toContain('Found 1 search results');
       expect(actual).toContain('Long Content Result');
-      expect(actual).toContain('A'.repeat(200) + '...');
+      expect(actual).toContain(`${'A'.repeat(200)}...`);
     });
 
     it('should handle empty results', async () => {
