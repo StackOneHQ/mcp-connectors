@@ -4,32 +4,19 @@ on:
     branches:
       - main
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 permissions:
   contents: write
   pull-requests: write
   issues: write
 
 jobs:
-  release-please:
+  release:
+    name: Release
     runs-on: ubuntu-latest
-    outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          config-file: .release-please-config.json
-          manifest-file: .release-please-manifest.json
-
-  publish-packages:
-    runs-on: ubuntu-latest
-    needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created }}
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_CONFIG_TOKEN }}
-    steps:
-      - name: Checkout code
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
       - name: Setup Bun
@@ -43,18 +30,17 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      - name: 💫 Install dependencies
+      - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: 🏡 Build packages
+      - name: Build packages
         run: bun run build
 
-      - name: 🚀 Publish packages
-        run: |
-          echo "Released packages: ${{ needs.release-please.outputs.paths_released }}"
-          for package_path in $(echo '${{ needs.release-please.outputs.paths_released }}' | jq -r '.[]'); do
-            echo "Publishing package: $package_path"
-            cd "$package_path"
-            npm publish --access public
-            cd "$GITHUB_WORKSPACE"
-          done
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: bun changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_CONFIG_TOKEN }}

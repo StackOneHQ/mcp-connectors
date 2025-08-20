@@ -88,6 +88,26 @@ Server runs at `http://localhost:3000/mcp`
 - [Writing Connectors](./docs/writing-connectors.md) - How to write a connector
 - [Running Locally](./docs/running-locally.md) - Detailed setup and configuration
 
+## Releasing Packages
+
+This project uses [changesets](https://github.com/changesets/changesets) for version management and releases.
+
+### Creating a changeset
+
+When you make changes that should be released:
+
+```bash
+bun changeset
+```
+
+This will prompt you to select which packages have changed and the type of change (major/minor/patch).
+
+### Release process
+
+1. Push your changes with a changeset to the `main` branch
+2. The GitHub Action will automatically create a "Version Packages" PR
+3. When you merge that PR, packages will be automatically published to npm
+
 ## License
 
 Apache 2.0 - see [LICENSE](LICENSE)
