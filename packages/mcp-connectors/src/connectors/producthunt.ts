@@ -166,8 +166,16 @@ function transformPostNode(node: GraphQLPostNode): ProductHuntProduct {
 }
 
 // Input validation schemas
-const slugSchema = z.string().min(1).max(100).regex(/^[a-z0-9-]+$/);
-const usernameSchema = z.string().min(1).max(50).regex(/^[a-zA-Z0-9_-]+$/);
+const slugSchema = z
+  .string()
+  .min(1)
+  .max(100)
+  .regex(/^[a-z0-9-]+$/);
+const usernameSchema = z
+  .string()
+  .min(1)
+  .max(50)
+  .regex(/^[a-zA-Z0-9_-]+$/);
 const querySchema = z.string().min(1).max(200);
 const limitSchema = z.number().int().min(1).max(100);
 
@@ -455,7 +463,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(product, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get product: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -481,7 +489,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(products, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to search products: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -512,7 +520,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(products, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get featured products: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -533,7 +541,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(user, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -561,7 +569,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(comments, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get comments: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -586,7 +594,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(collections, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get collections: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -609,7 +617,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(products, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get trending products: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -629,7 +637,7 @@ export const ProductHuntConfig = mcpConnectorConfig({
           return JSON.stringify(collections, null, 2);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+            return `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
           }
           return `Failed to get top collections: ${error instanceof Error ? error.message : String(error)}`;
         }
