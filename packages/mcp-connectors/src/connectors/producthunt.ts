@@ -122,10 +122,14 @@ class ProductHuntAPI {
       );
     }
 
-    const result = await response.json();
+    const result = await response.json() as any;
 
     if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0].message}`);
+      const errorMessage =
+        Array.isArray(result.errors) && result.errors.length > 0 && result.errors[0] && typeof result.errors[0].message === 'string'
+          ? result.errors[0].message
+          : JSON.stringify(result.errors);
+      throw new Error(`GraphQL error: ${errorMessage}`);
     }
 
     return result.data;
