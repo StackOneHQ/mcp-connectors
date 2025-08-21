@@ -13,6 +13,7 @@ import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
 import { ExaConnectorConfig } from './connectors/exa';
 import { FalConnectorConfig } from './connectors/fal';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
+import { FreeAgentConnectorConfig } from './connectors/freeagent';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { HiBobConnectorConfig } from './connectors/hibob';
@@ -53,6 +54,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
+  FreeAgentConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
@@ -93,6 +95,7 @@ export {
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
+  FreeAgentConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
