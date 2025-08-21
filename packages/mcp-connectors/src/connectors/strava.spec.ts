@@ -1,11 +1,15 @@
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { describe, expect, it, type vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { StravaConnectorConfig } from './strava';
 
 const server = setupServer();
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 const mockAthlete = {
   id: 123456,
@@ -449,7 +453,10 @@ describe('#StravaConnector', () => {
         ];
 
         server.use(
-          http.get('https://www.strava.com/api/v3/athletes/routes', () => {
+          http.get('https://www.strava.com/api/v3/athlete', () => {
+            return HttpResponse.json(mockAthlete);
+          }),
+          http.get('https://www.strava.com/api/v3/athletes/123456/routes', () => {
             return HttpResponse.json(mockRoutes);
           })
         );
@@ -529,4 +536,3 @@ describe('#StravaConnector', () => {
   });
 });
 
-server.listen({ onUnhandledRequest: 'error' });
