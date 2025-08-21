@@ -1,7 +1,7 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
 
-// Product Hunt API types
+// Product Hunt API types - simplified to single interface
 interface ProductHuntProduct {
   id: string;
   name: string;
@@ -25,11 +25,12 @@ interface GraphQLError {
   [key: string]: unknown;
 }
 
-interface GraphQLResponse<T = unknown> {
+interface GraphQLResponse<T> {
   data: T;
   errors?: GraphQLError[];
 }
 
+// Raw GraphQL node types (matches API response exactly)
 interface GraphQLPostNode {
   id: string;
   name: string;
@@ -65,7 +66,7 @@ interface GraphQLCollectionNode {
   description: string;
   slug: string;
   url: string;
-  postsCount: number;
+  postsCount: number; // Note: API returns postsCount, not productsCount
   followersCount: number;
   createdAt: string;
 }
@@ -144,6 +145,32 @@ interface GetCollectionsResponse {
   };
 }
 
+// Helper function to transform GraphQL post node to ProductHunt product
+function transformPostNode(node: GraphQLPostNode): ProductHuntProduct {
+  return {
+    id: node.id,
+    name: node.name,
+    tagline: node.tagline,
+    description: node.description,
+    website: node.website,
+    slug: node.slug,
+    votesCount: node.votesCount,
+    commentsCount: node.commentsCount,
+    featured: node.featured,
+    url: node.url,
+    screenshotUrl: node.thumbnail?.url,
+    logoUrl: node.logo?.url,
+    createdAt: node.createdAt,
+    featuredAt: node.featuredAt,
+  };
+}
+
+// Input validation schemas
+const slugSchema = z.string().min(1).max(100).regex(/^[a-z0-9-]+$/);
+const usernameSchema = z.string().min(1).max(50).regex(/^[a-zA-Z0-9_-]+$/);
+const querySchema = z.string().min(1).max(200);
+const limitSchema = z.number().int().min(1).max(100);
+
 class ProductHuntAPI {
   private baseUrl = 'https://api.producthunt.com/v2/api/graphql';
   private accessToken: string;
@@ -152,22 +179,7 @@ class ProductHuntAPI {
     this.accessToken = accessToken;
   }
 
-  /**
-   * Extracts the first error message from a GraphQL error array, or stringifies the errors if not available.
-   */
-  private getGraphQLErrorMessage(errors: GraphQLError[]): string {
-    if (
-      Array.isArray(errors) &&
-      errors.length > 0 &&
-      errors[0] &&
-      typeof errors[0].message === 'string'
-    ) {
-      return errors[0].message;
-    }
-    return JSON.stringify(errors);
-  }
-
-  private async makeRequest<T = unknown>(
+  private async makeRequest<T>(
     query: string,
     variables?: Record<string, unknown>
   ): Promise<T> {
@@ -191,8 +203,8 @@ class ProductHuntAPI {
 
     const result = (await response.json()) as GraphQLResponse<T>;
 
-    if (result.errors) {
-      const errorMessage = this.getGraphQLErrorMessage(result.errors);
+    if (result.errors && result.errors.length > 0) {
+      const errorMessage = result.errors[0]?.message || 'Unknown GraphQL error';
       throw new Error(`GraphQL error: ${errorMessage}`);
     }
 
@@ -200,6 +212,9 @@ class ProductHuntAPI {
   }
 
   async getProduct(slug: string): Promise<ProductHuntProduct> {
+    // Validate input
+    slugSchema.parse(slug);
+
     const query = `
       query getProduct($slug: String!) {
         post(slug: $slug) {
@@ -226,27 +241,14 @@ class ProductHuntAPI {
     `;
 
     const data = await this.makeRequest<GetProductResponse>(query, { slug });
-    const post = data.post;
-
-    return {
-      id: post.id,
-      name: post.name,
-      tagline: post.tagline,
-      description: post.description,
-      website: post.website,
-      slug: post.slug,
-      votesCount: post.votesCount,
-      commentsCount: post.commentsCount,
-      featured: post.featured,
-      url: post.url,
-      screenshotUrl: post.thumbnail?.url,
-      logoUrl: post.logo?.url,
-      createdAt: post.createdAt,
-      featuredAt: post.featuredAt,
-    };
+    return transformPostNode(data.post);
   }
 
   async searchProducts(query: string, limit = 10): Promise<ProductHuntProduct[]> {
+    // Validate inputs
+    querySchema.parse(query);
+    limitSchema.parse(limit);
+
     const searchQuery = `
       query searchPosts($query: String!, $first: Int!) {
         posts(query: $query, first: $first) {
@@ -281,25 +283,16 @@ class ProductHuntAPI {
       first: limit,
     });
 
-    return data.posts.edges.map((edge: { node: GraphQLPostNode }) => ({
-      id: edge.node.id,
-      name: edge.node.name,
-      tagline: edge.node.tagline,
-      description: edge.node.description,
-      website: edge.node.website,
-      slug: edge.node.slug,
-      votesCount: edge.node.votesCount,
-      commentsCount: edge.node.commentsCount,
-      featured: edge.node.featured,
-      url: edge.node.url,
-      screenshotUrl: edge.node.thumbnail?.url,
-      logoUrl: edge.node.logo?.url,
-      createdAt: edge.node.createdAt,
-      featuredAt: edge.node.featuredAt,
-    }));
+    return data.posts.edges.map((edge) => transformPostNode(edge.node));
   }
 
   async getFeaturedProducts(date?: string, limit = 10): Promise<ProductHuntProduct[]> {
+    // Validate inputs
+    limitSchema.parse(limit);
+    if (date) {
+      z.string().datetime().parse(date); // Validate ISO date format
+    }
+
     const query = `
       query getFeaturedPosts($postedAfter: DateTime, $first: Int!) {
         posts(postedAfter: $postedAfter, first: $first, featured: true, order: VOTES_COUNT) {
@@ -335,26 +328,13 @@ class ProductHuntAPI {
     }
 
     const data = await this.makeRequest<SearchPostsResponse>(query, variables);
-
-    return data.posts.edges.map((edge: { node: GraphQLPostNode }) => ({
-      id: edge.node.id,
-      name: edge.node.name,
-      tagline: edge.node.tagline,
-      description: edge.node.description,
-      website: edge.node.website,
-      slug: edge.node.slug,
-      votesCount: edge.node.votesCount,
-      commentsCount: edge.node.commentsCount,
-      featured: edge.node.featured,
-      url: edge.node.url,
-      screenshotUrl: edge.node.thumbnail?.url,
-      logoUrl: edge.node.logo?.url,
-      createdAt: edge.node.createdAt,
-      featuredAt: edge.node.featuredAt,
-    }));
+    return data.posts.edges.map((edge) => transformPostNode(edge.node));
   }
 
   async getUser(username: string): Promise<ProductHuntUser> {
+    // Validate input
+    usernameSchema.parse(username);
+
     const query = `
       query getUser($username: String!) {
         user(username: $username) {
@@ -372,22 +352,14 @@ class ProductHuntAPI {
     `;
 
     const data = await this.makeRequest<GetUserResponse>(query, { username });
-    const user = data.user;
-
-    return {
-      id: user.id,
-      name: user.name,
-      username: user.username,
-      headline: user.headline,
-      profileImage: user.profileImage,
-      url: user.url,
-      followersCount: user.followersCount,
-      followingCount: user.followingCount,
-      makerOfCount: user.makerOfCount,
-    };
+    return data.user;
   }
 
   async getProductComments(slug: string, limit = 10): Promise<ProductHuntComment[]> {
+    // Validate inputs
+    slugSchema.parse(slug);
+    limitSchema.parse(limit);
+
     const query = `
       query getPostComments($slug: String!, $first: Int!) {
         post(slug: $slug) {
@@ -415,20 +387,13 @@ class ProductHuntAPI {
       first: limit,
     });
 
-    return data.post.comments.edges.map((edge: { node: GraphQLCommentNode }) => ({
-      id: edge.node.id,
-      body: edge.node.body,
-      createdAt: edge.node.createdAt,
-      votesCount: edge.node.votesCount,
-      user: {
-        name: edge.node.user.name,
-        username: edge.node.user.username,
-        profileImage: edge.node.user.profileImage,
-      },
-    }));
+    return data.post.comments.edges.map((edge) => edge.node);
   }
 
   async getCollections(limit = 10): Promise<ProductHuntCollection[]> {
+    // Validate input
+    limitSchema.parse(limit);
+
     const query = `
       query getCollections($first: Int!) {
         collections(first: $first) {
@@ -450,15 +415,9 @@ class ProductHuntAPI {
 
     const data = await this.makeRequest<GetCollectionsResponse>(query, { first: limit });
 
-    return data.collections.edges.map((edge: { node: GraphQLCollectionNode }) => ({
-      id: edge.node.id,
-      name: edge.node.name,
-      description: edge.node.description,
-      slug: edge.node.slug,
-      url: edge.node.url,
-      productsCount: edge.node.postsCount,
-      followersCount: edge.node.followersCount,
-      createdAt: edge.node.createdAt,
+    return data.collections.edges.map((edge) => ({
+      ...edge.node,
+      productsCount: edge.node.postsCount, // Transform API field name to external interface
     }));
   }
 }
@@ -495,6 +454,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const product = await api.getProduct(slug);
           return JSON.stringify(product, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get product: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -518,6 +480,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const products = await api.searchProducts(query, limit);
           return JSON.stringify(products, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to search products: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -546,6 +511,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const products = await api.getFeaturedProducts(date, limit);
           return JSON.stringify(products, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get featured products: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -564,6 +532,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const user = await api.getUser(username);
           return JSON.stringify(user, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -589,6 +560,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const comments = await api.getProductComments(slug, limit);
           return JSON.stringify(comments, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get comments: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -611,6 +585,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const collections = await api.getCollections(limit);
           return JSON.stringify(collections, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get collections: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -631,6 +608,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const products = await api.getFeaturedProducts(today, 20);
           return JSON.stringify(products, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get trending products: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -648,6 +628,9 @@ export const ProductHuntConfig = mcpConnectorConfig({
           const collections = await api.getCollections(20);
           return JSON.stringify(collections, null, 2);
         } catch (error) {
+          if (error instanceof z.ZodError) {
+            return `Invalid input: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+          }
           return `Failed to get top collections: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
