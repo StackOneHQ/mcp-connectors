@@ -20,6 +20,16 @@ interface ProductHuntProduct {
 }
 
 // GraphQL response types
+interface GraphQLError {
+  message?: string;
+  [key: string]: unknown;
+}
+
+interface GraphQLResponse<T = unknown> {
+  data: T;
+  errors?: GraphQLError[];
+}
+
 interface GraphQLPostNode {
   id: string;
   name: string;
@@ -103,7 +113,25 @@ class ProductHuntAPI {
     this.accessToken = accessToken;
   }
 
-  private async makeRequest(query: string, variables?: Record<string, unknown>) {
+  /**
+   * Extracts the first error message from a GraphQL error array, or stringifies the errors if not available.
+   */
+  private getGraphQLErrorMessage(errors: GraphQLResponse['errors']): string {
+    if (
+      Array.isArray(errors) &&
+      errors.length > 0 &&
+      errors[0] &&
+      typeof errors[0].message === 'string'
+    ) {
+      return errors[0].message;
+    }
+    return JSON.stringify(errors);
+  }
+
+  private async makeRequest<T = unknown>(
+    query: string,
+    variables?: Record<string, unknown>
+  ): Promise<T> {
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
@@ -122,13 +150,10 @@ class ProductHuntAPI {
       );
     }
 
-    const result = await response.json() as any;
+    const result = (await response.json()) as GraphQLResponse<T>;
 
     if (result.errors) {
-      const errorMessage =
-        Array.isArray(result.errors) && result.errors.length > 0 && result.errors[0] && typeof result.errors[0].message === 'string'
-          ? result.errors[0].message
-          : JSON.stringify(result.errors);
+      const errorMessage = this.getGraphQLErrorMessage(result.errors);
       throw new Error(`GraphQL error: ${errorMessage}`);
     }
 
@@ -395,41 +420,45 @@ class ProductHuntAPI {
 
 export const ProductHuntConfig = mcpConnectorConfig({
   name: 'Product Hunt',
+  key: 'producthunt',
+  version: '1.0.0',
   description:
     'Connect to Product Hunt to discover, search, and analyze products, makers, and trends',
-  credentials: {
+  credentials: z.object({
     access_token: z
       .string()
       .describe(
         'Product Hunt API access token (get from https://api.producthunt.com/v2/oauth/applications)'
       ),
-  },
-  tools: {
-    PRODUCTHUNT_GET_PRODUCT: {
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Search for AI products, get detailed information about trending products today, and find popular collections in the design space.',
+  tools: (tool) => ({
+    PRODUCTHUNT_GET_PRODUCT: tool({
+      name: 'producthunt_get_product',
       description: 'Get detailed information about a specific product on Product Hunt',
-      parameters: z.object({
+      schema: z.object({
         slug: z
           .string()
           .describe('Product slug (from URL, e.g., "claude" for claude.ai)'),
       }),
-      handler: async ({ slug }, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const product = await api.getProduct(slug);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(product, null, 2),
-            },
-          ],
-        };
+      handler: async ({ slug }, context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const product = await api.getProduct(slug);
+          return JSON.stringify(product, null, 2);
+        } catch (error) {
+          return `Failed to get product: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
+    }),
 
-    PRODUCTHUNT_SEARCH_PRODUCTS: {
+    PRODUCTHUNT_SEARCH_PRODUCTS: tool({
+      name: 'producthunt_search_products',
       description: 'Search for products on Product Hunt by name, tagline, or description',
-      parameters: z.object({
+      schema: z.object({
         query: z.string().describe('Search query (product name, keywords, etc.)'),
         limit: z
           .number()
@@ -437,24 +466,22 @@ export const ProductHuntConfig = mcpConnectorConfig({
           .default(10)
           .describe('Maximum number of results to return (default: 10)'),
       }),
-      handler: async ({ query, limit = 10 }, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const products = await api.searchProducts(query, limit);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(products, null, 2),
-            },
-          ],
-        };
+      handler: async ({ query, limit = 10 }, context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const products = await api.searchProducts(query, limit);
+          return JSON.stringify(products, null, 2);
+        } catch (error) {
+          return `Failed to search products: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
+    }),
 
-    PRODUCTHUNT_GET_FEATURED: {
+    PRODUCTHUNT_GET_FEATURED: tool({
+      name: 'producthunt_get_featured',
       description: 'Get featured products from Product Hunt, optionally filtered by date',
-      parameters: z.object({
+      schema: z.object({
         date: z
           .string()
           .optional()
@@ -467,44 +494,40 @@ export const ProductHuntConfig = mcpConnectorConfig({
           .default(10)
           .describe('Maximum number of results to return (default: 10)'),
       }),
-      handler: async ({ date, limit = 10 }, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const products = await api.getFeaturedProducts(date, limit);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(products, null, 2),
-            },
-          ],
-        };
+      handler: async ({ date, limit = 10 }, context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const products = await api.getFeaturedProducts(date, limit);
+          return JSON.stringify(products, null, 2);
+        } catch (error) {
+          return `Failed to get featured products: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
+    }),
 
-    PRODUCTHUNT_GET_USER: {
+    PRODUCTHUNT_GET_USER: tool({
+      name: 'producthunt_get_user',
       description: 'Get information about a Product Hunt user or maker',
-      parameters: z.object({
+      schema: z.object({
         username: z.string().describe('Product Hunt username (without @ symbol)'),
       }),
-      handler: async ({ username }, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const user = await api.getUser(username);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
-        };
+      handler: async ({ username }, context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const user = await api.getUser(username);
+          return JSON.stringify(user, null, 2);
+        } catch (error) {
+          return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
+    }),
 
-    PRODUCTHUNT_GET_COMMENTS: {
+    PRODUCTHUNT_GET_COMMENTS: tool({
+      name: 'producthunt_get_comments',
       description: 'Get comments for a specific product on Product Hunt',
-      parameters: z.object({
+      schema: z.object({
         slug: z
           .string()
           .describe('Product slug (from URL, e.g., "claude" for claude.ai)'),
@@ -514,84 +537,75 @@ export const ProductHuntConfig = mcpConnectorConfig({
           .default(10)
           .describe('Maximum number of comments to return (default: 10)'),
       }),
-      handler: async ({ slug, limit = 10 }, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const comments = await api.getProductComments(slug, limit);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(comments, null, 2),
-            },
-          ],
-        };
+      handler: async ({ slug, limit = 10 }, context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const comments = await api.getProductComments(slug, limit);
+          return JSON.stringify(comments, null, 2);
+        } catch (error) {
+          return `Failed to get comments: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
+    }),
 
-    PRODUCTHUNT_GET_COLLECTIONS: {
+    PRODUCTHUNT_GET_COLLECTIONS: tool({
+      name: 'producthunt_get_collections',
       description: 'Get popular collections on Product Hunt',
-      parameters: z.object({
+      schema: z.object({
         limit: z
           .number()
           .optional()
           .default(10)
           .describe('Maximum number of collections to return (default: 10)'),
       }),
-      handler: async ({ limit = 10 }, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const collections = await api.getCollections(limit);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(collections, null, 2),
-            },
-          ],
-        };
+      handler: async ({ limit = 10 }, context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const collections = await api.getCollections(limit);
+          return JSON.stringify(collections, null, 2);
+        } catch (error) {
+          return `Failed to get collections: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
-  },
+    }),
+  }),
 
-  resources: {
-    PRODUCTHUNT_TRENDING_TODAY: {
-      description: 'Current trending products on Product Hunt today',
+  resources: (resource) => ({
+    PRODUCTHUNT_TRENDING_TODAY: resource({
+      name: 'producthunt_trending_today',
       uri: 'producthunt://trending/today',
+      description: 'Current trending products on Product Hunt today',
       mimeType: 'application/json',
-      handler: async (_, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const today = `${new Date().toISOString().split('T')[0]}T00:00:00Z`;
-        const products = await api.getFeaturedProducts(today, 20);
-
-        return {
-          contents: [
-            {
-              type: 'text',
-              text: JSON.stringify(products, null, 2),
-            },
-          ],
-        };
+      handler: async (context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const today = `${new Date().toISOString().split('T')[0]}T00:00:00Z`;
+          const products = await api.getFeaturedProducts(today, 20);
+          return JSON.stringify(products, null, 2);
+        } catch (error) {
+          return `Failed to get trending products: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
+    }),
 
-    PRODUCTHUNT_TOP_COLLECTIONS: {
-      description: 'Top collections on Product Hunt',
+    PRODUCTHUNT_TOP_COLLECTIONS: resource({
+      name: 'producthunt_top_collections',
       uri: 'producthunt://collections/top',
+      description: 'Top collections on Product Hunt',
       mimeType: 'application/json',
-      handler: async (_, { credentials }) => {
-        const api = new ProductHuntAPI(credentials.access_token);
-        const collections = await api.getCollections(20);
-
-        return {
-          contents: [
-            {
-              type: 'text',
-              text: JSON.stringify(collections, null, 2),
-            },
-          ],
-        };
+      handler: async (context) => {
+        try {
+          const { access_token } = await context.getCredentials();
+          const api = new ProductHuntAPI(access_token);
+          const collections = await api.getCollections(20);
+          return JSON.stringify(collections, null, 2);
+        } catch (error) {
+          return `Failed to get top collections: ${error instanceof Error ? error.message : String(error)}`;
+        }
       },
-    },
-  },
+    }),
+  }),
 });

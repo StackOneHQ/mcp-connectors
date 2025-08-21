@@ -1,7 +1,7 @@
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, type vi } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { ProductHuntConfig } from './producthunt';
 
@@ -44,12 +44,13 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           const actual = await tool.handler({ slug: 'test-product' }, mockContext);
 
-          expect(actual.content[0].type).toBe('text');
-          const productData = JSON.parse(actual.content[0].text as string);
+          const productData = JSON.parse(actual as string);
           expect(productData.name).toBe('Test Product');
           expect(productData.slug).toBe('test-product');
           expect(productData.votesCount).toBe(150);
@@ -69,11 +70,14 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'invalid-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'invalid-token',
+          });
 
-          await expect(
-            tool.handler({ slug: 'test-product' }, mockContext)
-          ).rejects.toThrow('Product Hunt API error: 401 Unauthorized');
+          const actual = await tool.handler({ slug: 'test-product' }, mockContext);
+
+          expect(actual).toContain('Failed to get product:');
+          expect(actual).toContain('Product Hunt API error: 401 Unauthorized');
         });
       });
 
@@ -90,11 +94,14 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
-          await expect(
-            tool.handler({ slug: 'nonexistent' }, mockContext)
-          ).rejects.toThrow('GraphQL error: Post not found');
+          const actual = await tool.handler({ slug: 'nonexistent' }, mockContext);
+
+          expect(actual).toContain('Failed to get product:');
+          expect(actual).toContain('GraphQL error: Post not found');
         });
       });
     });
@@ -138,12 +145,13 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_SEARCH_PRODUCTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           const actual = await tool.handler({ query: 'AI', limit: 10 }, mockContext);
 
-          expect(actual.content[0].type).toBe('text');
-          const products = JSON.parse(actual.content[0].text as string);
+          const products = JSON.parse(actual as string);
           expect(products).toHaveLength(1);
           expect(products[0].name).toBe('AI Tool');
         });
@@ -169,7 +177,9 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_SEARCH_PRODUCTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           await tool.handler({ query: 'test', limit: 5 }, mockContext);
 
@@ -214,12 +224,13 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_FEATURED as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           const actual = await tool.handler({ limit: 10 }, mockContext);
 
-          expect(actual.content[0].type).toBe('text');
-          const products = JSON.parse(actual.content[0].text as string);
+          const products = JSON.parse(actual as string);
           expect(products).toHaveLength(1);
           expect(products[0].featured).toBe(true);
         });
@@ -245,7 +256,9 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_FEATURED as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           await tool.handler(
             {
@@ -287,12 +300,13 @@ describe('#ProductHuntConnector', () => {
 
           const tool = ProductHuntConfig.tools.PRODUCTHUNT_GET_USER as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           const actual = await tool.handler({ username: 'johndoe' }, mockContext);
 
-          expect(actual.content[0].type).toBe('text');
-          const userData = JSON.parse(actual.content[0].text as string);
+          const userData = JSON.parse(actual as string);
           expect(userData.username).toBe('johndoe');
           expect(userData.name).toBe('John Doe');
           expect(userData.followersCount).toBe(1000);
@@ -336,15 +350,16 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_COMMENTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           const actual = await tool.handler(
             { slug: 'test-product', limit: 10 },
             mockContext
           );
 
-          expect(actual.content[0].type).toBe('text');
-          const comments = JSON.parse(actual.content[0].text as string);
+          const comments = JSON.parse(actual as string);
           expect(comments).toHaveLength(1);
           expect(comments[0].body).toBe('Great product!');
           expect(comments[0].user.username).toBe('janesmith');
@@ -385,12 +400,13 @@ describe('#ProductHuntConnector', () => {
           const tool = ProductHuntConfig.tools
             .PRODUCTHUNT_GET_COLLECTIONS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
-          mockContext.credentials.access_token = 'test-token';
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
           const actual = await tool.handler({ limit: 10 }, mockContext);
 
-          expect(actual.content[0].type).toBe('text');
-          const collections = JSON.parse(actual.content[0].text as string);
+          const collections = JSON.parse(actual as string);
           expect(collections).toHaveLength(1);
           expect(collections[0].name).toBe('AI Tools');
           expect(collections[0].productsCount).toBe(25);
@@ -434,12 +450,13 @@ describe('#ProductHuntConnector', () => {
 
             const resource = ProductHuntConfig.resources.PRODUCTHUNT_TRENDING_TODAY;
             const mockContext = createMockConnectorContext();
-            mockContext.credentials.access_token = 'test-token';
+            (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+              access_token: 'test-token',
+            });
 
-            const actual = await resource.handler(undefined, mockContext);
+            const actual = await resource.handler(mockContext);
 
-            expect(actual.contents[0].type).toBe('text');
-            const products = JSON.parse(actual.contents[0].text as string);
+            const products = JSON.parse(actual as string);
             expect(products).toHaveLength(1);
             expect(products[0].name).toBe('Trending Product');
           });
@@ -478,12 +495,13 @@ describe('#ProductHuntConnector', () => {
 
             const resource = ProductHuntConfig.resources.PRODUCTHUNT_TOP_COLLECTIONS;
             const mockContext = createMockConnectorContext();
-            mockContext.credentials.access_token = 'test-token';
+            (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+              access_token: 'test-token',
+            });
 
-            const actual = await resource.handler(undefined, mockContext);
+            const actual = await resource.handler(mockContext);
 
-            expect(actual.contents[0].type).toBe('text');
-            const collections = JSON.parse(actual.contents[0].text as string);
+            const collections = JSON.parse(actual as string);
             expect(collections).toHaveLength(1);
             expect(collections[0].name).toBe('Top Collection');
           });
