@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
+import { describe, expect, it, type vi } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { StravaConnectorConfig } from './strava';
 
@@ -25,7 +25,7 @@ const mockAthlete = {
   friend_count: 50,
   ftp: 250,
   weight: 75.0,
-  clubs: []
+  clubs: [],
 };
 
 const mockActivity = {
@@ -69,7 +69,7 @@ const mockActivity = {
   from_accepted_tag: false,
   pr_count: 1,
   total_photo_count: 2,
-  has_kudoed: false
+  has_kudoed: false,
 };
 
 const mockSegment = {
@@ -92,7 +92,7 @@ const mockSegment = {
   starred: true,
   effort_count: 50345,
   athlete_count: 7453,
-  star_count: 632
+  star_count: 632,
 };
 
 describe('#StravaConnector', () => {
@@ -107,7 +107,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ATHLETE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({}, mockContext);
 
@@ -125,7 +127,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ATHLETE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'invalid_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'invalid_token',
+        });
 
         const actual = await tool.handler({}, mockContext);
 
@@ -139,7 +143,7 @@ describe('#StravaConnector', () => {
       it('returns athlete stats for specified ID', async () => {
         const mockStats = {
           recent_ride_totals: { count: 5, distance: 150000.0 },
-          ytd_ride_totals: { count: 150, distance: 5000000.0 }
+          ytd_ride_totals: { count: 150, distance: 5000000.0 },
         };
 
         server.use(
@@ -150,7 +154,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ATHLETE_STATS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({ athleteId: 123456 }, mockContext);
 
@@ -162,7 +168,7 @@ describe('#StravaConnector', () => {
       it('fetches current athlete ID and returns stats', async () => {
         const mockStats = {
           recent_ride_totals: { count: 5, distance: 150000.0 },
-          ytd_ride_totals: { count: 150, distance: 5000000.0 }
+          ytd_ride_totals: { count: 150, distance: 5000000.0 },
         };
 
         server.use(
@@ -176,7 +182,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ATHLETE_STATS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({}, mockContext);
 
@@ -198,7 +206,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ACTIVITIES as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({}, mockContext);
 
@@ -219,7 +229,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ACTIVITIES as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         await tool.handler({ page: 2, perPage: 10 }, mockContext);
       });
@@ -237,7 +249,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ACTIVITY as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({ activityId: 987654321 }, mockContext);
 
@@ -255,7 +269,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ACTIVITY as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({ activityId: 999999 }, mockContext);
 
@@ -270,7 +286,12 @@ describe('#StravaConnector', () => {
         const mockStreams = {
           time: { data: [0, 10, 20, 30] },
           distance: { data: [0.0, 100.0, 200.0, 300.0] },
-          latlng: { data: [[37.7749, -122.4194], [37.7750, -122.4195]] }
+          latlng: {
+            data: [
+              [37.7749, -122.4194],
+              [37.775, -122.4195],
+            ],
+          },
         };
 
         server.use(
@@ -279,9 +300,12 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ACTIVITY_STREAMS as MCPToolDefinition;
+        const tool = StravaConnectorConfig.tools
+          .GET_ACTIVITY_STREAMS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({ activityId: 987654321 }, mockContext);
 
@@ -292,18 +316,27 @@ describe('#StravaConnector', () => {
     describe('when custom keys are provided', () => {
       it('includes custom keys in request', async () => {
         server.use(
-          http.get('https://www.strava.com/api/v3/activities/987654321/streams', ({ request }) => {
-            const url = new URL(request.url);
-            expect(url.searchParams.get('keys')).toBe('heartrate,watts');
-            return HttpResponse.json({});
-          })
+          http.get(
+            'https://www.strava.com/api/v3/activities/987654321/streams',
+            ({ request }) => {
+              const url = new URL(request.url);
+              expect(url.searchParams.get('keys')).toBe('heartrate,watts');
+              return HttpResponse.json({});
+            }
+          )
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ACTIVITY_STREAMS as MCPToolDefinition;
+        const tool = StravaConnectorConfig.tools
+          .GET_ACTIVITY_STREAMS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
-        await tool.handler({ activityId: 987654321, keys: ['heartrate', 'watts'] }, mockContext);
+        await tool.handler(
+          { activityId: 987654321, keys: ['heartrate', 'watts'] },
+          mockContext
+        );
       });
     });
   });
@@ -319,7 +352,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_SEGMENT as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({ segmentId: 654321 }, mockContext);
 
@@ -332,7 +367,7 @@ describe('#StravaConnector', () => {
     describe('when bounds are provided', () => {
       it('returns segments in the area', async () => {
         const mockExploreResult = {
-          segments: [mockSegment]
+          segments: [mockSegment],
         };
 
         server.use(
@@ -346,14 +381,19 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.EXPLORE_SEGMENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
-        const actual = await tool.handler({
-          bounds: {
-            sw: [37.7, -122.5],
-            ne: [37.8, -122.4]
-          }
-        }, mockContext);
+        const actual = await tool.handler(
+          {
+            bounds: {
+              sw: [37.7, -122.5],
+              ne: [37.8, -122.4],
+            },
+          },
+          mockContext
+        );
 
         expect(actual).toBe(JSON.stringify(mockExploreResult, null, 2));
       });
@@ -371,15 +411,20 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.EXPLORE_SEGMENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
-        await tool.handler({
-          bounds: {
-            sw: [37.7, -122.5],
-            ne: [37.8, -122.4]
+        await tool.handler(
+          {
+            bounds: {
+              sw: [37.7, -122.5],
+              ne: [37.8, -122.4],
+            },
+            activityType: 'running',
           },
-          activityType: 'running'
-        }, mockContext);
+          mockContext
+        );
       });
     });
   });
@@ -387,19 +432,21 @@ describe('#StravaConnector', () => {
   describe('.GET_ATHLETE_ROUTES', () => {
     describe('when request is successful', () => {
       it('returns list of routes', async () => {
-        const mockRoutes = [{
-          id: 456789,
-          name: 'Golden Gate Loop',
-          description: 'Beautiful route around the Golden Gate',
-          distance: 25000.0,
-          elevation_gain: 500.0,
-          type: 1,
-          sub_type: 1,
-          private: false,
-          starred: true,
-          timestamp: 1640995200,
-          segments: []
-        }];
+        const mockRoutes = [
+          {
+            id: 456789,
+            name: 'Golden Gate Loop',
+            description: 'Beautiful route around the Golden Gate',
+            distance: 25000.0,
+            elevation_gain: 500.0,
+            type: 1,
+            sub_type: 1,
+            private: false,
+            starred: true,
+            timestamp: 1640995200,
+            segments: [],
+          },
+        ];
 
         server.use(
           http.get('https://www.strava.com/api/v3/athletes/routes', () => {
@@ -409,7 +456,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ATHLETE_ROUTES as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({}, mockContext);
 
@@ -432,7 +481,7 @@ describe('#StravaConnector', () => {
           private: false,
           starred: true,
           timestamp: 1640995200,
-          segments: []
+          segments: [],
         };
 
         server.use(
@@ -443,7 +492,9 @@ describe('#StravaConnector', () => {
 
         const tool = StravaConnectorConfig.tools.GET_ROUTE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({ routeId: 456789 }, mockContext);
 
@@ -463,9 +514,12 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_STARRED_SEGMENTS as MCPToolDefinition;
+        const tool = StravaConnectorConfig.tools
+          .GET_STARRED_SEGMENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({ accessToken: 'test_token' });
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          accessToken: 'test_token',
+        });
 
         const actual = await tool.handler({}, mockContext);
 

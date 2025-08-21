@@ -94,6 +94,15 @@ interface StravaSegment {
   star_count: number;
 }
 
+interface StravaActivityStreams {
+  [key: string]: {
+    data: (number | number[] | null)[];
+    series_type: 'time' | 'distance';
+    original_size: number;
+    resolution: 'low' | 'medium' | 'high';
+  };
+}
+
 interface StravaRoute {
   id: number;
   name: string;
@@ -254,7 +263,7 @@ class StravaClient {
   async getActivityStreams(
     activityId: number,
     keys: string[] = ['time', 'distance', 'latlng', 'altitude', 'heartrate', 'watts']
-  ): Promise<any> {
+  ): Promise<StravaActivityStreams> {
     const keysString = keys.join(',');
     const response = await fetch(
       `${this.baseUrl}/activities/${activityId}/streams?keys=${keysString}&key_by_type=true`,
@@ -267,7 +276,7 @@ class StravaClient {
       throw new Error(`Strava API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<StravaActivityStreams>;
   }
 
   async getSegment(segmentId: number): Promise<StravaSegment> {
@@ -381,19 +390,22 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       name: 'strava_get_athlete_stats',
       description: 'Get statistics for the authenticated athlete',
       schema: z.object({
-        athleteId: z.number().optional().describe('Athlete ID (defaults to authenticated athlete)'),
+        athleteId: z
+          .number()
+          .optional()
+          .describe('Athlete ID (defaults to authenticated athlete)'),
       }),
       handler: async (args, context) => {
         try {
           const { accessToken } = await context.getCredentials();
           const client = new StravaClient(accessToken);
-          
+
           let athleteId = args.athleteId;
           if (!athleteId) {
             const athlete = await client.getAthlete();
             athleteId = athlete.id;
           }
-          
+
           const stats = await client.getAthleteStats(athleteId);
           return JSON.stringify(stats, null, 2);
         } catch (error) {
@@ -405,10 +417,19 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       name: 'strava_get_activities',
       description: 'Get recent activities for the authenticated athlete',
       schema: z.object({
-        before: z.number().optional().describe('Unix timestamp to retrieve activities before'),
-        after: z.number().optional().describe('Unix timestamp to retrieve activities after'),
+        before: z
+          .number()
+          .optional()
+          .describe('Unix timestamp to retrieve activities before'),
+        after: z
+          .number()
+          .optional()
+          .describe('Unix timestamp to retrieve activities after'),
         page: z.number().default(1).describe('Page number for pagination'),
-        perPage: z.number().default(30).describe('Number of activities per page (max 200)'),
+        perPage: z
+          .number()
+          .default(30)
+          .describe('Number of activities per page (max 200)'),
       }),
       handler: async (args, context) => {
         try {
@@ -445,13 +466,16 @@ export const StravaConnectorConfig = mcpConnectorConfig({
     }),
     GET_ACTIVITY_STREAMS: tool({
       name: 'strava_get_activity_streams',
-      description: 'Get detailed stream data for an activity (GPS, heart rate, power, etc.)',
+      description:
+        'Get detailed stream data for an activity (GPS, heart rate, power, etc.)',
       schema: z.object({
         activityId: z.number().describe('The ID of the activity'),
         keys: z
           .array(z.string())
           .optional()
-          .describe('Stream types to retrieve: time, distance, latlng, altitude, heartrate, watts, etc.'),
+          .describe(
+            'Stream types to retrieve: time, distance, latlng, altitude, heartrate, watts, etc.'
+          ),
       }),
       handler: async (args, context) => {
         try {
@@ -485,10 +509,12 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       name: 'strava_explore_segments',
       description: 'Find popular segments in a geographic area',
       schema: z.object({
-        bounds: z.object({
-          sw: z.tuple([z.number(), z.number()]).describe('Southwest corner [lat, lng]'),
-          ne: z.tuple([z.number(), z.number()]).describe('Northeast corner [lat, lng]'),
-        }).describe('Bounding box for the search area'),
+        bounds: z
+          .object({
+            sw: z.tuple([z.number(), z.number()]).describe('Southwest corner [lat, lng]'),
+            ne: z.tuple([z.number(), z.number()]).describe('Northeast corner [lat, lng]'),
+          })
+          .describe('Bounding box for the search area'),
         activityType: z
           .enum(['running', 'riding'])
           .default('riding')
