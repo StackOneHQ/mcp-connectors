@@ -312,13 +312,17 @@ class StravaClient {
     return response.json() as Promise<{ segments: StravaSegment[] }>;
   }
 
-  async getAthleteRoutes(athleteId?: number, page = 1, perPage = 30): Promise<StravaRoute[]> {
+  async getAthleteRoutes(
+    athleteId?: number,
+    page = 1,
+    perPage = 30
+  ): Promise<StravaRoute[]> {
     let id = athleteId;
     if (!id) {
       const athlete = await this.getAthlete();
       id = athlete.id;
     }
-    
+
     const response = await fetch(
       `${this.baseUrl}/athletes/${id}/routes?page=${page}&per_page=${perPage}`,
       {
@@ -569,7 +573,11 @@ export const StravaConnectorConfig = mcpConnectorConfig({
         try {
           const { accessToken } = await context.getCredentials();
           const client = new StravaClient(accessToken);
-          const routes = await client.getAthleteRoutes(args.athleteId, args.page, args.perPage);
+          const routes = await client.getAthleteRoutes(
+            args.athleteId,
+            args.page,
+            args.perPage
+          );
           return JSON.stringify(routes, null, 2);
         } catch (error) {
           return `Failed to get athlete routes: ${error instanceof Error ? error.message : String(error)}`;
