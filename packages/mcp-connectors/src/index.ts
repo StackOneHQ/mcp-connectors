@@ -31,6 +31,7 @@ import { ReplicateConnectorConfig } from './connectors/replicate';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
 import { StackOneConnectorConfig } from './connectors/stackone';
+import { StravaConnectorConfig } from './connectors/strava';
 import { SupabaseConnectorConfig } from './connectors/supabase';
 import { TestConnectorConfig } from './connectors/test';
 import { TinybirdConnectorConfig } from './connectors/tinybird';
@@ -71,6 +72,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ReplicateConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
+  StravaConnectorConfig,
   SupabaseConnectorConfig,
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
@@ -111,6 +113,7 @@ export {
   ReplicateConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
+  StravaConnectorConfig,
   SupabaseConnectorConfig,
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
