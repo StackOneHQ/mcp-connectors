@@ -12,20 +12,14 @@ on:
 
 jobs:
   claude:
-    # Only run when stackone team and tags @claude
-    if: >
-      contains(fromJSON('["mattzcarey","willleeney","brycetoz","glebedel","ryoppippi"]'), github.actor)
-      && contains(fromJSON('["issue_comment","pull_request_review_comment","pull_request_review","issues"]'), github.event_name)
-      && contains(
-           format(
-             '{0}\n{1}\n{2}\n{3}',
-             github.event.comment.body || '',
-             github.event.review.body || '',
-             github.event.issue.body || '',
-             github.event.issue.title || ''
-           ),
-           '@claude'
-         )
+    # Only run when mattzcarey tags @claude
+    if: |
+      (github.actor == 'mattzcarey' || github.actor == 'willleeney' || github.actor == 'brycetoz' || github.actor == 'glebedel') && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
