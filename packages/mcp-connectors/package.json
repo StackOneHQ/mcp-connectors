@@ -1,6 +1,6 @@
 {
     "name": "@stackone/mcp-connectors",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "MCP connectors for disco.dev",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
@@ -10,7 +10,10 @@
         "./package.json": "./package.json"
     },
     "type": "module",
-    "files": ["dist", "LICENSE"],
+    "files": [
+        "dist",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "bun -b tsdown",
         "prepublishOnly": "bun run build",

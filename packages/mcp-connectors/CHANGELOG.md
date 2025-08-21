@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.11](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.10...mcp-connectors-v0.0.11) (2025-08-21)
+
+
+### Bug Fixes
+
+* parallel logo ([#40](https://github.com/StackOneHQ/mcp-connectors/issues/40)) ([6797adf](https://github.com/StackOneHQ/mcp-connectors/commit/6797adffade2a6517705b1ea53b228a124feebe3))
+* remove unused files from bundle ([#43](https://github.com/StackOneHQ/mcp-connectors/issues/43)) ([60e1c48](https://github.com/StackOneHQ/mcp-connectors/commit/60e1c48f9842de0f6023ae0d7a084cd00798acfd))
+
 ## [0.0.10](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.9...mcp-connectors-v0.0.10) (2025-08-20)
 
 
