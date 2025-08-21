@@ -130,7 +130,7 @@ interface GetUserResponse {
   };
 }
 
-interface GetPostCommentsResponse {
+interface GetCommentsResponse {
   post: {
     comments: {
       edges: Array<{ node: GraphQLCommentNode }>;
@@ -410,7 +410,7 @@ class ProductHuntAPI {
       }
     `;
 
-    const data = await this.makeRequest<GetPostCommentsResponse>(query, {
+    const data = await this.makeRequest<GetCommentsResponse>(query, {
       slug,
       first: limit,
     });

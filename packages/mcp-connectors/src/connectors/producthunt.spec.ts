@@ -5,6 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, type vi } from 'v
 import { createMockConnectorContext } from '../__mocks__/context';
 import { ProductHuntConfig } from './producthunt';
 
+// Type for GraphQL request body
 interface GraphQLRequestBody {
   query: string;
   variables?: {
@@ -170,7 +171,7 @@ describe('#ProductHuntConnector', () => {
     describe('when limit parameter is provided', () => {
       describe('and limit is set to 5', () => {
         it('requests only 5 results', async () => {
-          let requestBody: GraphQLRequestBody | undefined;
+          let requestBody: GraphQLRequestBody = { query: '' };
           server.use(
             http.post(
               'https://api.producthunt.com/v2/api/graphql',
@@ -192,7 +193,7 @@ describe('#ProductHuntConnector', () => {
 
           await tool.handler({ query: 'test', limit: 5 }, mockContext);
 
-          expect(requestBody?.variables?.first).toBe(5);
+          expect(requestBody.variables?.first).toBe(5);
         });
       });
     });
@@ -249,7 +250,7 @@ describe('#ProductHuntConnector', () => {
     describe('when date filter is provided', () => {
       describe('and date is valid ISO string', () => {
         it('includes date filter in request', async () => {
-          let requestBody: GraphQLRequestBody | undefined;
+          let requestBody: GraphQLRequestBody = { query: '' };
           server.use(
             http.post(
               'https://api.producthunt.com/v2/api/graphql',
@@ -277,7 +278,7 @@ describe('#ProductHuntConnector', () => {
             mockContext
           );
 
-          expect(requestBody?.variables?.postedAfter).toBe('2024-01-01T00:00:00Z');
+          expect(requestBody.variables?.postedAfter).toBe('2024-01-01T00:00:00Z');
         });
       });
     });
@@ -458,7 +459,9 @@ describe('#ProductHuntConnector', () => {
             );
 
             const resource = ProductHuntConfig.resources.PRODUCTHUNT_TRENDING_TODAY;
-            if (!resource) throw new Error('Resource not found');
+            if (!resource) {
+              throw new Error('Resource PRODUCTHUNT_TRENDING_TODAY not found');
+            }
             const mockContext = createMockConnectorContext();
             (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
               access_token: 'test-token',
@@ -504,7 +507,9 @@ describe('#ProductHuntConnector', () => {
             );
 
             const resource = ProductHuntConfig.resources.PRODUCTHUNT_TOP_COLLECTIONS;
-            if (!resource) throw new Error('Resource not found');
+            if (!resource) {
+              throw new Error('Resource PRODUCTHUNT_TOP_COLLECTIONS not found');
+            }
             const mockContext = createMockConnectorContext();
             (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
               access_token: 'test-token',
