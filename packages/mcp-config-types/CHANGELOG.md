@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.9...mcp-config-types-v0.0.10) (2025-08-21)
+
+
+### Bug Fixes
+
+* remove unused files from bundle ([#43](https://github.com/StackOneHQ/mcp-connectors/issues/43)) ([60e1c48](https://github.com/StackOneHQ/mcp-connectors/commit/60e1c48f9842de0f6023ae0d7a084cd00798acfd))
+
 ## [0.0.9](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.8...mcp-config-types-v0.0.9) (2025-08-20)
 
 
