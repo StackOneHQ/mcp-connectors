@@ -25,6 +25,7 @@ import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
 import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
+import { ProductHuntConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
@@ -40,7 +41,7 @@ import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 
-export const Connectors: readonly MCPConnectorConfig[] = [
+export const allConnectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
   StackOneConnectorConfig,
   AsanaConnectorConfig,
@@ -68,6 +69,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  ProductHuntConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
   SequentialThinkingConnectorConfig,
@@ -80,6 +82,9 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   WandbConnectorConfig,
   XeroConnectorConfig,
 ] as const;
+
+// Legacy export for backward compatibility
+export const Connectors = allConnectors;
 
 export {
   TestConnectorConfig,
@@ -109,6 +114,7 @@ export {
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  ProductHuntConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
   SequentialThinkingConnectorConfig,
