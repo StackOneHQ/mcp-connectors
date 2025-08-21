@@ -1,4 +1,9 @@
-import { Client } from '@notionhq/client';
+import {
+  APIErrorCode,
+  Client,
+  ClientErrorCode,
+  isNotionClientError,
+} from '@notionhq/client';
 import type {
   BlockObjectRequest,
   CreateCommentResponse,
@@ -12,7 +17,44 @@ import { z } from 'zod';
 const createNotionClient = (token: string) => {
   return new Client({
     auth: token,
+    notionVersion: '2022-06-28', // Latest stable version
   });
+};
+
+const handleNotionError = (error: unknown): string => {
+  if (isNotionClientError(error)) {
+    switch (error.code) {
+      case APIErrorCode.ObjectNotFound:
+        return `Error: Resource not found. Please check the ID and ensure your integration has access to it.`;
+      case APIErrorCode.Unauthorized:
+        return `Error: Unauthorized. Please check your Notion integration token and permissions.`;
+      case APIErrorCode.RestrictedResource:
+        return `Error: Access restricted. Your integration doesn't have permission to access this resource.`;
+      case APIErrorCode.RateLimited:
+        return `Error: Rate limited. Please wait before making more requests.`;
+      case APIErrorCode.InvalidJson:
+        return `Error: Invalid request format. Please check the request parameters.`;
+      case APIErrorCode.InvalidRequestUrl:
+        return `Error: Invalid request URL.`;
+      case APIErrorCode.InvalidRequest:
+        return `Error: Invalid request. Please check the request parameters.`;
+      case APIErrorCode.ValidationError:
+        return `Error: Validation failed. ${error.message}`;
+      case APIErrorCode.ConflictError:
+        return `Error: Conflict. The resource you're trying to create already exists or conflicts with existing data.`;
+      case APIErrorCode.InternalServerError:
+        return `Error: Internal server error. Please try again later.`;
+      case APIErrorCode.ServiceUnavailable:
+        return `Error: Service unavailable. Please try again later.`;
+      case ClientErrorCode.RequestTimeout:
+        return `Error: Request timeout. Please try again.`;
+      case ClientErrorCode.ResponseError:
+        return `Error: Response error. ${error.message}`;
+      default:
+        return `Error: ${error.message}`;
+    }
+  }
+  return `Error: ${error instanceof Error ? error.message : String(error)}`;
 };
 
 export const NotionConnectorConfig = mcpConnectorConfig({
@@ -29,7 +71,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
   }),
   setup: z.object({}),
   examplePrompt:
-    'Search for pages about "project planning", create a new page with meeting notes, and add a comment to the roadmap page with progress updates.',
+    'Create a project management database with tasks, assignees, and due dates. Then create a new page for meeting notes, add some structured content with headings and bullet points, and query the database to find overdue tasks.',
   tools: (tool) => ({
     GET_ME: tool({
       name: 'notion_get_me',
@@ -42,7 +84,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const response = await notion.users.me({});
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -68,7 +110,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           });
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -87,7 +129,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           });
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -362,7 +404,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const response = await notion.pages.create(createPageParams);
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -471,7 +513,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           });
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -523,7 +565,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           }
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -544,7 +586,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           });
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
         }
       },
     }),
@@ -600,7 +642,1207 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const response = await notion.search(searchParams);
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
+          return handleNotionError(error);
+        }
+      },
+    }),
+    CREATE_DATABASE: tool({
+      name: 'notion_create_database',
+      description: 'Create a new database in Notion',
+      schema: z.object({
+        parent_page_id: z.string().describe('The ID of the parent page'),
+        title: z.string().describe('The title of the database'),
+        properties: z
+          .record(
+            z.union([
+              // Title property
+              z.object({
+                type: z.literal('title'),
+                title: z.object({}).optional(),
+              }),
+              // Rich text property
+              z.object({
+                type: z.literal('rich_text'),
+                rich_text: z.object({}).optional(),
+              }),
+              // Number property
+              z.object({
+                type: z.literal('number'),
+                number: z
+                  .object({
+                    format: z
+                      .enum([
+                        'number',
+                        'number_with_commas',
+                        'percent',
+                        'dollar',
+                        'canadian_dollar',
+                        'singapore_dollar',
+                        'euro',
+                        'pound',
+                        'yen',
+                        'ruble',
+                        'rupiah',
+                        'won',
+                        'yuan',
+                        'real',
+                        'lira',
+                        'rupee',
+                        'franc',
+                        'hong_kong_dollar',
+                        'new_zealand_dollar',
+                        'krona',
+                        'norwegian_krone',
+                        'mexican_peso',
+                        'rand',
+                        'new_taiwan_dollar',
+                        'danish_krone',
+                        'zloty',
+                        'baht',
+                        'forint',
+                        'koruna',
+                        'shekel',
+                        'chilean_peso',
+                        'philippine_peso',
+                        'dirham',
+                        'colombian_peso',
+                        'riyal',
+                        'ringgit',
+                        'leu',
+                        'argentine_peso',
+                        'uruguayan_peso',
+                        'peruvian_sol',
+                      ])
+                      .optional(),
+                  })
+                  .optional(),
+              }),
+              // Select property
+              z.object({
+                type: z.literal('select'),
+                select: z
+                  .object({
+                    options: z
+                      .array(
+                        z.object({
+                          name: z.string(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                      )
+                      .optional(),
+                  })
+                  .optional(),
+              }),
+              // Multi-select property
+              z.object({
+                type: z.literal('multi_select'),
+                multi_select: z
+                  .object({
+                    options: z
+                      .array(
+                        z.object({
+                          name: z.string(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                      )
+                      .optional(),
+                  })
+                  .optional(),
+              }),
+              // Date property
+              z.object({
+                type: z.literal('date'),
+                date: z.object({}).optional(),
+              }),
+              // Checkbox property
+              z.object({
+                type: z.literal('checkbox'),
+                checkbox: z.object({}).optional(),
+              }),
+              // URL property
+              z.object({
+                type: z.literal('url'),
+                url: z.object({}).optional(),
+              }),
+              // Email property
+              z.object({
+                type: z.literal('email'),
+                email: z.object({}).optional(),
+              }),
+              // People property
+              z.object({
+                type: z.literal('people'),
+                people: z.object({}).optional(),
+              }),
+              // Files property
+              z.object({
+                type: z.literal('files'),
+                files: z.object({}).optional(),
+              }),
+              // Phone number property
+              z.object({
+                type: z.literal('phone_number'),
+                phone_number: z.object({}).optional(),
+              }),
+              // Formula property
+              z.object({
+                type: z.literal('formula'),
+                formula: z.object({
+                  expression: z.string(),
+                }),
+              }),
+              // Relation property
+              z.object({
+                type: z.literal('relation'),
+                relation: z.object({
+                  database_id: z.string(),
+                  type: z.enum(['single_property', 'dual_property']).optional(),
+                  single_property: z.object({}).optional(),
+                  dual_property: z
+                    .object({
+                      synced_property_name: z.string(),
+                      synced_property_id: z.string(),
+                    })
+                    .optional(),
+                }),
+              }),
+              // Rollup property
+              z.object({
+                type: z.literal('rollup'),
+                rollup: z.object({
+                  relation_property_name: z.string(),
+                  relation_property_id: z.string(),
+                  rollup_property_name: z.string(),
+                  rollup_property_id: z.string(),
+                  function: z.enum([
+                    'count',
+                    'count_values',
+                    'empty',
+                    'not_empty',
+                    'unique',
+                    'show_unique',
+                    'percent_empty',
+                    'percent_not_empty',
+                    'sum',
+                    'average',
+                    'median',
+                    'min',
+                    'max',
+                    'range',
+                  ]),
+                }),
+              }),
+              // Created time property
+              z.object({
+                type: z.literal('created_time'),
+                created_time: z.object({}).optional(),
+              }),
+              // Created by property
+              z.object({
+                type: z.literal('created_by'),
+                created_by: z.object({}).optional(),
+              }),
+              // Last edited time property
+              z.object({
+                type: z.literal('last_edited_time'),
+                last_edited_time: z.object({}).optional(),
+              }),
+              // Last edited by property
+              z.object({
+                type: z.literal('last_edited_by'),
+                last_edited_by: z.object({}).optional(),
+              }),
+            ])
+          )
+          .describe('Database property schema following Notion property types'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const notion = createNotionClient(token);
+          const { parent_page_id, title, properties } = args;
+
+          const response = await notion.databases.create({
+            parent: {
+              type: 'page_id',
+              page_id: parent_page_id,
+            },
+            title: [
+              {
+                type: 'text',
+                text: { content: title },
+              },
+            ],
+            properties: properties as any,
+          });
+          return JSON.stringify(response, null, 2);
+        } catch (error) {
+          return handleNotionError(error);
+        }
+      },
+    }),
+    LIST_DATABASES: tool({
+      name: 'notion_list_databases',
+      description: 'List databases accessible to the integration',
+      schema: z.object({
+        page_size: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .describe('Number of databases to return (max 100)'),
+        start_cursor: z.string().optional().describe('Cursor for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const notion = createNotionClient(token);
+
+          // Use search with database filter to list databases
+          const response = await notion.search({
+            filter: {
+              property: 'object',
+              value: 'database',
+            },
+            page_size: args.page_size,
+            start_cursor: args.start_cursor,
+          });
+          return JSON.stringify(response, null, 2);
+        } catch (error) {
+          return handleNotionError(error);
+        }
+      },
+    }),
+    GET_DATABASE: tool({
+      name: 'notion_get_database',
+      description: 'Retrieve a database by ID',
+      schema: z.object({
+        database_id: z.string().describe('The ID of the database to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const notion = createNotionClient(token);
+          const response = await notion.databases.retrieve({
+            database_id: args.database_id,
+          });
+          return JSON.stringify(response, null, 2);
+        } catch (error) {
+          return handleNotionError(error);
+        }
+      },
+    }),
+    QUERY_DATABASE: tool({
+      name: 'notion_query_database',
+      description: 'Query a database with filters and sorts',
+      schema: z.object({
+        database_id: z.string().describe('The ID of the database to query'),
+        filter: z
+          .object({
+            property: z.string(),
+            rich_text: z
+              .object({
+                contains: z.string().optional(),
+                does_not_contain: z.string().optional(),
+                starts_with: z.string().optional(),
+                ends_with: z.string().optional(),
+                equals: z.string().optional(),
+                does_not_equal: z.string().optional(),
+                is_empty: z.boolean().optional(),
+                is_not_empty: z.boolean().optional(),
+              })
+              .optional(),
+            title: z
+              .object({
+                contains: z.string().optional(),
+                does_not_contain: z.string().optional(),
+                starts_with: z.string().optional(),
+                ends_with: z.string().optional(),
+                equals: z.string().optional(),
+                does_not_equal: z.string().optional(),
+                is_empty: z.boolean().optional(),
+                is_not_empty: z.boolean().optional(),
+              })
+              .optional(),
+            number: z
+              .object({
+                equals: z.number().optional(),
+                does_not_equal: z.number().optional(),
+                greater_than: z.number().optional(),
+                less_than: z.number().optional(),
+                greater_than_or_equal_to: z.number().optional(),
+                less_than_or_equal_to: z.number().optional(),
+                is_empty: z.boolean().optional(),
+                is_not_empty: z.boolean().optional(),
+              })
+              .optional(),
+            checkbox: z
+              .object({
+                equals: z.boolean().optional(),
+                does_not_equal: z.boolean().optional(),
+              })
+              .optional(),
+            select: z
+              .object({
+                equals: z.string().optional(),
+                does_not_equal: z.string().optional(),
+                is_empty: z.boolean().optional(),
+                is_not_empty: z.boolean().optional(),
+              })
+              .optional(),
+            multi_select: z
+              .object({
+                contains: z.string().optional(),
+                does_not_contain: z.string().optional(),
+                is_empty: z.boolean().optional(),
+                is_not_empty: z.boolean().optional(),
+              })
+              .optional(),
+            date: z
+              .object({
+                equals: z.string().optional(),
+                before: z.string().optional(),
+                after: z.string().optional(),
+                on_or_before: z.string().optional(),
+                on_or_after: z.string().optional(),
+                past_week: z.object({}).optional(),
+                past_month: z.object({}).optional(),
+                past_year: z.object({}).optional(),
+                next_week: z.object({}).optional(),
+                next_month: z.object({}).optional(),
+                next_year: z.object({}).optional(),
+                is_empty: z.boolean().optional(),
+                is_not_empty: z.boolean().optional(),
+              })
+              .optional(),
+          })
+          .optional()
+          .describe('Filter conditions for the query'),
+        sorts: z
+          .array(
+            z.object({
+              property: z.string().optional(),
+              timestamp: z.enum(['created_time', 'last_edited_time']).optional(),
+              direction: z.enum(['ascending', 'descending']),
+            })
+          )
+          .optional()
+          .describe('Sort options for the query'),
+        page_size: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .describe('Number of results to return (max 100)'),
+        start_cursor: z.string().optional().describe('Cursor for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const notion = createNotionClient(token);
+          const { database_id, filter, sorts, page_size, start_cursor } = args;
+
+          const response = await notion.databases.query({
+            database_id,
+            filter: filter as any,
+            sorts: sorts as any,
+            page_size,
+            start_cursor,
+          });
+          return JSON.stringify(response, null, 2);
+        } catch (error) {
+          return handleNotionError(error);
+        }
+      },
+    }),
+    GET_BLOCK_CHILDREN: tool({
+      name: 'notion_get_block_children',
+      description: 'Retrieve child blocks of a page or block',
+      schema: z.object({
+        block_id: z.string().describe('The ID of the parent block (page or block)'),
+        page_size: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .describe('Number of blocks to return (max 100)'),
+        start_cursor: z.string().optional().describe('Cursor for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const notion = createNotionClient(token);
+          const response = await notion.blocks.children.list({
+            block_id: args.block_id,
+            page_size: args.page_size,
+            start_cursor: args.start_cursor,
+          });
+          return JSON.stringify(response, null, 2);
+        } catch (error) {
+          return handleNotionError(error);
+        }
+      },
+    }),
+    APPEND_BLOCK_CHILDREN: tool({
+      name: 'notion_append_block_children',
+      description: 'Add new blocks as children to a page or block',
+      schema: z.object({
+        block_id: z.string().describe('The ID of the parent block (page or block)'),
+        children: z
+          .array(
+            z.union([
+              // Paragraph block
+              z.object({
+                type: z.literal('paragraph'),
+                paragraph: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // Heading blocks
+              z.object({
+                type: z.literal('heading_1'),
+                heading_1: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                  is_toggleable: z.boolean().optional(),
+                }),
+              }),
+              z.object({
+                type: z.literal('heading_2'),
+                heading_2: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                  is_toggleable: z.boolean().optional(),
+                }),
+              }),
+              z.object({
+                type: z.literal('heading_3'),
+                heading_3: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                  is_toggleable: z.boolean().optional(),
+                }),
+              }),
+              // Bulleted list item
+              z.object({
+                type: z.literal('bulleted_list_item'),
+                bulleted_list_item: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // Numbered list item
+              z.object({
+                type: z.literal('numbered_list_item'),
+                numbered_list_item: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // To-do block
+              z.object({
+                type: z.literal('to_do'),
+                to_do: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  checked: z.boolean().optional(),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // Toggle block
+              z.object({
+                type: z.literal('toggle'),
+                toggle: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // Code block
+              z.object({
+                type: z.literal('code'),
+                code: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  language: z
+                    .enum([
+                      'abap',
+                      'arduino',
+                      'bash',
+                      'basic',
+                      'c',
+                      'clojure',
+                      'coffeescript',
+                      'c++',
+                      'c#',
+                      'css',
+                      'dart',
+                      'diff',
+                      'docker',
+                      'elixir',
+                      'elm',
+                      'erlang',
+                      'flow',
+                      'fortran',
+                      'f#',
+                      'gherkin',
+                      'glsl',
+                      'go',
+                      'graphql',
+                      'groovy',
+                      'haskell',
+                      'html',
+                      'java',
+                      'javascript',
+                      'json',
+                      'julia',
+                      'kotlin',
+                      'latex',
+                      'less',
+                      'lisp',
+                      'livescript',
+                      'lua',
+                      'makefile',
+                      'markdown',
+                      'markup',
+                      'matlab',
+                      'mermaid',
+                      'nix',
+                      'objective-c',
+                      'ocaml',
+                      'pascal',
+                      'perl',
+                      'php',
+                      'plain text',
+                      'powershell',
+                      'prolog',
+                      'protobuf',
+                      'python',
+                      'r',
+                      'reason',
+                      'ruby',
+                      'rust',
+                      'sass',
+                      'scala',
+                      'scheme',
+                      'scss',
+                      'shell',
+                      'sql',
+                      'swift',
+                      'typescript',
+                      'vb.net',
+                      'verilog',
+                      'vhdl',
+                      'visual basic',
+                      'webassembly',
+                      'xml',
+                      'yaml',
+                      'java/c/c++/c#',
+                    ])
+                    .optional(),
+                  caption: z
+                    .array(
+                      z.object({
+                        type: z.literal('text'),
+                        text: z.object({
+                          content: z.string(),
+                          link: z.object({ url: z.string() }).nullable().optional(),
+                        }),
+                        annotations: z
+                          .object({
+                            bold: z.boolean().optional(),
+                            italic: z.boolean().optional(),
+                            strikethrough: z.boolean().optional(),
+                            underline: z.boolean().optional(),
+                            code: z.boolean().optional(),
+                            color: z
+                              .enum([
+                                'default',
+                                'gray',
+                                'brown',
+                                'red',
+                                'orange',
+                                'yellow',
+                                'green',
+                                'blue',
+                                'purple',
+                                'pink',
+                              ])
+                              .optional(),
+                          })
+                          .optional(),
+                      })
+                    )
+                    .optional(),
+                }),
+              }),
+              // Quote block
+              z.object({
+                type: z.literal('quote'),
+                quote: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // Callout block
+              z.object({
+                type: z.literal('callout'),
+                callout: z.object({
+                  rich_text: z.array(
+                    z.object({
+                      type: z.literal('text'),
+                      text: z.object({
+                        content: z.string(),
+                        link: z.object({ url: z.string() }).nullable().optional(),
+                      }),
+                      annotations: z
+                        .object({
+                          bold: z.boolean().optional(),
+                          italic: z.boolean().optional(),
+                          strikethrough: z.boolean().optional(),
+                          underline: z.boolean().optional(),
+                          code: z.boolean().optional(),
+                          color: z
+                            .enum([
+                              'default',
+                              'gray',
+                              'brown',
+                              'red',
+                              'orange',
+                              'yellow',
+                              'green',
+                              'blue',
+                              'purple',
+                              'pink',
+                            ])
+                            .optional(),
+                        })
+                        .optional(),
+                    })
+                  ),
+                  icon: z
+                    .union([
+                      z.object({
+                        type: z.literal('emoji'),
+                        emoji: z.string(),
+                      }),
+                      z.object({
+                        type: z.literal('external'),
+                        external: z.object({
+                          url: z.string(),
+                        }),
+                      }),
+                    ])
+                    .optional(),
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+              // Divider
+              z.object({
+                type: z.literal('divider'),
+                divider: z.object({}),
+              }),
+              // Table of contents
+              z.object({
+                type: z.literal('table_of_contents'),
+                table_of_contents: z.object({
+                  color: z
+                    .enum([
+                      'default',
+                      'gray',
+                      'brown',
+                      'red',
+                      'orange',
+                      'yellow',
+                      'green',
+                      'blue',
+                      'purple',
+                      'pink',
+                    ])
+                    .optional(),
+                }),
+              }),
+            ])
+          )
+          .describe('Array of blocks to add as children'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const notion = createNotionClient(token);
+          const { block_id, children } = args;
+
+          const response = await notion.blocks.children.append({
+            block_id,
+            children: children as BlockObjectRequest[],
+          });
+          return JSON.stringify(response, null, 2);
+        } catch (error) {
+          return handleNotionError(error);
         }
       },
     }),
