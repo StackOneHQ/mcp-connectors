@@ -21,7 +21,7 @@ interface ProductHuntProduct {
 
 // GraphQL response types
 interface GraphQLError {
-  message?: string;
+  message: string;
   [key: string]: unknown;
 }
 
@@ -105,6 +105,45 @@ interface ProductHuntCollection {
   createdAt: string;
 }
 
+// GraphQL API response interfaces
+interface GetProductResponse {
+  post: GraphQLPostNode;
+}
+
+interface SearchPostsResponse {
+  posts: {
+    edges: Array<{ node: GraphQLPostNode }>;
+  };
+}
+
+interface GetUserResponse {
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    headline?: string;
+    profileImage?: string;
+    url: string;
+    followersCount: number;
+    followingCount: number;
+    makerOfCount: number;
+  };
+}
+
+interface GetPostCommentsResponse {
+  post: {
+    comments: {
+      edges: Array<{ node: GraphQLCommentNode }>;
+    };
+  };
+}
+
+interface GetCollectionsResponse {
+  collections: {
+    edges: Array<{ node: GraphQLCollectionNode }>;
+  };
+}
+
 class ProductHuntAPI {
   private baseUrl = 'https://api.producthunt.com/v2/api/graphql';
   private accessToken: string;
@@ -116,7 +155,7 @@ class ProductHuntAPI {
   /**
    * Extracts the first error message from a GraphQL error array, or stringifies the errors if not available.
    */
-  private getGraphQLErrorMessage(errors: GraphQLResponse['errors']): string {
+  private getGraphQLErrorMessage(errors: GraphQLError[]): string {
     if (
       Array.isArray(errors) &&
       errors.length > 0 &&
@@ -186,7 +225,7 @@ class ProductHuntAPI {
       }
     `;
 
-    const data = await this.makeRequest(query, { slug });
+    const data = await this.makeRequest<GetProductResponse>(query, { slug });
     const post = data.post;
 
     return {
@@ -237,7 +276,10 @@ class ProductHuntAPI {
       }
     `;
 
-    const data = await this.makeRequest(searchQuery, { query, first: limit });
+    const data = await this.makeRequest<SearchPostsResponse>(searchQuery, {
+      query,
+      first: limit,
+    });
 
     return data.posts.edges.map((edge: { node: GraphQLPostNode }) => ({
       id: edge.node.id,
@@ -292,7 +334,7 @@ class ProductHuntAPI {
       variables.postedAfter = date;
     }
 
-    const data = await this.makeRequest(query, variables);
+    const data = await this.makeRequest<SearchPostsResponse>(query, variables);
 
     return data.posts.edges.map((edge: { node: GraphQLPostNode }) => ({
       id: edge.node.id,
@@ -329,7 +371,7 @@ class ProductHuntAPI {
       }
     `;
 
-    const data = await this.makeRequest(query, { username });
+    const data = await this.makeRequest<GetUserResponse>(query, { username });
     const user = data.user;
 
     return {
@@ -368,7 +410,10 @@ class ProductHuntAPI {
       }
     `;
 
-    const data = await this.makeRequest(query, { slug, first: limit });
+    const data = await this.makeRequest<GetPostCommentsResponse>(query, {
+      slug,
+      first: limit,
+    });
 
     return data.post.comments.edges.map((edge: { node: GraphQLCommentNode }) => ({
       id: edge.node.id,
@@ -403,7 +448,7 @@ class ProductHuntAPI {
       }
     `;
 
-    const data = await this.makeRequest(query, { first: limit });
+    const data = await this.makeRequest<GetCollectionsResponse>(query, { first: limit });
 
     return data.collections.edges.map((edge: { node: GraphQLCollectionNode }) => ({
       id: edge.node.id,
