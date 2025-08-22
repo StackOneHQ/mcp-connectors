@@ -41,7 +41,7 @@ import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 
-export const allConnectors: readonly MCPConnectorConfig[] = [
+export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
   StackOneConnectorConfig,
   AsanaConnectorConfig,
@@ -82,9 +82,6 @@ export const allConnectors: readonly MCPConnectorConfig[] = [
   WandbConnectorConfig,
   XeroConnectorConfig,
 ] as const;
-
-// Legacy export for backward compatibility
-export const Connectors = allConnectors;
 
 export {
   TestConnectorConfig,
