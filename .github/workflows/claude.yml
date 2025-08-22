@@ -14,7 +14,7 @@ jobs:
   claude:
     # Only run when mattzcarey tags @claude
     if: |
-      (github.actor == 'mattzcarey' || github.actor == 'willleeney' || github.actor == 'brycetoz' || github.actor == 'glebedel') && (
+      (github.actor == 'mattzcarey' || github.actor == 'willleeney' || github.actor == 'brycetoz' || github.actor == 'glebedel' || github.actor == 'ryoppippi') && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
