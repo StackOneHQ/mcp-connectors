@@ -430,7 +430,7 @@ class ProductHuntAPI {
   }
 }
 
-export const ProductHuntConfig = mcpConnectorConfig({
+export const ProducthuntConnectorConfig = mcpConnectorConfig({
   name: 'Product Hunt',
   key: 'producthunt',
   version: '1.0.0',

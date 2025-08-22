@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, type vi } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
-import { ProductHuntConfig } from './producthunt';
+import { ProducthuntConnectorConfig } from './producthunt';
 
 // Type for GraphQL request body
 interface GraphQLRequestBody {
@@ -51,7 +51,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -77,7 +77,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -101,7 +101,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -152,7 +152,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_SEARCH_PRODUCTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -184,7 +184,7 @@ describe('#ProductHuntConnector', () => {
             )
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_SEARCH_PRODUCTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -231,7 +231,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_FEATURED as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -263,7 +263,7 @@ describe('#ProductHuntConnector', () => {
             )
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_FEATURED as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -308,7 +308,8 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools.PRODUCTHUNT_GET_USER as MCPToolDefinition;
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_USER as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
             access_token: 'test-token',
@@ -357,7 +358,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_COMMENTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -407,7 +408,7 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const tool = ProductHuntConfig.tools
+          const tool = ProducthuntConnectorConfig.tools
             .PRODUCTHUNT_GET_COLLECTIONS as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
           (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -458,7 +459,8 @@ describe('#ProductHuntConnector', () => {
               })
             );
 
-            const resource = ProductHuntConfig.resources.PRODUCTHUNT_TRENDING_TODAY;
+            const resource =
+              ProducthuntConnectorConfig.resources.PRODUCTHUNT_TRENDING_TODAY;
             if (!resource) {
               throw new Error('Resource PRODUCTHUNT_TRENDING_TODAY not found');
             }
@@ -506,7 +508,8 @@ describe('#ProductHuntConnector', () => {
               })
             );
 
-            const resource = ProductHuntConfig.resources.PRODUCTHUNT_TOP_COLLECTIONS;
+            const resource =
+              ProducthuntConnectorConfig.resources.PRODUCTHUNT_TOP_COLLECTIONS;
             if (!resource) {
               throw new Error('Resource PRODUCTHUNT_TOP_COLLECTIONS not found');
             }
