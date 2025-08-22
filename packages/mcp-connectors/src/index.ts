@@ -22,6 +22,7 @@ import { LangsmithConnectorConfig } from './connectors/langsmith';
 import { LinearConnectorConfig } from './connectors/linear';
 import { LinkedInConnectorConfig } from './connectors/linkedin';
 import { NotionConnectorConfig } from './connectors/notion';
+import { NpmConnectorConfig } from './connectors/npm';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
 import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
@@ -65,6 +66,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
   NotionConnectorConfig,
+  NpmConnectorConfig,
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
@@ -106,6 +108,7 @@ export {
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
   NotionConnectorConfig,
+  NpmConnectorConfig,
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
