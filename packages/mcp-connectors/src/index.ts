@@ -8,6 +8,7 @@ import { DatadogConnectorConfig } from './connectors/datadog';
 import { DeelConnectorConfig } from './connectors/deel';
 import { DeepseekConnectorConfig } from './connectors/deepseek';
 import { DocumentationConnectorConfig } from './connectors/documentation';
+import { DuffelConnectorConfig } from './connectors/duffel';
 import { DuckDuckGoConnectorConfig } from './connectors/duckduckgo';
 import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
 import { ExaConnectorConfig } from './connectors/exa';
@@ -51,6 +52,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   DeelConnectorConfig,
   DeepseekConnectorConfig,
   DocumentationConnectorConfig,
+  DuffelConnectorConfig,
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
@@ -93,6 +95,7 @@ export {
   DeelConnectorConfig,
   DeepseekConnectorConfig,
   DocumentationConnectorConfig,
+  DuffelConnectorConfig,
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
