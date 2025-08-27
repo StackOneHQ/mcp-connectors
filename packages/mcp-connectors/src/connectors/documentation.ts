@@ -201,7 +201,7 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
     key: 'convex',
     name: 'Convex',
     description: 'Backend-as-a-service platform',
-    llmsFullUrl: 'https://docs.convex.dev/llms.txt',
+    llmsFullUrl: 'https://docs.convex.dev/llms-full.txt',
     category: DocumentationCategory.FRAMEWORK,
   },
   {
@@ -225,6 +225,13 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
       'Platform for running Python code in the cloud with minimal configuration',
     llmsFullUrl: 'https://modal.com/llms-full.txt',
     category: DocumentationCategory.INFRASTRUCTURE,
+  },
+  {
+    key: 'openai',
+    name: 'OpenAI',
+    description: 'AI platform for building applications',
+    llmsFullUrl: 'https://cdn.openai.com/API/docs/txt/llms-full.txt',
+    category: DocumentationCategory.AI,
   },
   {
     key: 'fireflies',
@@ -267,6 +274,13 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
     description: 'Javascript search engine',
     llmsFullUrl: 'https://docs.orama.com/llms-full.txt',
     category: DocumentationCategory.DATABASE,
+  },
+  {
+    key: 'supermemory',
+    name: 'Supermemory',
+    description: 'Memory API for AI',
+    llmsFullUrl: 'https://supermemory.ai/docs/llms-full.txt',
+    category: DocumentationCategory.AI,
   },
 ];
 
