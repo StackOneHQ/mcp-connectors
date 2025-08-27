@@ -899,7 +899,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
                 text: { content: title },
               },
             ],
-            properties: properties as any,
+            properties: properties as Record<string, DatabasePropertySchema>,
           });
           return JSON.stringify(response, null, 2);
         } catch (error) {
