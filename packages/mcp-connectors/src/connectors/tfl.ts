@@ -1,6 +1,6 @@
+import { create, insertMultiple, search } from '@orama/orama';
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import { create, insertMultiple, search } from '@orama/orama';
 
 interface TFLLine {
   id: string;
@@ -216,20 +216,20 @@ interface TFLAirQuality {
 }
 
 // Helper function to filter and summarize TfL responses using Orama
-async function filterTflResponse<T extends Record<string, any>>(
+async function filterTflResponse<T>(
   data: T[],
   schema: Record<string, 'string' | 'number' | 'boolean'>,
   query?: string,
-  limit: number = 10
+  limit = 10
 ): Promise<T[]> {
   if (!data.length) return [];
-  
+
   try {
     const db = await create({
-      schema: schema as any,
+      schema: schema,
     });
 
-    await insertMultiple(db, data as any);
+    await insertMultiple(db, data as Record<string, string | number | boolean>[]);
 
     if (query) {
       const results = await search(db, {
@@ -237,9 +237,9 @@ async function filterTflResponse<T extends Record<string, any>>(
         limit,
         threshold: 0.5,
       });
-      return results.hits.map(hit => hit.document as unknown as T);
+      return results.hits.map((hit) => hit.document as unknown as T);
     }
-    
+
     // If no query, return first N items
     return data.slice(0, limit);
   } catch (error) {
@@ -252,10 +252,11 @@ async function filterTflResponse<T extends Record<string, any>>(
 // Filter functions for different TfL data types
 async function filterLineStatus(lines: TFLLine[], query?: string): Promise<TFLLine[]> {
   // Extract relevant fields from lineStatuses for indexing
-  const flattenedLines = lines.map(line => ({
+  const flattenedLines = lines.map((line) => ({
     ...line,
     statusSeverity: line.lineStatuses?.[0]?.statusSeverity || 10,
-    statusSeverityDescription: line.lineStatuses?.[0]?.statusSeverityDescription || 'Good Service',
+    statusSeverityDescription:
+      line.lineStatuses?.[0]?.statusSeverityDescription || 'Good Service',
     reason: line.lineStatuses?.[0]?.reason || '',
   }));
 
@@ -273,9 +274,12 @@ async function filterLineStatus(lines: TFLLine[], query?: string): Promise<TFLLi
   );
 }
 
-async function filterStopPoints(stopPoints: TFLStopPoint[], query?: string): Promise<TFLStopPoint[]> {
+async function filterStopPoints(
+  stopPoints: TFLStopPoint[],
+  query?: string
+): Promise<TFLStopPoint[]> {
   // Flatten modes array for better searching
-  const flattenedStopPoints = stopPoints.map(stop => ({
+  const flattenedStopPoints = stopPoints.map((stop) => ({
     ...stop,
     modesString: stop.modes?.join(' ') || '',
   }));
@@ -294,12 +298,15 @@ async function filterStopPoints(stopPoints: TFLStopPoint[], query?: string): Pro
   );
 }
 
-async function filterArrivals(arrivals: TFLArrivalPrediction[], query?: string): Promise<TFLArrivalPrediction[]> {
+async function filterArrivals(
+  arrivals: TFLArrivalPrediction[],
+  query?: string
+): Promise<TFLArrivalPrediction[]> {
   // Sort by arrival time and limit to next few arrivals
   const sortedArrivals = arrivals
     .sort((a, b) => a.timeToStation - b.timeToStation)
     .slice(0, 10);
-    
+
   return filterTflResponse(
     sortedArrivals,
     {
@@ -317,34 +324,82 @@ async function filterArrivals(arrivals: TFLArrivalPrediction[], query?: string):
 
 async function filterJourneyPlan(
   journeyPlan: TFLJourneyPlan | TFLDisambiguationResult
-): Promise<any> {
+): Promise<
+  | TFLJourneyPlan
+  | TFLDisambiguationResult
+  | {
+      error: string;
+      message: string;
+      originalQuery: { from: string; to: string };
+      suggestions: {
+        from?: {
+          name: string;
+          id: string;
+          type: string;
+          coordinates: string;
+          matchQuality: number;
+        }[];
+        to?: {
+          name: string;
+          id: string;
+          type: string;
+          coordinates: string;
+          matchQuality: number;
+        }[];
+      };
+      tip: string;
+    }
+  | {
+      journeys: {
+        startDateTime: string;
+        duration: number;
+        arrivalDateTime: string;
+        legs: {
+          duration: number;
+          instruction: { summary: string; detailed: string };
+          mode: { id: string; name: string; type: string };
+        }[];
+        fare?: {
+          totalCost: number;
+          fares: { chargeLevel: string; cost: number; chargeType: string }[];
+        };
+      }[];
+      journeyVector: { from: string; to: string };
+      searchCriteria: { dateTime: string; dateTimeType: string };
+    }
+> {
   // If it's a disambiguation result, return the top options for each location
-  if ('toLocationDisambiguation' in journeyPlan || 'fromLocationDisambiguation' in journeyPlan) {
+  if (
+    'toLocationDisambiguation' in journeyPlan ||
+    'fromLocationDisambiguation' in journeyPlan
+  ) {
     const disambiguation = journeyPlan as TFLDisambiguationResult;
-    
-    const fromSuggestions = disambiguation.fromLocationDisambiguation?.disambiguationOptions
-      ?.slice(0, 3)
-      .map(option => ({
-        name: option.place.commonName,
-        id: option.parameterValue,
-        type: option.place.placeType,
-        coordinates: `${option.place.lat}, ${option.place.lon}`,
-        matchQuality: option.matchQuality,
-      }));
-      
+
+    const fromSuggestions =
+      disambiguation.fromLocationDisambiguation?.disambiguationOptions
+        ?.slice(0, 3)
+        .map((option) => ({
+          name: option.place.commonName,
+          id: option.parameterValue,
+          type: option.place.placeType,
+          coordinates: `${option.place.lat}, ${option.place.lon}`,
+          matchQuality: option.matchQuality,
+        }));
+
     const toSuggestions = disambiguation.toLocationDisambiguation?.disambiguationOptions
       ?.slice(0, 3)
-      .map(option => ({
+      .map((option) => ({
         name: option.place.commonName,
         id: option.parameterValue,
         type: option.place.placeType,
         coordinates: `${option.place.lat}, ${option.place.lon}`,
         matchQuality: option.matchQuality,
       }));
-    
+
     return {
       error: 'Location ambiguous',
-      message: 'Multiple locations found. Please use one of the suggested location names or IDs below:',
+      message:
+        'Multiple locations found. Please use one of the suggested location names or IDs below:',
       originalQuery: {
         from: disambiguation.journeyVector.from,
         to: disambiguation.journeyVector.to,
@@ -356,17 +411,17 @@ async function filterJourneyPlan(
       tip: 'Try using the full station name (e.g., "Waterloo Underground Station") or the ID from suggestions above.',
     };
   }
-  
+
   // Handle regular journey plan results
   const plan = journeyPlan as TFLJourneyPlan;
   const filteredJourneys = plan.journeys
     .sort((a, b) => a.duration - b.duration)
     .slice(0, 3)
-    .map(journey => ({
+    .map((journey) => ({
       startDateTime: journey.startDateTime,
       duration: journey.duration,
       arrivalDateTime: journey.arrivalDateTime,
-      legs: journey.legs.map(leg => ({
+      legs: journey.legs.map((leg) => ({
         duration: leg.duration,
         instruction: leg.instruction,
         mode: leg.mode,
@@ -398,9 +453,9 @@ class TFLClient {
     const url = new URL(`${this.baseUrl}${endpoint}`);
 
     if (params) {
-      Object.entries(params).forEach(([key, value]) => {
+      for (const [key, value] of Object.entries(params)) {
         url.searchParams.set(key, value);
-      });
+      }
     }
 
     return url.toString();
@@ -458,7 +513,7 @@ class TFLClient {
   }
 
   async searchStopPoints(query: string): Promise<TFLStopPoint[]> {
-    const response = await fetch(this.buildUrl(`/StopPoint/Search`, { query }), {
+    const response = await fetch(this.buildUrl('/StopPoint/Search', { query }), {
       headers: this.headers,
     });
 
@@ -505,18 +560,22 @@ class TFLClient {
       throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json() as any;
-    
+    const result = (await response.json()) as TFLJourneyPlan | TFLDisambiguationResult;
+
     // If we get a disambiguation result, try to automatically resolve it using the best matches
     if (result.$type?.includes('DisambiguationResult')) {
       const disambiguation = result as TFLDisambiguationResult;
-      
+
       // Get the best matching station IDs for from and to locations
-      const fromId = disambiguation.fromLocationDisambiguation?.disambiguationOptions?.[0]?.parameterValue || from;
-      const toId = disambiguation.toLocationDisambiguation?.disambiguationOptions?.[0]?.parameterValue || to;
-      
+      const fromId =
+        disambiguation.fromLocationDisambiguation?.disambiguationOptions?.[0]
+          ?.parameterValue || from;
+      const toId =
+        disambiguation.toLocationDisambiguation?.disambiguationOptions?.[0]
+          ?.parameterValue || to;
+
       // Only retry if we have at least one resolved ID that's different from the original
-      if ((fromId !== from || toId !== to) && (fromId && toId)) {
+      if ((fromId !== from || toId !== to) && fromId && toId) {
         try {
           // Retry with the specific station IDs
           const retryResponse = await fetch(
@@ -526,10 +585,15 @@ class TFLClient {
             ),
             { headers: this.headers }
           );
-          
+
           if (retryResponse.ok) {
-            const retryResult = await retryResponse.json() as any;
-            if (retryResult.$type?.includes('ItineraryResult') || retryResult.journeys) {
+            const retryResult = (await retryResponse.json()) as
+              | TFLJourneyPlan
+              | TFLDisambiguationResult;
+            if (
+              retryResult.$type?.includes('ItineraryResult') ||
+              'journeys' in retryResult
+            ) {
               return retryResult as TFLJourneyPlan;
             }
           }
@@ -538,11 +602,11 @@ class TFLClient {
           console.warn('Auto-resolution retry failed:', retryError);
         }
       }
-      
+
       // If auto-resolution fails or isn't applicable, return the disambiguation result
       return disambiguation;
     }
-    
+
     return result as TFLJourneyPlan;
   }
 
