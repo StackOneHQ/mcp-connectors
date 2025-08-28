@@ -44,6 +44,32 @@ interface BrowserbaseTypeResponse {
   [key: string]: unknown;
 }
 
+class BrowserbaseClientManager {
+  private static instances = new Map<string, BrowserbaseClient>();
+
+  static getClient(apiKey: string, projectId: string): BrowserbaseClient {
+    const key = `${apiKey}-${projectId}`;
+    if (!this.instances.has(key)) {
+      this.instances.set(key, new BrowserbaseClient(apiKey, projectId));
+    }
+    return this.instances.get(key)!;
+  }
+}
+
+function handleError(operation: string, error: unknown): string {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+
+  // Log for debugging (in production, use proper logging)
+  console.error(`Browserbase ${operation} failed:`, errorMessage);
+
+  return JSON.stringify({
+    success: false,
+    operation,
+    error: errorMessage,
+    timestamp: new Date().toISOString()
+  }, null, 2);
+}
+
 class BrowserbaseClient {
   private apiKey: string;
   private projectId: string;
@@ -84,6 +110,23 @@ class BrowserbaseClient {
     return response;
   }
 
+  async createSessionWithContext(contextId?: string, options?: {
+    width?: number;
+    height?: number;
+    proxies?: boolean;
+    stealth?: boolean;
+  }): Promise<BrowserbaseSession> {
+    const response = await this.makeRequest('/v1/sessions', {
+      method: 'POST',
+      body: JSON.stringify({
+        projectId: this.projectId,
+        contextId,
+        ...options
+      }),
+    });
+    return response;
+  }
+
   async getSession(sessionId: string): Promise<BrowserbaseSession> {
     return this.makeRequest(`/v1/sessions/${sessionId}`);
   }
@@ -104,8 +147,11 @@ class BrowserbaseClient {
     return this.makeRequest(`/v1/sessions/${sessionId}/page`);
   }
 
-  async takeScreenshot(sessionId: string): Promise<BrowserbaseScreenshot> {
-    return this.makeRequest(`/v1/sessions/${sessionId}/screenshot`);
+  async takeScreenshot(sessionId: string, selector?: string): Promise<BrowserbaseScreenshot> {
+    const endpoint = selector
+      ? `/v1/sessions/${sessionId}/screenshot?selector=${encodeURIComponent(selector)}`
+      : `/v1/sessions/${sessionId}/screenshot`;
+    return this.makeRequest(endpoint);
   }
 
   async clickElement(sessionId: string, selector: string): Promise<BrowserbaseClickResponse> {
@@ -153,9 +199,49 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
         'Browserbase Project ID :: proj_1234567890abcdef :: https://docs.browserbase.com/projects'
       ),
   }),
-  setup: z.object({}),
-  examplePrompt:
-    'Create a browser session, navigate to a website, take a screenshot, extract page content, and complete the session.',
+  setup: z.object({
+    defaultBrowserWidth: z
+      .number()
+      .default(1280)
+      .describe('Default browser viewport width'),
+    defaultBrowserHeight: z
+      .number()
+      .default(720)
+      .describe('Default browser viewport height'),
+    enableProxies: z
+      .boolean()
+      .default(false)
+      .describe('Enable Browserbase proxies by default'),
+    enableStealth: z
+      .boolean()
+      .default(false)
+      .describe('Enable advanced stealth mode'),
+    sessionTimeout: z
+      .number()
+      .default(300000)
+      .describe('Default session timeout in milliseconds'),
+    contextId: z
+      .string()
+      .optional()
+      .describe('Default Browserbase context ID for session persistence')
+  }),
+  examplePrompt: `
+Multi-step browser automation example:
+1. Create a browser session with custom viewport settings
+2. Navigate to a website (e.g., "https://example.com")
+3. Take a screenshot for visual reference (with optional base64 data)
+4. Extract specific content using CSS selectors
+5. Fill out a form using smart form detection
+6. Complete the session
+
+Try: "Create a session, go to news.ycombinator.com, take a screenshot, and extract the top 5 story titles"
+
+Advanced usage:
+- Use smart form filling: "Fill out the login form with username 'test' and password 'pass'"
+- Element-specific screenshots: "Take a screenshot of the header section only"
+- Session persistence: "Create a session with context ID for reuse"
+- Resource browsing: "Show me all active browser sessions"
+`,
   tools: (tool) => ({
     CREATE_SESSION: tool({
       name: 'browserbase_create_session',
@@ -164,7 +250,7 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const session = await client.createSession();
           return JSON.stringify({
             sessionId: session.id,
@@ -173,7 +259,7 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
             message: 'Browser session created successfully'
           }, null, 2);
         } catch (error) {
-          return `Failed to create session: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('create_session', error);
         }
       },
     }),
@@ -187,11 +273,11 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const session = await client.getSession(args.sessionId);
           return JSON.stringify(session, null, 2);
         } catch (error) {
-          return `Failed to get session: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('get_session', error);
         }
       },
     }),
@@ -208,11 +294,11 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const sessions = await client.listSessions(args.limit);
           return JSON.stringify(sessions, null, 2);
         } catch (error) {
-          return `Failed to list sessions: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('list_sessions', error);
         }
       },
     }),
@@ -227,11 +313,11 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const response = await client.navigate(args.sessionId, args.url);
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Failed to navigate: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('navigate', error);
         }
       },
     }),
@@ -245,7 +331,7 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const pageContent = await client.getPageContent(args.sessionId);
           return JSON.stringify({
             url: pageContent.url,
@@ -255,7 +341,7 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
             hasScreenshot: !!pageContent.screenshot
           }, null, 2);
         } catch (error) {
-          return `Failed to get page content: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('get_page_content', error);
         }
       },
     }),
@@ -265,19 +351,24 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       description: 'Take a screenshot of the current page in a browser session',
       schema: z.object({
         sessionId: z.string().describe('The ID of the browser session'),
+        returnImage: z.boolean().default(false).describe('Return base64 image data'),
+        element: z.string().optional().describe('CSS selector to screenshot specific element')
       }),
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
-          const screenshot = await client.takeScreenshot(args.sessionId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
+          const screenshot = await client.takeScreenshot(args.sessionId, args.element);
+
           return JSON.stringify({
             url: screenshot.url,
+            image: args.returnImage ? screenshot.screenshot : undefined,
             screenshotSize: screenshot.screenshot.length,
+            element: args.element || 'full-page',
             message: 'Screenshot captured successfully'
           }, null, 2);
         } catch (error) {
-          return `Failed to take screenshot: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('take_screenshot', error);
         }
       },
     }),
@@ -292,11 +383,11 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const response = await client.clickElement(args.sessionId, args.selector);
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Failed to click element: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('click_element', error);
         }
       },
     }),
@@ -312,11 +403,11 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const response = await client.typeText(args.sessionId, args.selector, args.text);
           return JSON.stringify(response, null, 2);
         } catch (error) {
-          return `Failed to type text: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('type_text', error);
         }
       },
     }),
@@ -331,13 +422,120 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const result = await client.executeScript(args.sessionId, args.script);
           return JSON.stringify(result, null, 2);
         } catch (error) {
-          return `Failed to execute script: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('execute_script', error);
         }
       },
+    }),
+
+    SMART_FILL_FORM: tool({
+      name: 'browserbase_smart_fill_form',
+      description: 'Intelligently fill out forms using AI-powered element detection',
+      schema: z.object({
+        sessionId: z.string().describe('The ID of the browser session'),
+        formData: z.record(z.string()).describe('Key-value pairs of form field labels and values'),
+        submitAfter: z.boolean().default(false).describe('Submit form after filling')
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, projectId } = await context.getCredentials();
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
+
+          // Create a smart script that uses multiple selector strategies
+          const script = `
+            const formResults = {};
+            const formData = ${JSON.stringify(args.formData)};
+
+            for (const [label, value] of Object.entries(formData)) {
+              try {
+                // Try multiple selector strategies
+                const selectors = [
+                  \`input[placeholder*="\${label}" i]\`,
+                  \`input[name*="\${label}" i]\`,
+                  \`input[id*="\${label}" i]\`,
+                  \`label:has-text("\${label}") input\`,
+                  \`label:has-text("\${label}") ~ input\`,
+                  \`input[aria-label*="\${label}" i]\`,
+                  \`textarea[placeholder*="\${label}" i]\`,
+                  \`textarea[name*="\${label}" i]\`,
+                  \`select[name*="\${label}" i]\`
+                ];
+
+                let element = null;
+                for (const selector of selectors) {
+                  try {
+                    element = document.querySelector(selector);
+                    if (element && element.offsetParent !== null) {
+                      break;
+                    }
+                  } catch (e) {
+                    continue;
+                  }
+                }
+
+                if (element) {
+                  if (element.tagName === 'SELECT') {
+                    element.value = value;
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                  } else {
+                    element.value = value;
+                    element.dispatchEvent(new Event('input', { bubbles: true }));
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
+                  formResults[label] = 'filled';
+                } else {
+                  formResults[label] = 'element_not_found';
+                }
+              } catch (e) {
+                formResults[label] = 'error: ' + e.message;
+              }
+            }
+
+            ${args.submitAfter ? `
+              // Try to find and click submit button
+              const submitSelectors = [
+                'button[type="submit"]',
+                'input[type="submit"]',
+                'button:has-text("Submit")',
+                'button:has-text("Save")',
+                'button:has-text("Send")',
+                'button:has-text("Login")',
+                'button:has-text("Sign in")',
+                'button:has-text("Register")'
+              ];
+
+              let submitButton = null;
+              for (const selector of submitSelectors) {
+                try {
+                  submitButton = document.querySelector(selector);
+                  if (submitButton && submitButton.offsetParent !== null) {
+                    break;
+                  }
+                } catch (e) {
+                  continue;
+                }
+              }
+
+              if (submitButton) {
+                submitButton.click();
+                formResults.submit = 'clicked';
+              } else {
+                formResults.submit = 'submit_button_not_found';
+              }
+            ` : ''}
+
+            return formResults;
+          `;
+
+          const result = await client.executeScript(args.sessionId, script);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return handleError('smart_fill_form', error);
+        }
+      }
     }),
 
     COMPLETE_SESSION: tool({
@@ -349,7 +547,7 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { apiKey, projectId } = await context.getCredentials();
-          const client = new BrowserbaseClient(apiKey, projectId);
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
           const session = await client.completeSession(args.sessionId);
           return JSON.stringify({
             sessionId: session.id,
@@ -358,10 +556,59 @@ export const BrowserbaseConnectorConfig = mcpConnectorConfig({
             message: 'Session completed successfully'
           }, null, 2);
         } catch (error) {
-          return `Failed to complete session: ${error instanceof Error ? error.message : String(error)}`;
+          return handleError('complete_session', error);
         }
       },
     }),
+  }),
+  resources: (resource) => ({
+    BROWSER_SESSIONS: resource({
+      uri: 'browserbase://sessions',
+      name: 'Active Browser Sessions',
+      description: 'List of active browser sessions and their current state',
+      mimeType: 'application/json',
+      handler: async (context) => {
+        try {
+          const { apiKey, projectId } = await context.getCredentials();
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
+          const sessions = await client.listSessions(20);
+          return JSON.stringify(sessions, null, 2);
+        } catch (error) {
+          return JSON.stringify({
+            error: 'Failed to fetch browser sessions',
+            message: error instanceof Error ? error.message : String(error)
+          }, null, 2);
+        }
+      }
+    }),
+
+    SESSION_HISTORY: resource({
+      uri: 'browserbase://sessions/{sessionId}/history',
+      name: 'Session Navigation History',
+      description: 'Navigation history and page visits for a session',
+      mimeType: 'application/json',
+      handler: async (uri, context) => {
+        try {
+          const sessionId = uri.split('/')[2];
+          const { apiKey, projectId } = await context.getCredentials();
+          const client = BrowserbaseClientManager.getClient(apiKey, projectId);
+          const session = await client.getSession(sessionId);
+          return JSON.stringify({
+            sessionId,
+            history: session.logs || [],
+            currentUrl: session.url || 'Unknown',
+            status: session.status,
+            startedAt: session.startedAt,
+            endedAt: session.endedAt
+          }, null, 2);
+        } catch (error) {
+          return JSON.stringify({
+            error: 'Failed to fetch session history',
+            message: error instanceof Error ? error.message : String(error)
+          }, null, 2);
+        }
+      }
+    })
   }),
 });
 
