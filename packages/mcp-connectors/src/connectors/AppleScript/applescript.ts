@@ -21,7 +21,6 @@ import { registerMapsTools } from "./tools/maps";
 import { registerWorkflowTools } from "./tools/workflow";
 import { registerSystemTools } from "./tools/system";
 import { registerMiscTools } from "./tools/misc";
-import { registerRemoteBuilderTools } from "./tools/remote_builder";
 
 /**
  * AppleScript MCP Connector — exposes AppleScript-based toolset via MCP.
@@ -44,7 +43,6 @@ import { registerRemoteBuilderTools } from "./tools/remote_builder";
  *  - workflow: workflow_setup_workspace, workflow_full_json (orchestration helpers)
  *  - system: system info, volume/brightness control, screenshot, app management
  *  - misc: iWork document management (numbers_open/read, keynote_open/read, pages_open/read), photos, things, preview
- *  - remote_builder: compose_and_execute (AI-generated AppleScript via remote service), execute_applescript
  *
  * Key constraints and behavior:
  *  - JSON-first, deterministic, and idempotent where possible; tools return structured { ok, data|error, meta? }.
@@ -426,6 +424,5 @@ Follow this guide exactly to produce consistent, repeatable results across LLMs 
     ...registerWorkflowTools(tool),
     ...registerSystemTools(tool),
     ...registerMiscTools(tool),
-    ...registerRemoteBuilderTools(tool),
   }),
 });
