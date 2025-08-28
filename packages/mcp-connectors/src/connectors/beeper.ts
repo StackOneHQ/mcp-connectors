@@ -128,6 +128,101 @@ class BeeperMatrixClient {
   }
 }
 
+// Local Beeper Desktop API (v0) - SSE-only support
+class BeeperLocalClient {
+  private baseUrl: string;
+  private token: string;
+
+  constructor(accessToken: string, baseUrl?: string) {
+    this.baseUrl = (baseUrl || 'http://localhost:23373').replace(/\/$/, '');
+    this.token = accessToken;
+  }
+
+  async listenToEvents(options?: {
+    limit?: number;
+    timeoutMs?: number;
+    eventTypes?: string[];
+  }): Promise<{ events: Array<{ event?: string; data: unknown }> }> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), options?.timeoutMs ?? 5000);
+
+    try {
+      const res = await fetch(`${this.baseUrl}/v0/sse`, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/event-stream',
+          Authorization: `Bearer ${this.token}`,
+        },
+        signal: controller.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`Beeper SSE error ${res.status}: ${text}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      const collected: Array<{ event?: string; data: unknown }> = [];
+      let pending = '';
+      const max = options?.limit ?? 5;
+      const filters = options?.eventTypes?.map((t) => t.toLowerCase());
+
+      // Read until limit or timeout/abort
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        pending += decoder.decode(value, { stream: true });
+
+        // Split complete SSE events by double newline
+        const parts = pending.split(/\n\n/);
+        pending = parts.pop() ?? '';
+
+        for (const chunk of parts) {
+          let eventName: string | undefined;
+          let dataPayload = '';
+          for (const line of chunk.split(/\n/)) {
+            if (line.startsWith('event:')) {
+              eventName = line.replace(/^event:\s*/, '').trim();
+            } else if (line.startsWith('data:')) {
+              dataPayload += (dataPayload ? '\n' : '') + line.replace(/^data:\s*/, '');
+            }
+          }
+
+          if (filters && eventName && !filters.includes(eventName.toLowerCase())) {
+            continue;
+          }
+
+          try {
+            const parsed = dataPayload ? JSON.parse(dataPayload) : null;
+            collected.push({ event: eventName, data: parsed });
+          } catch {
+            collected.push({ event: eventName, data: dataPayload });
+          }
+
+          if (collected.length >= max) {
+            clearTimeout(timeout);
+            try {
+              controller.abort();
+            } catch {}
+            return { events: collected };
+          }
+        }
+      }
+
+      clearTimeout(timeout);
+      return { events: collected };
+    } catch (error) {
+      clearTimeout(timeout);
+      if (error instanceof Error && error.name === 'AbortError') {
+        // Timeout case: return what we have
+        return { events: [] };
+      }
+      throw error;
+    }
+  }
+}
+
 export const BeeperConnectorConfig = mcpConnectorConfig({
   name: 'Beeper',
   key: 'beeper',
@@ -137,20 +232,75 @@ export const BeeperConnectorConfig = mcpConnectorConfig({
     accessToken: z
       .string()
       .describe(
-        'Beeper/Matrix Access Token :: syt_xxx or Bearer token with Matrix client perms :: see Beeper developer docs'
+        'Beeper access token. For local Desktop API, sent as Authorization: Bearer <token>. For Matrix CS, use a valid syt_ token.'
       ),
     baseUrl: z
       .string()
       .url()
       .optional()
       .describe(
-        'Optional Beeper API base URL. Defaults to local Beeper at http://localhost:23373'
+        'Optional API base URL. Local Desktop defaults to http://localhost:23373. For Matrix CS, set https://chat.beeper.com'
       ),
   }),
   setup: z.object({}),
   examplePrompt:
-    'Check my Beeper identity, list my joined rooms, send a message to a room, invite a user, and fetch the latest 20 messages.',
+    'Check my Beeper identity (Matrix), list joined rooms (Matrix), send a message (Matrix), or listen to local Beeper events via SSE.',
   tools: (tool) => ({
+    // Local Desktop API (SSE)
+    LISTEN_EVENTS: tool({
+      name: 'beeper_listen_events',
+      description:
+        'Listen to local Beeper Desktop SSE stream and return a sample of events (http://localhost:23373/v0/sse).',
+      schema: z.object({
+        limit: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .describe('Maximum number of events to collect (default 5)'),
+        timeout_ms: z
+          .number()
+          .min(100)
+          .max(60_000)
+          .optional()
+          .describe('How long to listen before returning (default 5000ms)'),
+        event_types: z
+          .array(z.string())
+          .optional()
+          .describe('Filter by SSE event names (case-insensitive)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken, baseUrl } = await context.getCredentials();
+          const client = new BeeperLocalClient(accessToken, baseUrl);
+          const result = await client.listenToEvents({
+            limit: args.limit,
+            timeoutMs: args.timeout_ms,
+            eventTypes: args.event_types,
+          });
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to listen to events: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    PING: tool({
+      name: 'beeper_ping',
+      description:
+        'Ping local Beeper SSE by attempting to read a single event within a short timeout to verify connectivity.',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessToken, baseUrl } = await context.getCredentials();
+          const client = new BeeperLocalClient(accessToken, baseUrl);
+          const res = await client.listenToEvents({ limit: 1, timeoutMs: 1500 });
+          return JSON.stringify({ ok: true, received: res.events.length }, null, 2);
+        } catch (error) {
+          return `Failed to ping SSE: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
     WHO_AM_I: tool({
       name: 'beeper_who_am_i',
       description: 'Get the current Matrix user (whoami)',
