@@ -102,7 +102,7 @@ class ModalClient {
       throw new Error(`Modal API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as { sandboxes?: ModalSandbox[] };
     return result.sandboxes || [];
   }
 
@@ -189,7 +189,7 @@ class ModalClient {
       throw new Error(`Modal API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as { logs?: string[] };
     return result.logs || [];
   }
 
@@ -249,7 +249,7 @@ export const ModalConnectorConfig = mcpConnectorConfig({
   }),
   setup: z.object({}),
   examplePrompt:
-    'Create a Python sandbox, run some data analysis code, get the logs, and save a snapshot for later use.',
+    'Create a Python sandbox which runs a python script that prints "hello world" to the console.',
   tools: (tool) => ({
     CREATE_SANDBOX: tool({
       name: 'modal_create_sandbox',
