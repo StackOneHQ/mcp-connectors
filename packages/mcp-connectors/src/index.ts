@@ -43,6 +43,7 @@ import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 import { LocalizationConnectorConfig } from './connectors/localization';
 import { AccessibilityConnectorConfig } from './connectors/accessibility';
+import { CulturalAdaptationConnectorConfig } from './connectors/cultural-adaptation';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
@@ -71,6 +72,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   LogfireConnectorConfig,
   LocalizationConnectorConfig,
   AccessibilityConnectorConfig,
+  CulturalAdaptationConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
@@ -104,6 +106,7 @@ export {
   ExaConnectorConfig,
   LocalizationConnectorConfig,
   AccessibilityConnectorConfig,
+  CulturalAdaptationConnectorConfig,
   FalConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,

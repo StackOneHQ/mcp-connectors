@@ -1,0 +1,37 @@
+{
+  "welcome": {
+    "title": "Welcome to our platform!",
+    "subtitle": "Hit the ground running with our revolutionary solution"
+  },
+  "cta": {
+    "primary": "Grab it now!",
+    "secondary": "Learn more",
+    "action": "Break a leg with our Black Friday deals!"
+  },
+  "marketing": {
+    "slogan": "A silver bullet for your workflow",
+    "description": "Touch base with us for more details about our ballpark estimates"
+  },
+  "ui": {
+    "buttons": {
+      "save": "Save changes",
+      "cancel": "Cancel",
+      "submit": "Submit form"
+    },
+    "messages": {
+      "success": "Great job! You hit a home run!",
+      "error": "Oops! Something went wrong",
+      "info": "This is a piece of cake to use"
+    }
+  },
+  "dates": {
+    "format": "MM/DD/YYYY",
+    "holiday": "Happy Thanksgiving!",
+    "sale": "Black Friday sale starts now!"
+  },
+  "emoji": {
+    "welcome": "Hey there! 🙏",
+    "success": "Awesome! 👍",
+    "celebration": "🎉 You did it!"
+  }
+}
