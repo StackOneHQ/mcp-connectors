@@ -5,6 +5,7 @@ import { AsanaConnectorConfig } from './connectors/asana';
 import { AttioConnectorConfig } from './connectors/attio';
 import { AwsConnectorConfig } from './connectors/aws';
 import { DatadogConnectorConfig } from './connectors/datadog';
+import { BeeperConnectorConfig } from './connectors/beeper';
 import { DeelConnectorConfig } from './connectors/deel';
 import { DeepseekConnectorConfig } from './connectors/deepseek';
 import { DocumentationConnectorConfig } from './connectors/documentation';
@@ -45,6 +46,7 @@ import { XeroConnectorConfig } from './connectors/xero';
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
   StackOneConnectorConfig,
+  BeeperConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
   AwsConnectorConfig,
@@ -88,6 +90,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
 export {
   TestConnectorConfig,
   StackOneConnectorConfig,
+  BeeperConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
   AwsConnectorConfig,
