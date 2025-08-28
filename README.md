@@ -69,7 +69,13 @@ If you want to run the connectors locally or contribute to the project:
    bun install
    ```
 
-4. **Run the tests:**
+4. **Build the project:**
+
+   ```bash
+   bun run build
+   ```
+
+5. **Run the tests:**
 
    ```bash
    bun test
