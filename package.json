@@ -15,6 +15,8 @@
     "files": ["dist", "README.md", "LICENSE"],
     "scripts": {
         "start": "tsx --watch ./scripts/start-server.ts",
+        "start:fixed": "tsx --watch ./scripts/start-server-fixed.ts",
+        "simple-server": "tsx --watch ./scripts/simple-mcp-server.ts",
         "start:test": "tsx --watch ./scripts/test-server.ts",
         "prepare": "husky",
         "build": "turbo build",

@@ -13,6 +13,7 @@ import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
 import { ExaConnectorConfig } from './connectors/exa';
 import { FalConnectorConfig } from './connectors/fal';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
+import { GeminiImageConnectorConfig } from './connectors/gemini-image';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { HiBobConnectorConfig } from './connectors/hibob';
@@ -29,6 +30,8 @@ import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
+import { OrchestrationConnectorConfig } from './connectors/orchestration';
+import { WorkflowOrchestrationConnectorConfig } from './connectors/workflow-orchestration';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
 import { StackOneConnectorConfig } from './connectors/stackone';
@@ -39,6 +42,7 @@ import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
+
 import { XeroConnectorConfig } from './connectors/xero';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
@@ -55,6 +59,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
+  GeminiImageConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
@@ -72,6 +77,8 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  OrchestrationConnectorConfig,
+  WorkflowOrchestrationConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
@@ -97,6 +104,7 @@ export {
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
+  GeminiImageConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
@@ -114,6 +122,8 @@ export {
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  OrchestrationConnectorConfig,
+  WorkflowOrchestrationConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
