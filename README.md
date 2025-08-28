@@ -1,6 +1,6 @@
 <div align="center">
   <img src="./docs/assets/logo.png" alt="Disco Logo" width="400" />
-  
+
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
   [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-connectors.svg)](https://badge.fury.io/js/@stackone%2Fmcp-connectors)
   [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-config-types.svg)](https://badge.fury.io/js/@stackone%2Fmcp-config-types)
@@ -95,13 +95,12 @@ This is a monorepo managed with Bun and Turbo.
 No credentials needed:
 
 ```bash
-bun start --connector test
-```
+# Start a test server in the background
+bun run server -- -- --connector test
+bun run server -- -- --connector documentation
 
-Production connectors with credentials:
-
-```bash
-bun start --connector asana --credentials '{"apiKey":"your-api-key"}'
+# Start with credentials (credentials object schema may be different for each connector)
+bun run server -- -- --connector github --credentials '{"token":"ghp_xxx"}'
 ```
 
 Server runs at `http://localhost:3000/mcp`
