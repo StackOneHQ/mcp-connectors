@@ -8,6 +8,7 @@ import { DatadogConnectorConfig } from './connectors/datadog';
 import { DeelConnectorConfig } from './connectors/deel';
 import { DeepseekConnectorConfig } from './connectors/deepseek';
 import { DocumentationConnectorConfig } from './connectors/documentation';
+import { DiscoSquaredConnectorConfig } from './connectors/discosquared';
 import { DuckDuckGoConnectorConfig } from './connectors/duckduckgo';
 import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
 import { ExaConnectorConfig } from './connectors/exa';
@@ -16,7 +17,6 @@ import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { HiBobConnectorConfig } from './connectors/hibob';
-import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
@@ -52,6 +52,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   DeelConnectorConfig,
   DeepseekConnectorConfig,
   DocumentationConnectorConfig,
+  DiscoSquaredConnectorConfig,
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
@@ -59,7 +60,6 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
-  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -95,6 +95,7 @@ export {
   DeelConnectorConfig,
   DeepseekConnectorConfig,
   DocumentationConnectorConfig,
+  DiscoSquaredConnectorConfig,
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
@@ -102,7 +103,6 @@ export {
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
-  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,

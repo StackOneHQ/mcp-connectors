@@ -11,7 +11,7 @@ export interface MockContextOptions {
 export function createMockConnectorContext(
   options?: MockContextOptions
 ): ConnectorContext {
-  return {
+  return {context.ts
     getCredentials: vi.fn().mockResolvedValue(options?.credentials ?? {}),
     getSetup: vi.fn().mockResolvedValue(options?.setup ?? {}),
     getData: vi.fn().mockResolvedValue(options?.data ?? undefined),
