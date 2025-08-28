@@ -1,6 +1,7 @@
 import type { MCPConnectorConfig } from '@stackone/mcp-config-types';
 
 // Import all connectors for the array
+import { AIRealityCheckConnectorConfig } from './connectors/ai-reality-check';
 import { AsanaConnectorConfig } from './connectors/asana';
 import { AttioConnectorConfig } from './connectors/attio';
 import { AwsConnectorConfig } from './connectors/aws';
@@ -45,6 +46,7 @@ import { XeroConnectorConfig } from './connectors/xero';
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
   StackOneConnectorConfig,
+  AIRealityCheckConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
   AwsConnectorConfig,
@@ -88,6 +90,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
 export {
   TestConnectorConfig,
   StackOneConnectorConfig,
+  AIRealityCheckConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
   AwsConnectorConfig,
