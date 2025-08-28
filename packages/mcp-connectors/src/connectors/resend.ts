@@ -23,7 +23,7 @@ export const ResendConnectorConfig = mcpConnectorConfig({
   name: 'Resend',
   key: 'resend',
   version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/resend/filled/svg',
+  logo: 'https://cdn.worldvectorlogo.com/logos/resend-1.svg',
   credentials: z.object({
     apiKey: z
       .string()
