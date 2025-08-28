@@ -1,0 +1,43 @@
+{
+  "header": {
+    "greeting": "Hey, what's up? 🙏",
+    "navigation": "Click here to navigate"
+  },
+  "content": {
+    "main": "This is a silver bullet solution that will help you hit the ground running!",
+    "sidebar": "Touch base with us for ballpark estimates on your project",
+    "footer": "Break a leg with our Black Friday deals! 🎉"
+  },
+  "forms": {
+    "labels": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "message": "Your Message"
+    },
+    "placeholders": {
+      "name": "Enter your name",
+      "email": "Enter your email",
+      "message": "Tell us about your project"
+    },
+    "buttons": {
+      "submit": "Submit Form",
+      "reset": "Reset",
+      "cancel": "Cancel"
+    }
+  },
+  "notifications": {
+    "success": "Great job! You hit a home run! 👍",
+    "warning": "Watch out! This might be out of left field",
+    "error": "Oops! Something went wrong. Let's touch base to fix it"
+  },
+  "dates": {
+    "holiday": "Happy Thanksgiving! 🦃",
+    "sale": "Black Friday sale - don't miss out!",
+    "deadline": "Due date: 12/25/2024"
+  },
+  "pricing": {
+    "tier1": "Basic Plan - $9.99/month",
+    "tier2": "Pro Plan - $19.99/month",
+    "tier3": "Enterprise Plan - Contact us for ballpark estimates"
+  }
+}

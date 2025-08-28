@@ -41,6 +41,9 @@ import { TodoistConnectorConfig } from './connectors/todoist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
+import { LocalizationConnectorConfig } from './connectors/localization';
+import { AccessibilityConnectorConfig } from './connectors/accessibility';
+import { CulturalAdaptationConnectorConfig } from './connectors/cultural-adaptation';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
@@ -67,6 +70,9 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   LinearConnectorConfig,
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
+  LocalizationConnectorConfig,
+  AccessibilityConnectorConfig,
+  CulturalAdaptationConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
@@ -98,6 +104,9 @@ export {
   DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
+  LocalizationConnectorConfig,
+  AccessibilityConnectorConfig,
+  CulturalAdaptationConnectorConfig,
   FalConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
