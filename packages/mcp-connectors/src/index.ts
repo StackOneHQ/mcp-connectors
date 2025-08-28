@@ -31,6 +31,7 @@ import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
+import { ShadcnConnectorConfig } from './connectors/shadcn';
 import { SlackConnectorConfig } from './connectors/slack';
 import { StackOneConnectorConfig } from './connectors/stackone';
 import { StravaConnectorConfig } from './connectors/strava';
@@ -83,6 +84,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+  ShadcnConnectorConfig,
 ] as const;
 
 export {
@@ -126,4 +128,5 @@ export {
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+  ShadcnConnectorConfig,
 };
