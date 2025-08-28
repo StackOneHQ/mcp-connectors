@@ -77,8 +77,6 @@ interface FigmaProject {
   modified_at: string;
 }
 
-
-
 interface FigmaColor {
   r: number;
   g: number;
@@ -125,14 +123,17 @@ class FigmaClient {
     };
   }
 
-  async getFile(fileKey: string, options: {
-    version?: string;
-    ids?: string[];
-    depth?: number;
-    geometry?: string;
-    plugin_data?: string;
-    branch_data?: boolean;
-  } = {}): Promise<FigmaFile> {
+  async getFile(
+    fileKey: string,
+    options: {
+      version?: string;
+      ids?: string[];
+      depth?: number;
+      geometry?: string;
+      plugin_data?: string;
+      branch_data?: boolean;
+    } = {}
+  ): Promise<FigmaFile> {
     const params = new URLSearchParams();
     if (options.version) params.append('version', options.version);
     if (options.ids) params.append('ids', options.ids.join(','));
@@ -151,12 +152,16 @@ class FigmaClient {
     return response.json() as Promise<FigmaFile>;
   }
 
-  async getFileNodes(fileKey: string, nodeIds: string[], options: {
-    version?: string;
-    depth?: number;
-    geometry?: string;
-    plugin_data?: string;
-  } = {}): Promise<{ nodes: Record<string, FigmaNode> }> {
+  async getFileNodes(
+    fileKey: string,
+    nodeIds: string[],
+    options: {
+      version?: string;
+      depth?: number;
+      geometry?: string;
+      plugin_data?: string;
+    } = {}
+  ): Promise<{ nodes: Record<string, FigmaNode> }> {
     const params = new URLSearchParams();
     params.append('ids', nodeIds.join(','));
     if (options.version) params.append('version', options.version);
@@ -164,9 +169,12 @@ class FigmaClient {
     if (options.geometry) params.append('geometry', options.geometry);
     if (options.plugin_data) params.append('plugin_data', options.plugin_data);
 
-    const response = await fetch(`${this.baseUrl}/files/${fileKey}/nodes?${params.toString()}`, {
-      headers: this.headers,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/files/${fileKey}/nodes?${params.toString()}`,
+      {
+        headers: this.headers,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Figma API error: ${response.status} ${response.statusText}`);
@@ -187,11 +195,15 @@ class FigmaClient {
     return response.json() as Promise<{ comments: FigmaComment[] }>;
   }
 
-  async postComment(fileKey: string, message: string, clientMeta: {
-    x?: number;
-    y?: number;
-    node_id?: string[];
-  } = {}): Promise<{ comment: FigmaComment }> {
+  async postComment(
+    fileKey: string,
+    message: string,
+    clientMeta: {
+      x?: number;
+      y?: number;
+      node_id?: string[];
+    } = {}
+  ): Promise<{ comment: FigmaComment }> {
     const response = await fetch(`${this.baseUrl}/files/${fileKey}/comments`, {
       method: 'POST',
       headers: this.headers,
@@ -220,9 +232,19 @@ class FigmaClient {
     return response.json() as Promise<{ projects: FigmaProject[] }>;
   }
 
-  async getProjectFiles(projectId: string, options: {
-    branch_data?: boolean;
-  } = {}): Promise<{ files: Array<{ key: string; name: string; thumbnail_url: string; last_modified: string }> }> {
+  async getProjectFiles(
+    projectId: string,
+    options: {
+      branch_data?: boolean;
+    } = {}
+  ): Promise<{
+    files: Array<{
+      key: string;
+      name: string;
+      thumbnail_url: string;
+      last_modified: string;
+    }>;
+  }> {
     const params = new URLSearchParams();
     if (options.branch_data) params.append('branch_data', options.branch_data.toString());
 
@@ -233,7 +255,14 @@ class FigmaClient {
       throw new Error(`Figma API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<{ files: Array<{ key: string; name: string; thumbnail_url: string; last_modified: string }> }>;
+    return response.json() as Promise<{
+      files: Array<{
+        key: string;
+        name: string;
+        thumbnail_url: string;
+        last_modified: string;
+      }>;
+    }>;
   }
 
   async getMe(): Promise<FigmaUser> {
@@ -248,26 +277,36 @@ class FigmaClient {
     return response.json() as Promise<FigmaUser>;
   }
 
-  async getImage(fileKey: string, nodeIds: string[], options: {
-    scale?: number;
-    format?: 'jpg' | 'png' | 'svg' | 'pdf';
-    svg_include_id?: boolean;
-    svg_simplify_stroke?: boolean;
-    use_absolute_bounds?: boolean;
-    version?: string;
-  } = {}): Promise<{ images: Record<string, string | null> }> {
+  async getImage(
+    fileKey: string,
+    nodeIds: string[],
+    options: {
+      scale?: number;
+      format?: 'jpg' | 'png' | 'svg' | 'pdf';
+      svg_include_id?: boolean;
+      svg_simplify_stroke?: boolean;
+      use_absolute_bounds?: boolean;
+      version?: string;
+    } = {}
+  ): Promise<{ images: Record<string, string | null> }> {
     const params = new URLSearchParams();
     params.append('ids', nodeIds.join(','));
     if (options.scale) params.append('scale', options.scale.toString());
     if (options.format) params.append('format', options.format);
-    if (options.svg_include_id) params.append('svg_include_id', options.svg_include_id.toString());
-    if (options.svg_simplify_stroke) params.append('svg_simplify_stroke', options.svg_simplify_stroke.toString());
-    if (options.use_absolute_bounds) params.append('use_absolute_bounds', options.use_absolute_bounds.toString());
+    if (options.svg_include_id)
+      params.append('svg_include_id', options.svg_include_id.toString());
+    if (options.svg_simplify_stroke)
+      params.append('svg_simplify_stroke', options.svg_simplify_stroke.toString());
+    if (options.use_absolute_bounds)
+      params.append('use_absolute_bounds', options.use_absolute_bounds.toString());
     if (options.version) params.append('version', options.version);
 
-    const response = await fetch(`${this.baseUrl}/images/${fileKey}?${params.toString()}`, {
-      headers: this.headers,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/images/${fileKey}?${params.toString()}`,
+      {
+        headers: this.headers,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Figma API error: ${response.status} ${response.statusText}`);
@@ -276,10 +315,13 @@ class FigmaClient {
     return response.json() as Promise<{ images: Record<string, string | null> }>;
   }
 
-  async getTeamComponents(teamId: string, options: {
-    page_size?: number;
-    after?: string;
-  } = {}): Promise<{
+  async getTeamComponents(
+    teamId: string,
+    options: {
+      page_size?: number;
+      after?: string;
+    } = {}
+  ): Promise<{
     components: FigmaComponent[];
     pagination?: { after?: string; before?: string };
   }> {
@@ -300,10 +342,13 @@ class FigmaClient {
     }>;
   }
 
-  async getTeamStyles(teamId: string, options: {
-    page_size?: number;
-    after?: string;
-  } = {}): Promise<{
+  async getTeamStyles(
+    teamId: string,
+    options: {
+      page_size?: number;
+      after?: string;
+    } = {}
+  ): Promise<{
     styles: FigmaStyle[];
     pagination?: { after?: string; before?: string };
   }> {
@@ -371,13 +416,20 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
   tools: (tool) => ({
     GET_FILE: tool({
       name: 'figma_get_file',
-      description: 'Get detailed information about a Figma file including its document tree, components, and styles',
+      description:
+        'Get detailed information about a Figma file including its document tree, components, and styles',
       schema: z.object({
         fileKey: z.string().describe('The Figma file key from the file URL'),
         version: z.string().optional().describe('Specific version ID to retrieve'),
         nodeIds: z.array(z.string()).optional().describe('Specific node IDs to retrieve'),
-        depth: z.number().optional().describe('How deep to traverse the document tree (default: 1)'),
-        geometry: z.enum(['paths', 'bounds']).optional().describe('Geometry format to return'),
+        depth: z
+          .number()
+          .optional()
+          .describe('How deep to traverse the document tree (default: 1)'),
+        geometry: z
+          .enum(['paths', 'bounds'])
+          .optional()
+          .describe('Geometry format to return'),
         pluginData: z.string().optional().describe('Plugin data to retrieve'),
         branchData: z.boolean().optional().describe('Whether to include branch data'),
       }),
@@ -407,7 +459,10 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
         nodeIds: z.array(z.string()).describe('Array of node IDs to retrieve'),
         version: z.string().optional().describe('Specific version ID to retrieve'),
         depth: z.number().optional().describe('How deep to traverse each node tree'),
-        geometry: z.enum(['paths', 'bounds']).optional().describe('Geometry format to return'),
+        geometry: z
+          .enum(['paths', 'bounds'])
+          .optional()
+          .describe('Geometry format to return'),
         pluginData: z.string().optional().describe('Plugin data to retrieve'),
       }),
       handler: async (args, context) => {
@@ -451,7 +506,10 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
         message: z.string().describe('The comment message text'),
         x: z.number().optional().describe('X coordinate for positioning the comment'),
         y: z.number().optional().describe('Y coordinate for positioning the comment'),
-        nodeIds: z.array(z.string()).optional().describe('Node IDs to attach the comment to'),
+        nodeIds: z
+          .array(z.string())
+          .optional()
+          .describe('Node IDs to attach the comment to'),
       }),
       handler: async (args, context) => {
         try {
@@ -527,10 +585,19 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
         fileKey: z.string().describe('The Figma file key from the file URL'),
         nodeIds: z.array(z.string()).describe('Array of node IDs to render as images'),
         scale: z.number().optional().describe('Scale factor for rasterized output (1-4)'),
-        format: z.enum(['jpg', 'png', 'svg', 'pdf']).default('png').describe('Image format'),
+        format: z
+          .enum(['jpg', 'png', 'svg', 'pdf'])
+          .default('png')
+          .describe('Image format'),
         svgIncludeId: z.boolean().optional().describe('Include node IDs in SVG output'),
-        svgSimplifyStroke: z.boolean().optional().describe('Simplify strokes in SVG output'),
-        useAbsoluteBounds: z.boolean().optional().describe('Use absolute bounds instead of relative'),
+        svgSimplifyStroke: z
+          .boolean()
+          .optional()
+          .describe('Simplify strokes in SVG output'),
+        useAbsoluteBounds: z
+          .boolean()
+          .optional()
+          .describe('Use absolute bounds instead of relative'),
         version: z.string().optional().describe('Specific version ID to render'),
       }),
       handler: async (args, context) => {
@@ -556,7 +623,10 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
       description: 'Get published components from a team library',
       schema: z.object({
         teamId: z.string().describe('The Figma team ID'),
-        pageSize: z.number().optional().describe('Number of components to return per page'),
+        pageSize: z
+          .number()
+          .optional()
+          .describe('Number of components to return per page'),
         after: z.string().optional().describe('Cursor for pagination'),
       }),
       handler: async (args, context) => {
