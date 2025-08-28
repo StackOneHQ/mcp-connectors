@@ -27,9 +27,7 @@ const customLogger = (
 };
 
 const getConnectorByKey = (connectorKey: string): MCPConnectorConfig | null => {
-  const connector = Connectors.find(
-    (c) => c.key === connectorKey
-  ) as MCPConnectorConfig;
+  const connector = Connectors.find((c) => c.key === connectorKey) as MCPConnectorConfig;
   return connector || null;
 };
 
@@ -150,8 +148,7 @@ const startServer = async (): Promise<{ app: Hono; port: number }> => {
     console.log('');
     console.log(`Available connectors (${Connectors.length}):`);
     console.log(
-      Connectors
-        .map((c) => c.key)
+      Connectors.map((c) => c.key)
         .sort()
         .join(', ')
     );
