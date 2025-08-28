@@ -178,7 +178,8 @@ describe('#NotionConnector', () => {
       it('creates page successfully', async () => {
         server.use(
           http.post('https://api.notion.com/v1/pages', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.parent.page_id).toBe('parent-123');
             expect(body.properties.title.title[0].text.content).toBe('New Page');
@@ -217,7 +218,8 @@ describe('#NotionConnector', () => {
       it('creates page with children', async () => {
         server.use(
           http.post('https://api.notion.com/v1/pages', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.children).toHaveLength(2);
             expect(body.children[0].type).toBe('heading_1');
@@ -272,7 +274,8 @@ describe('#NotionConnector', () => {
       it('returns filtered search results', async () => {
         server.use(
           http.post('https://api.notion.com/v1/search', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.query).toBe('test query');
             expect(body.filter.value).toBe('page');
@@ -351,7 +354,8 @@ describe('#NotionConnector', () => {
           http.post(
             'https://api.notion.com/v1/databases/db-123/query',
             async ({ request }) => {
-              const body = (await request.json()) as unknown;
+              // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+              const body = (await request.json()) as any;
 
               expect(body.filter).toBeDefined();
               expect(body.sorts).toHaveLength(1);
@@ -403,7 +407,8 @@ describe('#NotionConnector', () => {
       it('creates database with properties', async () => {
         server.use(
           http.post('https://api.notion.com/v1/databases', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.parent.page_id).toBe('parent-page-123');
             expect(body.title[0].text.content).toBe('Tasks Database');
@@ -460,7 +465,8 @@ describe('#NotionConnector', () => {
           http.patch(
             'https://api.notion.com/v1/blocks/block-123/children',
             async ({ request }) => {
-              const body = (await request.json()) as unknown;
+              // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+              const body = (await request.json()) as any;
 
               expect(body.children).toHaveLength(3);
               expect(body.children[0].type).toBe('heading_2');
@@ -469,8 +475,9 @@ describe('#NotionConnector', () => {
 
               return HttpResponse.json({
                 object: 'list',
-                results: (body as { children: unknown[] }).children.map(
-                  (child: unknown, index: number) => ({
+                results: body.children.map(
+                  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+                  (child: any, index: number) => ({
                     ...child,
                     id: `block-${index}`,
                     object: 'block',
@@ -522,7 +529,8 @@ describe('#NotionConnector', () => {
       it('updates page successfully', async () => {
         server.use(
           http.patch('https://api.notion.com/v1/pages/page-123', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.properties.title.title[0].text.content).toBe('Updated Title');
             expect(body.archived).toBe(false);
@@ -567,7 +575,8 @@ describe('#NotionConnector', () => {
       it('creates comment on page', async () => {
         server.use(
           http.post('https://api.notion.com/v1/comments', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.parent.page_id).toBe('page-123');
             expect(body.rich_text[0].text.content).toBe('This is a comment');
@@ -607,7 +616,8 @@ describe('#NotionConnector', () => {
       it('adds comment to thread', async () => {
         server.use(
           http.post('https://api.notion.com/v1/comments', async ({ request }) => {
-            const body = (await request.json()) as unknown;
+            // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            const body = (await request.json()) as any;
 
             expect(body.discussion_id).toBe('discussion-123');
             expect(body.rich_text[0].text.content).toBe('Reply to thread');
