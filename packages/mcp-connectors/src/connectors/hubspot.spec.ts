@@ -1,9 +1,9 @@
-import { describe, expect, it, beforeAll, afterAll, afterEach } from 'vitest';
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { HubSpotConnectorConfig } from './hubspot';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { HubSpotConnectorConfig } from './hubspot';
 
 const HUBSPOT_API_BASE = 'https://api.hubapi.com';
 
@@ -46,10 +46,7 @@ describe('#HubSpotConnector', () => {
           credentials: { apiKey: 'test-api-key' },
         });
 
-        const actual = await tool.handler(
-          { limit: 10 },
-          mockContext
-        );
+        const actual = await tool.handler({ limit: 10 }, mockContext);
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -59,7 +56,7 @@ describe('#HubSpotConnector', () => {
       describe('and pagination is provided', () => {
         it('includes pagination parameters', async () => {
           const mockContacts = { results: [], paging: {} };
-          
+
           let capturedUrl: URL | undefined;
           server.use(
             http.get(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts`, ({ request }) => {
@@ -73,10 +70,7 @@ describe('#HubSpotConnector', () => {
             credentials: { apiKey: 'test-api-key' },
           });
 
-          await tool.handler(
-            { limit: 20, after: 'cursor123' },
-            mockContext
-          );
+          await tool.handler({ limit: 20, after: 'cursor123' }, mockContext);
 
           expect(capturedUrl?.searchParams.get('limit')).toBe('20');
           expect(capturedUrl?.searchParams.get('after')).toBe('cursor123');
@@ -86,7 +80,7 @@ describe('#HubSpotConnector', () => {
       describe('and properties are specified', () => {
         it('includes property parameters', async () => {
           const mockContacts = { results: [], paging: {} };
-          
+
           let capturedUrl: URL | undefined;
           server.use(
             http.get(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts`, ({ request }) => {
@@ -159,10 +153,7 @@ describe('#HubSpotConnector', () => {
           credentials: { apiKey: 'test-api-key' },
         });
 
-        const actual = await tool.handler(
-          { limit: 10 },
-          mockContext
-        );
+        const actual = await tool.handler({ limit: 10 }, mockContext);
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -172,7 +163,7 @@ describe('#HubSpotConnector', () => {
       describe('and pagination is provided', () => {
         it('includes pagination parameters', async () => {
           const mockDeals = { results: [], paging: {} };
-          
+
           let capturedUrl: URL | undefined;
           server.use(
             http.get(`${HUBSPOT_API_BASE}/crm/v3/objects/deals`, ({ request }) => {
@@ -186,10 +177,7 @@ describe('#HubSpotConnector', () => {
             credentials: { apiKey: 'test-api-key' },
           });
 
-          await tool.handler(
-            { limit: 50, after: 'next-page' },
-            mockContext
-          );
+          await tool.handler({ limit: 50, after: 'next-page' }, mockContext);
 
           expect(capturedUrl?.searchParams.get('limit')).toBe('50');
           expect(capturedUrl?.searchParams.get('after')).toBe('next-page');
@@ -258,10 +246,13 @@ describe('#HubSpotConnector', () => {
         it('includes all properties in the request', async () => {
           let capturedBody: Record<string, unknown> = {};
           server.use(
-            http.post(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts`, async ({ request }) => {
-              capturedBody = await request.json() as Record<string, unknown>;
-              return HttpResponse.json({ id: '123', properties: {} });
-            })
+            http.post(
+              `${HUBSPOT_API_BASE}/crm/v3/objects/contacts`,
+              async ({ request }) => {
+                capturedBody = (await request.json()) as Record<string, unknown>;
+                return HttpResponse.json({ id: '123', properties: {} });
+              }
+            )
           );
 
           const tool = HubSpotConnectorConfig.tools.CREATE_CONTACT as MCPToolDefinition;
@@ -357,7 +348,7 @@ describe('#HubSpotConnector', () => {
           let capturedBody: Record<string, unknown> = {};
           server.use(
             http.post(`${HUBSPOT_API_BASE}/crm/v3/objects/deals`, async ({ request }) => {
-              capturedBody = await request.json() as Record<string, unknown>;
+              capturedBody = (await request.json()) as Record<string, unknown>;
               return HttpResponse.json({ id: '456', properties: {} });
             })
           );
@@ -407,10 +398,7 @@ describe('#HubSpotConnector', () => {
           credentials: { apiKey: 'test-api-key' },
         });
 
-        const result = await tool.handler(
-          { dealname: 'Test Deal' },
-          mockContext
-        );
+        const result = await tool.handler({ dealname: 'Test Deal' }, mockContext);
         expect(result).toContain('Failed to create deal');
         expect(result).toContain('400');
       });

@@ -8,7 +8,9 @@ export interface MockContextOptions {
   cache?: Record<string, unknown> | null;
 }
 
-export function createMockConnectorContext(options?: MockContextOptions): ConnectorContext {
+export function createMockConnectorContext(
+  options?: MockContextOptions
+): ConnectorContext {
   return {
     getCredentials: vi.fn().mockResolvedValue(options?.credentials ?? {}),
     getSetup: vi.fn().mockResolvedValue(options?.setup ?? {}),
