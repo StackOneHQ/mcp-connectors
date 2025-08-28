@@ -11,7 +11,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const BASE = 'https://chat.beeper.com';
+const BASE = 'http://localhost:23373';
 
 describe('#BeeperConnector', () => {
   describe('.WHO_AM_I', () => {
@@ -84,7 +84,7 @@ describe('#BeeperConnector', () => {
         server.use(
           http.post(
             new RegExp(
-              '^https://chat\\.beeper\\.com/_matrix/client/v3/rooms/!room%3Abeeper\\.com/send/m\\.room\\.message/.+'
+              '^http://localhost:23373/_matrix/client/v3/rooms/!room%3Abeeper\\.com/send/m\\.room\\.message/.+'
             ),
             () => {
               return HttpResponse.json({ event_id: '$event123' });

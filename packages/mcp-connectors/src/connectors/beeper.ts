@@ -32,8 +32,8 @@ class BeeperMatrixClient {
   private headers: { Authorization: string; 'Content-Type': string };
 
   constructor(accessToken: string, baseUrl?: string) {
-    // Default Beeper homeserver base if not provided
-    this.baseUrl = (baseUrl || 'https://chat.beeper.com').replace(/\/$/, '');
+    // Default to local Beeper API if not provided
+    this.baseUrl = (baseUrl || 'http://localhost:23373').replace(/\/$/, '');
     this.headers = {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -143,7 +143,9 @@ export const BeeperConnectorConfig = mcpConnectorConfig({
       .string()
       .url()
       .optional()
-      .describe('Optional Beeper homeserver base URL (default https://chat.beeper.com)'),
+      .describe(
+        'Optional Beeper API base URL. Defaults to local Beeper at http://localhost:23373'
+      ),
   }),
   setup: z.object({}),
   examplePrompt:
