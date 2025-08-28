@@ -189,19 +189,73 @@ interface StravaAthleteStats {
 }
 
 class StravaClient {
-  private headers: { Authorization: string; Accept: string };
+  private credentials: StravaOAuth2Credentials;
   private baseUrl = 'https://www.strava.com/api/v3';
 
-  constructor(accessToken: string) {
-    this.headers = {
-      Authorization: `Bearer ${accessToken}`,
+  constructor(credentials: StravaOAuth2Credentials) {
+    this.credentials = credentials;
+  }
+
+  private getHeaders(): { Authorization: string; Accept: string } {
+    return {
+      Authorization: `Bearer ${this.credentials.accessToken}`,
       Accept: 'application/json',
     };
   }
 
+  private async refreshTokenIfNeeded(): Promise<void> {
+    const expiresAt = new Date(this.credentials.expiresAt);
+    const now = new Date();
+
+    // Refresh if token expires in the next 5 minutes
+    if (expiresAt.getTime() - now.getTime() < 5 * 60 * 1000) {
+      await this.refreshAccessToken();
+    }
+  }
+
+  private async refreshAccessToken(): Promise<void> {
+    try {
+      const response = await fetch(STRAVA_OAUTH2_CONFIG.tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: this.credentials.clientId,
+          client_secret: this.credentials.clientSecret,
+          grant_type: 'refresh_token',
+          refresh_token: this.credentials.refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Token refresh failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const tokenData = await response.json();
+
+      // Update credentials with new token data
+      this.credentials.accessToken = tokenData.access_token;
+      this.credentials.refreshToken =
+        tokenData.refresh_token || this.credentials.refreshToken;
+      this.credentials.expiresAt = new Date(
+        Date.now() + tokenData.expires_in * 1000
+      ).toISOString();
+
+      console.log('✅ Strava access token refreshed successfully');
+    } catch (error) {
+      console.error('❌ Failed to refresh Strava access token:', error);
+      throw error;
+    }
+  }
+
   async getAthlete(): Promise<StravaAthlete> {
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(`${this.baseUrl}/athlete`, {
-      headers: this.headers,
+      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -212,8 +266,10 @@ class StravaClient {
   }
 
   async getAthleteStats(athleteId: number): Promise<StravaAthleteStats> {
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(`${this.baseUrl}/athletes/${athleteId}/stats`, {
-      headers: this.headers,
+      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -229,16 +285,22 @@ class StravaClient {
     page = 1,
     perPage = 30
   ): Promise<StravaActivity[]> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      per_page: perPage.toString(),
-    });
+    const params = new URLSearchParams();
 
+    if (page !== 1) params.set('page', page.toString());
+    if (perPage !== 30) params.set('per_page', perPage.toString());
     if (before) params.set('before', before.toString());
     if (after) params.set('after', after.toString());
 
-    const response = await fetch(`${this.baseUrl}/athlete/activities?${params}`, {
-      headers: this.headers,
+    const queryString = params.toString();
+    const url = queryString
+      ? `${this.baseUrl}/athlete/activities?${queryString}`
+      : `${this.baseUrl}/athlete/activities`;
+
+    await this.refreshTokenIfNeeded();
+
+    const response = await fetch(url, {
+      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -249,8 +311,10 @@ class StravaClient {
   }
 
   async getActivity(activityId: number): Promise<StravaActivity> {
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(`${this.baseUrl}/activities/${activityId}`, {
-      headers: this.headers,
+      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -265,10 +329,12 @@ class StravaClient {
     keys: string[] = ['time', 'distance', 'latlng', 'altitude', 'heartrate', 'watts']
   ): Promise<StravaActivityStreams> {
     const keysString = keys.join(',');
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(
       `${this.baseUrl}/activities/${activityId}/streams?keys=${keysString}&key_by_type=true`,
       {
-        headers: this.headers,
+        headers: this.getHeaders(),
       }
     );
 
@@ -280,8 +346,10 @@ class StravaClient {
   }
 
   async getSegment(segmentId: number): Promise<StravaSegment> {
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(`${this.baseUrl}/segments/${segmentId}`, {
-      headers: this.headers,
+      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -298,10 +366,12 @@ class StravaClient {
     maxCategory = 5
   ): Promise<{ segments: StravaSegment[] }> {
     const boundsString = `${bounds.sw[0]},${bounds.sw[1]},${bounds.ne[0]},${bounds.ne[1]}`;
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(
       `${this.baseUrl}/segments/explore?bounds=${boundsString}&activity_type=${activityType}&min_cat=${minCategory}&max_cat=${maxCategory}`,
       {
-        headers: this.headers,
+        headers: this.getHeaders(),
       }
     );
 
@@ -323,10 +393,12 @@ class StravaClient {
       id = athlete.id;
     }
 
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(
       `${this.baseUrl}/athletes/${id}/routes?page=${page}&per_page=${perPage}`,
       {
-        headers: this.headers,
+        headers: this.getHeaders(),
       }
     );
 
@@ -338,8 +410,10 @@ class StravaClient {
   }
 
   async getRoute(routeId: number): Promise<StravaRoute> {
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(`${this.baseUrl}/routes/${routeId}`, {
-      headers: this.headers,
+      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -350,10 +424,12 @@ class StravaClient {
   }
 
   async getStarredSegments(page = 1, perPage = 30): Promise<StravaSegment[]> {
+    await this.refreshTokenIfNeeded();
+
     const response = await fetch(
       `${this.baseUrl}/segments/starred?page=${page}&per_page=${perPage}`,
       {
-        headers: this.headers,
+        headers: this.getHeaders(),
       }
     );
 
@@ -365,17 +441,35 @@ class StravaClient {
   }
 }
 
+// Strava OAuth2 Configuration
+const STRAVA_OAUTH2_CONFIG = {
+  tokenUrl: 'https://www.strava.com/oauth/token',
+};
+
+// OAuth2 credentials schema for Strava
+const stravaOAuth2Schema = z.object({
+  accessToken: z.string().describe('OAuth2 access token'),
+  refreshToken: z.string().describe('OAuth2 refresh token'),
+  expiresAt: z.string().describe('Token expiration timestamp'),
+  tokenType: z.string().default('Bearer').describe('Token type'),
+  clientId: z.string().describe('OAuth2 client ID'),
+  clientSecret: z.string().describe('OAuth2 client secret'),
+});
+
+type StravaOAuth2Credentials = z.infer<typeof stravaOAuth2Schema>;
+
 export const StravaConnectorConfig = mcpConnectorConfig({
   name: 'Strava',
   key: 'strava',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/strava/filled/svg',
   credentials: z.object({
-    accessToken: z
-      .string()
-      .describe(
-        'Strava Access Token obtained through OAuth 2.0 flow :: 1234567890abcdef :: https://developers.strava.com/docs/getting-started'
-      ),
+    accessToken: z.string().describe('Strava OAuth2 Access Token'),
+    refreshToken: z.string().describe('Strava OAuth2 Refresh Token'),
+    expiresAt: z.string().describe('Token expiration timestamp (ISO string)'),
+    tokenType: z.string().describe('Token type'),
+    clientId: z.string().describe('Strava OAuth2 Client ID'),
+    clientSecret: z.string().describe('Strava OAuth2 Client Secret'),
   }),
   setup: z.object({}),
   examplePrompt:
@@ -387,8 +481,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       schema: z.object({}),
       handler: async (_args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const athlete = await client.getAthlete();
           return JSON.stringify(athlete, null, 2);
         } catch (error) {
@@ -407,8 +501,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
 
           let athleteId = args.athleteId;
           if (!athleteId) {
@@ -443,8 +537,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const activities = await client.getActivities(
             args.before,
             args.after,
@@ -465,8 +559,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const activity = await client.getActivity(args.activityId);
           return JSON.stringify(activity, null, 2);
         } catch (error) {
@@ -489,8 +583,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const streams = await client.getActivityStreams(args.activityId, args.keys);
           return JSON.stringify(streams, null, 2);
         } catch (error) {
@@ -506,8 +600,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const segment = await client.getSegment(args.segmentId);
           return JSON.stringify(segment, null, 2);
         } catch (error) {
@@ -544,8 +638,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const result = await client.exploreSegments(
             args.bounds,
             args.activityType,
@@ -571,8 +665,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const routes = await client.getAthleteRoutes(
             args.athleteId,
             args.page,
@@ -592,8 +686,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const route = await client.getRoute(args.routeId);
           return JSON.stringify(route, null, 2);
         } catch (error) {
@@ -610,8 +704,8 @@ export const StravaConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { accessToken } = await context.getCredentials();
-          const client = new StravaClient(accessToken);
+          const credentials = await context.getCredentials();
+          const client = new StravaClient(credentials);
           const segments = await client.getStarredSegments(args.page, args.perPage);
           return JSON.stringify(segments, null, 2);
         } catch (error) {
