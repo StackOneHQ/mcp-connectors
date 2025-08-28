@@ -15,6 +15,7 @@ import { FalConnectorConfig } from './connectors/fal';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
+import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { HiBobConnectorConfig } from './connectors/hibob';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
@@ -58,6 +59,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   FalConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
+  GoogleMapsConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
@@ -101,6 +103,7 @@ export {
   FalConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
+  GoogleMapsConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
