@@ -1,0 +1,1 @@
+export { SSMProvider } from './ssm';

@@ -1,5 +1,6 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
+import { SecretResolver, SSMProvider } from '../secrets';
 
 // Jira API types
 interface JiraUser {
@@ -715,6 +716,22 @@ class JiraClient {
   }
 }
 
+// Create a global resolver instance with SSM provider
+const secretResolver = new SecretResolver();
+secretResolver.registerProvider(new SSMProvider());
+
+async function resolveJiraCredentials(credentials: {
+  baseUrl: string;
+  email: string;
+  apiToken: string;
+}): Promise<{ baseUrl: string; email: string; apiToken: string }> {
+  return {
+    baseUrl: credentials.baseUrl,
+    email: credentials.email,
+    apiToken: await secretResolver.resolve(credentials.apiToken),
+  };
+}
+
 export const JiraConnectorConfig = mcpConnectorConfig({
   name: 'Jira',
   key: 'jira',
@@ -749,7 +766,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.searchIssues(args.searchString);
           return JSON.stringify(result, null, 2);
@@ -766,7 +784,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.getEpicChildren(args.epicKey);
           return JSON.stringify(result, null, 2);
@@ -784,7 +803,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.getIssueWithComments(args.issueId);
           return JSON.stringify(result, null, 2);
@@ -812,7 +832,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.createIssue(
             args.projectKey,
@@ -836,7 +857,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           await client.updateIssue(args.issueKey, args.fields);
           return JSON.stringify(
@@ -857,7 +879,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.getTransitions(args.issueKey);
           return JSON.stringify(result, null, 2);
@@ -879,7 +902,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           await client.transitionIssue(args.issueKey, args.transitionId, args.comment);
           return JSON.stringify(
@@ -904,7 +928,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.addAttachment(
             args.issueKey,
@@ -936,7 +961,8 @@ export const JiraConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
+          const credentials = await context.getCredentials();
+          const { baseUrl, email, apiToken } = await resolveJiraCredentials(credentials);
           const client = new JiraClient(baseUrl, email, apiToken);
           const result = await client.addComment(args.issueIdOrKey, args.body);
           return JSON.stringify(result, null, 2);
