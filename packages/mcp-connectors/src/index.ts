@@ -38,6 +38,7 @@ import { SupabaseConnectorConfig } from './connectors/supabase';
 import { TestConnectorConfig } from './connectors/test';
 import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
+import { TodoListConnectorConfig } from './connectors/todolist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
@@ -80,6 +81,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   SupabaseConnectorConfig,
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
+  TodoListConnectorConfig,
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
@@ -123,6 +125,7 @@ export {
   SupabaseConnectorConfig,
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
+  TodoListConnectorConfig,
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
