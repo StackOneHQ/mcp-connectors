@@ -39,20 +39,6 @@ interface InterventionRecord {
   userState: string;
 }
 
-interface GrandioseClaimHistoryItem {
-  timestamp: number;
-  statement: string;
-  claims: Array<{ pattern: string; match: string; severity: number }>;
-  severity: number;
-}
-
-interface CrisisResourceHistoryItem {
-  timestamp: number;
-  urgencyLevel: string;
-  concerns?: string[];
-  location?: string;
-}
-
 // =============================================================================
 // ANALYSIS ALGORITHMS & HELPER FUNCTIONS
 // =============================================================================
