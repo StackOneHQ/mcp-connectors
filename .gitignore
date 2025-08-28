@@ -35,3 +35,5 @@ bun-debug.log*
 *.log
 
 .npmrc
+
+logs/
