@@ -16,7 +16,6 @@ import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { HiBobConnectorConfig } from './connectors/hibob';
-import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
@@ -26,6 +25,7 @@ import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
 import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
+import { PokemonConnectorConfig } from './connectors/pokemon';
 import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
@@ -59,7 +59,6 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
-  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -71,6 +70,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PokemonConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
@@ -102,7 +102,6 @@ export {
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
-  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -114,6 +113,7 @@ export {
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PokemonConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
