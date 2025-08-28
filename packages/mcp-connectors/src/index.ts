@@ -35,6 +35,7 @@ import { StackOneConnectorConfig } from './connectors/stackone';
 import { StravaConnectorConfig } from './connectors/strava';
 import { SupabaseConnectorConfig } from './connectors/supabase';
 import { TestConnectorConfig } from './connectors/test';
+import { TFLConnectorConfig } from './connectors/tfl';
 import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
@@ -76,6 +77,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   SlackConnectorConfig,
   StravaConnectorConfig,
   SupabaseConnectorConfig,
+  TFLConnectorConfig,
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
@@ -118,6 +120,7 @@ export {
   SlackConnectorConfig,
   StravaConnectorConfig,
   SupabaseConnectorConfig,
+  TFLConnectorConfig,
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
