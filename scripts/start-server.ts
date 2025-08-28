@@ -4,7 +4,7 @@ import { StreamableHTTPTransport } from '@hono/mcp';
 import { serve } from '@hono/node-server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ConnectorContext, MCPConnectorConfig } from '@stackone/mcp-config-types';
-import { allConnectors } from '@stackone/mcp-connectors';
+import { Connectors } from '@stackone/mcp-connectors';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 
@@ -27,7 +27,7 @@ const customLogger = (
 };
 
 const getConnectorByKey = (connectorKey: string): MCPConnectorConfig | null => {
-  const connector = allConnectors.find(
+  const connector = Connectors.find(
     (c) => c.key === connectorKey
   ) as MCPConnectorConfig;
   return connector || null;
@@ -82,8 +82,8 @@ const printUsage = () => {
   console.log('  --port         Port to run server on (default: 3000)');
   console.log('  --help         Show this help message');
   console.log('');
-  console.log(`Available connectors (${allConnectors.length}):`);
-  const sortedConnectors = allConnectors.map((c) => c.key).sort();
+  console.log(`Available connectors (${Connectors.length}):`);
+  const sortedConnectors = Connectors.map((c) => c.key).sort();
   console.log(sortedConnectors.join(', '));
   console.log('');
   console.log('Examples:');
@@ -148,9 +148,9 @@ const startServer = async (): Promise<{ app: Hono; port: number }> => {
   if (!connectorConfig) {
     console.error(`❌ Connector "${connectorKey}" not found`);
     console.log('');
-    console.log(`Available connectors (${allConnectors.length}):`);
+    console.log(`Available connectors (${Connectors.length}):`);
     console.log(
-      allConnectors
+      Connectors
         .map((c) => c.key)
         .sort()
         .join(', ')
