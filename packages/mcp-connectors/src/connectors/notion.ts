@@ -4,7 +4,12 @@ import { z } from 'zod';
 const NOTION_API_VERSION = '2022-06-28';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 
-const notionRequest = async (path: string, token: string, method = 'GET', body?: unknown) => {
+const notionRequest = async (
+  path: string,
+  token: string,
+  method = 'GET',
+  body?: unknown
+) => {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     'Notion-Version': NOTION_API_VERSION,

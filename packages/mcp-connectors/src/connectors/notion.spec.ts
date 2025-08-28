@@ -469,11 +469,13 @@ describe('#NotionConnector', () => {
 
               return HttpResponse.json({
                 object: 'list',
-                results: (body as { children: unknown[] }).children.map((child: unknown, index: number) => ({
-                  ...child,
-                  id: `block-${index}`,
-                  object: 'block',
-                })),
+                results: (body as { children: unknown[] }).children.map(
+                  (child: unknown, index: number) => ({
+                    ...child,
+                    id: `block-${index}`,
+                    object: 'block',
+                  })
+                ),
               });
             }
           )
