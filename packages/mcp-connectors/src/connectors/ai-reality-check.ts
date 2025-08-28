@@ -39,6 +39,23 @@ interface InterventionRecord {
   userState: string;
 }
 
+// Type definitions for data storage
+type GrandioseClaimHistory = Array<{
+  timestamp: number;
+  statement: string;
+  claims: Array<{ pattern: string; match: string; severity: number }>;
+  severity: number;
+}>;
+
+type InterventionHistory = Array<InterventionRecord>;
+
+type CrisisResourceHistory = Array<{
+  timestamp: number;
+  urgencyLevel: string;
+  concerns?: string[];
+  location?: string;
+}>;
+
 // =============================================================================
 // ANALYSIS ALGORITHMS & HELPER FUNCTIONS
 // =============================================================================
@@ -533,8 +550,6 @@ export const AIRealityCheckConnectorConfig = mcpConnectorConfig({
           .describe('Current user emotional state'),
       }),
       handler: async (args, context) => {
-        const _setup = await context.getSetup();
-
         const interventions = {
           gentle: {
             message:
@@ -813,20 +828,20 @@ export const AIRealityCheckConnectorConfig = mcpConnectorConfig({
 
         // Filter data by timeframe
         const recentInterventions = interventionHistory.filter(
-          (i) => i.timestamp > cutoff
+          (i: InterventionRecord) => i.timestamp > cutoff
         );
-        const recentClaims = grandioseClaimsHistory.filter((c) => c.timestamp > cutoff);
+        const recentClaims = grandioseClaimsHistory.filter((c: GrandioseClaimHistory[0]) => c.timestamp > cutoff);
         const recentCrisisHelp = crisisResourcesProvided.filter(
-          (r) => r.timestamp > cutoff
+          (r: CrisisResourceHistory[0]) => r.timestamp > cutoff
         );
 
         // Calculate metrics
         const avgRiskScore =
           recentClaims.length > 0
-            ? recentClaims.reduce((sum, c) => sum + c.severity, 0) / recentClaims.length
+            ? recentClaims.reduce((sum: number, c: GrandioseClaimHistory[0]) => sum + c.severity, 0) / recentClaims.length
             : 0;
 
-        const trendDirection = calculateTrend(recentClaims.map((c) => c.severity));
+        const trendDirection = calculateTrend(recentClaims.map((c: GrandioseClaimHistory[0]) => c.severity));
 
         const report = {
           timeframe: args.timeframe,
@@ -840,7 +855,7 @@ export const AIRealityCheckConnectorConfig = mcpConnectorConfig({
           },
           patterns: {
             mostCommonTriggers: getMostCommonTriggers(recentInterventions),
-            riskProgression: recentClaims.map((c) => ({
+            riskProgression: recentClaims.map((c: GrandioseClaimHistory[0]) => ({
               date: new Date(c.timestamp).toISOString().split('T')[0],
               severity: c.severity,
             })),
