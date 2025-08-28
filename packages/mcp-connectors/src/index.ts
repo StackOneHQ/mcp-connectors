@@ -3,6 +3,7 @@ import type { MCPConnectorConfig } from '@stackone/mcp-config-types';
 // Import all connectors for the array
 import { AsanaConnectorConfig } from './connectors/asana';
 import { AttioConnectorConfig } from './connectors/attio';
+import { AutumnConnectorConfig } from './connectors/autumn';
 import { AwsConnectorConfig } from './connectors/aws';
 import { DatadogConnectorConfig } from './connectors/datadog';
 import { DeelConnectorConfig } from './connectors/deel';
@@ -46,6 +47,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   StackOneConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
+  AutumnConnectorConfig,
   AwsConnectorConfig,
   DatadogConnectorConfig,
   DeelConnectorConfig,
@@ -88,6 +90,7 @@ export {
   StackOneConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
+  AutumnConnectorConfig,
   AwsConnectorConfig,
   DatadogConnectorConfig,
   DeelConnectorConfig,
