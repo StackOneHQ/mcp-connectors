@@ -1,7 +1,7 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { NotionConnectorConfig } from './notion';
 
@@ -32,7 +32,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.GET_ME as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler({}, mockContext);
         const parsed = JSON.parse(actual);
@@ -56,7 +58,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.GET_ME as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'invalid_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'invalid_token' });
 
         const actual = await tool.handler({}, mockContext);
 
@@ -92,7 +96,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.LIST_USERS as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           { page_size: 10, start_cursor: 'cursor-123' },
@@ -130,7 +136,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.GET_PAGE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler({ page_id: 'page-123' }, mockContext);
         const parsed = JSON.parse(actual);
@@ -153,7 +161,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.GET_PAGE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler({ page_id: 'invalid-id' }, mockContext);
 
@@ -168,8 +178,8 @@ describe('#NotionConnector', () => {
       it('creates page successfully', async () => {
         server.use(
           http.post('https://api.notion.com/v1/pages', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.parent.page_id).toBe('parent-123');
             expect(body.properties.title.title[0].text.content).toBe('New Page');
 
@@ -184,7 +194,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.CREATE_PAGE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -205,8 +217,8 @@ describe('#NotionConnector', () => {
       it('creates page with children', async () => {
         server.use(
           http.post('https://api.notion.com/v1/pages', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.children).toHaveLength(2);
             expect(body.children[0].type).toBe('heading_1');
             expect(body.children[1].type).toBe('paragraph');
@@ -222,7 +234,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.CREATE_PAGE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -258,8 +272,8 @@ describe('#NotionConnector', () => {
       it('returns filtered search results', async () => {
         server.use(
           http.post('https://api.notion.com/v1/search', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.query).toBe('test query');
             expect(body.filter.value).toBe('page');
             expect(body.page_size).toBe(20);
@@ -290,7 +304,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.SEARCH as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           { query: 'test query', filter: 'page', page_size: 20 },
@@ -316,7 +332,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.SEARCH as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler({ query: 'test' }, mockContext);
 
@@ -330,28 +348,39 @@ describe('#NotionConnector', () => {
     describe('when querying with filters and sorts', () => {
       it('returns filtered database entries', async () => {
         server.use(
-          http.post('https://api.notion.com/v1/databases/db-123/query', async ({ request }) => {
-            const body = await request.json() as any;
-            
-            expect(body.filter).toBeDefined();
-            expect(body.sorts).toHaveLength(1);
-            expect(body.sorts[0].direction).toBe('descending');
+          http.post(
+            'https://api.notion.com/v1/databases/db-123/query',
+            async ({ request }) => {
+              const body = (await request.json()) as any;
 
-            return HttpResponse.json({
-              object: 'list',
-              results: [
-                { id: 'entry-1', properties: { Name: { title: [{ text: { content: 'Entry 1' } }] } } },
-                { id: 'entry-2', properties: { Name: { title: [{ text: { content: 'Entry 2' } }] } } },
-              ],
-              has_more: false,
-              next_cursor: null,
-            });
-          })
+              expect(body.filter).toBeDefined();
+              expect(body.sorts).toHaveLength(1);
+              expect(body.sorts[0].direction).toBe('descending');
+
+              return HttpResponse.json({
+                object: 'list',
+                results: [
+                  {
+                    id: 'entry-1',
+                    properties: { Name: { title: [{ text: { content: 'Entry 1' } }] } },
+                  },
+                  {
+                    id: 'entry-2',
+                    properties: { Name: { title: [{ text: { content: 'Entry 2' } }] } },
+                  },
+                ],
+                has_more: false,
+                next_cursor: null,
+              });
+            }
+          )
         );
 
         const tool = NotionConnectorConfig.tools.QUERY_DATABASE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -374,8 +403,8 @@ describe('#NotionConnector', () => {
       it('creates database with properties', async () => {
         server.use(
           http.post('https://api.notion.com/v1/databases', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.parent.page_id).toBe('parent-page-123');
             expect(body.title[0].text.content).toBe('Tasks Database');
             expect(body.properties.Name).toBeDefined();
@@ -392,7 +421,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.CREATE_DATABASE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -426,28 +457,34 @@ describe('#NotionConnector', () => {
     describe('when appending blocks to a page', () => {
       it('adds blocks successfully', async () => {
         server.use(
-          http.patch('https://api.notion.com/v1/blocks/block-123/children', async ({ request }) => {
-            const body = await request.json() as any;
-            
-            expect(body.children).toHaveLength(3);
-            expect(body.children[0].type).toBe('heading_2');
-            expect(body.children[1].type).toBe('paragraph');
-            expect(body.children[2].type).toBe('divider');
+          http.patch(
+            'https://api.notion.com/v1/blocks/block-123/children',
+            async ({ request }) => {
+              const body = (await request.json()) as any;
 
-            return HttpResponse.json({
-              object: 'list',
-              results: body.children.map((child: any, index: number) => ({
-                ...child,
-                id: `block-${index}`,
-                object: 'block',
-              })),
-            });
-          })
+              expect(body.children).toHaveLength(3);
+              expect(body.children[0].type).toBe('heading_2');
+              expect(body.children[1].type).toBe('paragraph');
+              expect(body.children[2].type).toBe('divider');
+
+              return HttpResponse.json({
+                object: 'list',
+                results: body.children.map((child: any, index: number) => ({
+                  ...child,
+                  id: `block-${index}`,
+                  object: 'block',
+                })),
+              });
+            }
+          )
         );
 
-        const tool = NotionConnectorConfig.tools.APPEND_BLOCK_CHILDREN as MCPToolDefinition;
+        const tool = NotionConnectorConfig.tools
+          .APPEND_BLOCK_CHILDREN as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -483,8 +520,8 @@ describe('#NotionConnector', () => {
       it('updates page successfully', async () => {
         server.use(
           http.patch('https://api.notion.com/v1/pages/page-123', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.properties.title.title[0].text.content).toBe('Updated Title');
             expect(body.archived).toBe(false);
 
@@ -499,7 +536,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.UPDATE_PAGE as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -526,8 +565,8 @@ describe('#NotionConnector', () => {
       it('creates comment on page', async () => {
         server.use(
           http.post('https://api.notion.com/v1/comments', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.parent.page_id).toBe('page-123');
             expect(body.rich_text[0].text.content).toBe('This is a comment');
 
@@ -543,7 +582,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.CREATE_COMMENT as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {
@@ -564,8 +605,8 @@ describe('#NotionConnector', () => {
       it('adds comment to thread', async () => {
         server.use(
           http.post('https://api.notion.com/v1/comments', async ({ request }) => {
-            const body = await request.json() as any;
-            
+            const body = (await request.json()) as any;
+
             expect(body.discussion_id).toBe('discussion-123');
             expect(body.rich_text[0].text.content).toBe('Reply to thread');
 
@@ -580,7 +621,9 @@ describe('#NotionConnector', () => {
 
         const tool = NotionConnectorConfig.tools.CREATE_COMMENT as MCPToolDefinition;
         const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi.fn().mockResolvedValue({ token: 'secret_test_token' });
+        mockContext.getCredentials = vi
+          .fn()
+          .mockResolvedValue({ token: 'secret_test_token' });
 
         const actual = await tool.handler(
           {

@@ -1,13 +1,13 @@
-import express, { type Request, type Response } from 'express';
 import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { ConnectorContext, MCPConnectorConfig } from '@stackone/mcp-config-types';
 import { Connectors as allConnectors } from '@stackone/mcp-connectors';
+import express, { type Request, type Response } from 'express';
 import winston from 'winston';
-import path from 'node:path';
-import fs from 'node:fs';
 
 // Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
@@ -18,24 +18,18 @@ if (!fs.existsSync(logsDir)) {
 // Configure winston logger for file output
 const fileLogger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports: [
     // Write all logs to server.log
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'server.log'),
-      options: { flags: 'a' } // Append mode
+      options: { flags: 'a' }, // Append mode
     }),
     // Also log to console for development
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ]
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+    }),
+  ],
 });
 
 // Helper to format timestamps for logs
@@ -54,10 +48,10 @@ const customLogger = (
     debug: '🔍',
     warn: '⚠️',
   }[level];
-  
+
   // Console output for immediate feedback
   console.log(`[${timestamp}] ${prefix} ${message}`);
-  
+
   // File output for agent to read
   fileLogger.log(level, message, { ...meta, timestamp });
 };
@@ -130,7 +124,11 @@ const printUsage = () => {
   );
 };
 
-export const startServer = async (): Promise<{ app: express.Application; port: number; url: string }> => {
+export const startServer = async (): Promise<{
+  app: express.Application;
+  port: number;
+  url: string;
+}> => {
   const { values } = parseArgs({
     args: process.argv.slice(2),
     options: {
@@ -225,48 +223,53 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
     // Register tools
     for (const tool of Object.values(connectorConfig.tools)) {
       // @ts-expect-error - TODO: fix this
-      server.tool(tool.name, tool.description, tool.schema.shape, async (args: unknown) => {
-        const startTime = Date.now();
-        customLogger(`Tool invoked: ${tool.name}`, 'info', { tool: tool.name, args });
+      server.tool(
+        tool.name,
+        tool.description,
+        tool.schema.shape,
+        async (args: unknown) => {
+          const startTime = Date.now();
+          customLogger(`Tool invoked: ${tool.name}`, 'info', { tool: tool.name, args });
 
-        try {
-          const result = await tool.handler(args, context);
-          const duration = Date.now() - startTime;
-          customLogger(`Tool completed: ${tool.name} (${duration}ms)`, 'info', { 
-            tool: tool.name, 
-            duration 
-          });
+          try {
+            const result = await tool.handler(args, context);
+            const duration = Date.now() - startTime;
+            customLogger(`Tool completed: ${tool.name} (${duration}ms)`, 'info', {
+              tool: tool.name,
+              duration,
+            });
 
-          return {
-            content: [{ type: 'text' as const, text: String(result) }],
-          };
-        } catch (error) {
-          const duration = Date.now() - startTime;
-          customLogger(`Tool failed: ${tool.name} (${duration}ms)`, 'error', {
-            tool: tool.name,
-            duration,
-            error: error instanceof Error ? error.message : String(error)
-          });
+            return {
+              content: [{ type: 'text' as const, text: String(result) }],
+            };
+          } catch (error) {
+            const duration = Date.now() - startTime;
+            customLogger(`Tool failed: ${tool.name} (${duration}ms)`, 'error', {
+              tool: tool.name,
+              duration,
+              error: error instanceof Error ? error.message : String(error),
+            });
 
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-              },
-            ],
-          };
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                },
+              ],
+            };
+          }
         }
-      });
+      );
     }
 
     // Register resources
     for (const resource of Object.values(connectorConfig.resources)) {
       server.resource(resource.name, resource.uri, async (uri: URL) => {
         const startTime = Date.now();
-        customLogger(`Resource accessed: ${resource.name}`, 'info', { 
-          resource: resource.name, 
-          uri: uri.toString() 
+        customLogger(`Resource accessed: ${resource.name}`, 'info', {
+          resource: resource.name,
+          uri: uri.toString(),
         });
 
         try {
@@ -274,7 +277,7 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
           const duration = Date.now() - startTime;
           customLogger(`Resource fetched: ${resource.name} (${duration}ms)`, 'info', {
             resource: resource.name,
-            duration
+            duration,
           });
 
           return {
@@ -291,7 +294,7 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
           customLogger(`Resource failed: ${resource.name} (${duration}ms)`, 'error', {
             resource: resource.name,
             duration,
-            error: error instanceof Error ? error.message : String(error)
+            error: error instanceof Error ? error.message : String(error),
           });
 
           return {
@@ -327,30 +330,30 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
   // Handle POST requests in stateless mode
   app.post('/mcp', async (req: Request, res: Response) => {
     const requestId = randomUUID();
-    customLogger(`MCP request received [${requestId}]`, 'info', { 
-      requestId, 
-      method: req.method, 
-      url: req.url 
+    customLogger(`MCP request received [${requestId}]`, 'info', {
+      requestId,
+      method: req.method,
+      url: req.url,
     });
 
     // In stateless mode, create a new instance of transport and server for each request
     // to ensure complete isolation. A single instance would cause request ID collisions
     // when multiple clients connect concurrently.
     try {
-      const server = getServer(); 
+      const server = getServer();
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined, // Stateless mode - no sessions
       });
-      
+
       res.on('close', () => {
         customLogger(`Request closed [${requestId}]`, 'debug');
         transport.close();
         server.close();
       });
-      
+
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
-      
+
       customLogger(`MCP request completed [${requestId}]`, 'info', { requestId });
     } catch (error) {
       customLogger(
@@ -358,14 +361,14 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
         'error',
         { requestId, error: error instanceof Error ? error.message : String(error) }
       );
-      
+
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: '2.0',
           error: {
             code: -32603,
             message: 'Internal server error',
-            data: error instanceof Error ? error.message : String(error)
+            data: error instanceof Error ? error.message : String(error),
           },
           id: null,
         });
@@ -377,12 +380,12 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
   app.get('/mcp', async (_req: Request, res: Response) => {
     customLogger('GET request not supported in stateless mode', 'warn');
     res.status(405).json({
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       error: {
         code: -32000,
-        message: "Method not allowed in stateless mode"
+        message: 'Method not allowed in stateless mode',
       },
-      id: null
+      id: null,
     });
   });
 
@@ -390,12 +393,12 @@ export const startServer = async (): Promise<{ app: express.Application; port: n
   app.delete('/mcp', async (_req: Request, res: Response) => {
     customLogger('DELETE request not supported in stateless mode', 'warn');
     res.status(405).json({
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       error: {
         code: -32000,
-        message: "Method not allowed in stateless mode"
+        message: 'Method not allowed in stateless mode',
       },
-      id: null
+      id: null,
     });
   });
 

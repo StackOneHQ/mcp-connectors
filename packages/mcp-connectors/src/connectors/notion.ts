@@ -4,14 +4,9 @@ import { z } from 'zod';
 const NOTION_API_VERSION = '2022-06-28';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 
-const notionRequest = async (
-  path: string,
-  token: string,
-  method: string = 'GET',
-  body?: any
-) => {
+const notionRequest = async (path: string, token: string, method = 'GET', body?: any) => {
   const headers: Record<string, string> = {
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Notion-Version': NOTION_API_VERSION,
   };
 
@@ -26,11 +21,11 @@ const notionRequest = async (
   }
 
   const response = await fetch(`${NOTION_API_BASE}${path}`, options);
-  
+
   if (!response.ok) {
     const errorBody = await response.text();
     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-    
+
     try {
       const errorJson = JSON.parse(errorBody);
       if (errorJson.message) {
@@ -54,7 +49,7 @@ const notionRequest = async (
 const handleNotionError = (error: unknown): string => {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('unauthorized') || message.includes('401')) {
       return 'Error: Unauthorized. Please check your Notion integration token and permissions.';
     }
@@ -62,7 +57,7 @@ const handleNotionError = (error: unknown): string => {
       return 'Error: Resource not found. Please check the ID and ensure your integration has access to it.';
     }
     if (message.includes('restricted') || message.includes('403')) {
-      return 'Error: Access restricted. Your integration doesn\'t have permission to access this resource.';
+      return "Error: Access restricted. Your integration doesn't have permission to access this resource.";
     }
     if (message.includes('rate') || message.includes('429')) {
       return 'Error: Rate limited. Please wait before making more requests.';
@@ -71,7 +66,7 @@ const handleNotionError = (error: unknown): string => {
       return `Error: Invalid request. ${error.message}`;
     }
     if (message.includes('conflict') || message.includes('409')) {
-      return 'Error: Conflict. The resource you\'re trying to create already exists or conflicts with existing data.';
+      return "Error: Conflict. The resource you're trying to create already exists or conflicts with existing data.";
     }
     if (message.includes('server error') || message.includes('500')) {
       return 'Error: Internal server error. Please try again later.';
@@ -79,10 +74,10 @@ const handleNotionError = (error: unknown): string => {
     if (message.includes('service unavailable') || message.includes('503')) {
       return 'Error: Service unavailable. Please try again later.';
     }
-    
+
     return `Error: ${error.message}`;
   }
-  
+
   return `Error: ${String(error)}`;
 };
 
@@ -134,7 +129,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const params = new URLSearchParams();
           if (args.page_size) params.append('page_size', args.page_size.toString());
           if (args.start_cursor) params.append('start_cursor', args.start_cursor);
-          
+
           const queryString = params.toString();
           const path = queryString ? `/users?${queryString}` : '/users';
           const response = await notionRequest(path, token);
@@ -284,7 +279,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const { token } = await context.getCredentials();
           const { parent_id, parent_type, comment_text, discussion_id } = args;
 
-          let body: any = {
+          const body: any = {
             rich_text: [
               {
                 type: 'text',
@@ -296,9 +291,10 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           if (discussion_id) {
             body.discussion_id = discussion_id;
           } else {
-            body.parent = parent_type === 'page_id'
-              ? { page_id: parent_id }
-              : { block_id: parent_id };
+            body.parent =
+              parent_type === 'page_id'
+                ? { page_id: parent_id }
+                : { block_id: parent_id };
           }
 
           const response = await notionRequest('/comments', token, 'POST', body);
@@ -321,7 +317,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const params = new URLSearchParams();
           params.append('block_id', args.block_id);
           if (args.start_cursor) params.append('start_cursor', args.start_cursor);
-          
+
           const response = await notionRequest(`/comments?${params}`, token);
           return JSON.stringify(response, null, 2);
         } catch (error) {
@@ -361,7 +357,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const { query, filter, sort, page_size, start_cursor } = args;
 
           const body: any = { query };
-          
+
           if (filter) {
             body.filter = { property: 'object', value: filter };
           }
@@ -434,14 +430,14 @@ export const NotionConnectorConfig = mcpConnectorConfig({
       handler: async (args, context) => {
         try {
           const { token } = await context.getCredentials();
-          
+
           const body: any = {
             filter: {
               property: 'object',
               value: 'database',
             },
           };
-          
+
           if (args.page_size) body.page_size = args.page_size;
           if (args.start_cursor) body.start_cursor = args.start_cursor;
 
@@ -534,12 +530,12 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const params = new URLSearchParams();
           if (args.page_size) params.append('page_size', args.page_size.toString());
           if (args.start_cursor) params.append('start_cursor', args.start_cursor);
-          
+
           const queryString = params.toString();
           const path = queryString
             ? `/blocks/${args.block_id}/children?${queryString}`
             : `/blocks/${args.block_id}/children`;
-            
+
           const response = await notionRequest(path, token);
           return JSON.stringify(response, null, 2);
         } catch (error) {

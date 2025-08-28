@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process';
-import { parseArgs } from 'node:util';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -75,7 +75,8 @@ const main = async () => {
     'run',
     values.watch ? '--watch' : '',
     serverScript,
-    '--connector', values.connector,
+    '--connector',
+    values.connector,
   ].filter(Boolean); // Remove empty strings
 
   if (values.credentials) {
@@ -97,7 +98,7 @@ const main = async () => {
   console.log('🚀 Starting MCP Connector Server in background...');
   console.log(`📝 Logs: ${logFile}`);
   console.log(`🔧 Watch mode: ${values.watch ? 'enabled' : 'disabled'}`);
-  
+
   // Spawn the server process using bun
   const serverProcess = spawn('bun', args, {
     detached: true,
@@ -110,7 +111,7 @@ const main = async () => {
 
   const port = values.port || '3000';
   const serverUrl = `http://localhost:${port}/mcp`;
-  
+
   console.log(`✅ Server spawned with PID: ${serverProcess.pid}`);
   console.log(`🔗 Server URL: ${serverUrl}`);
   console.log('');
