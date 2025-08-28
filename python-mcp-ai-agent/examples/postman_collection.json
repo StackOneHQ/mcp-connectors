@@ -1,0 +1,441 @@
+{
+  "info": {
+    "name": "MCP AI Agent API",
+    "description": "Postman collection for testing the MCP AI Agent API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "API Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": ["{{base_url}}"],
+          "path": [""]
+        }
+      }
+    },
+    {
+      "name": "Add Connector",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"workflow\",\n  \"base_url\": \"http://localhost:3000\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/connectors",
+          "host": ["{{base_url}}"],
+          "path": ["connectors"]
+        }
+      }
+    },
+    {
+      "name": "List Connectors",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/connectors",
+          "host": ["{{base_url}}"],
+          "path": ["connectors"]
+        }
+      }
+    },
+    {
+      "name": "List All Tools",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/tools",
+          "host": ["{{base_url}}"],
+          "path": ["tools"]
+        }
+      }
+    },
+    {
+      "name": "Get Tools Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/tools/summary",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "summary"]
+        }
+      }
+    },
+    {
+      "name": "Process Natural Language Request - Basic Workflow",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"Create a new workflow called 'Database Migration' and register an actor named 'Alice' as a 'DBA'\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/process",
+          "host": ["{{base_url}}"],
+          "path": ["process"]
+        }
+      }
+    },
+    {
+      "name": "Process Natural Language Request - Proposal Workflow",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"Propose an action to update the database schema by adding a new table called 'users' with columns 'id', 'name', and 'email', then review and approve it\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/process",
+          "host": ["{{base_url}}"],
+          "path": ["process"]
+        }
+      }
+    },
+    {
+      "name": "Process Natural Language Request - Complex Workflow",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"Create a comprehensive deployment workflow: register a 'DevOps Engineer' actor named 'Bob', start a workflow called 'Production Deployment', propose a database migration action, propose a code deployment action, review and approve both proposals, execute the approved actions, and get the audit log for the workflow\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/process",
+          "host": ["{{base_url}}"],
+          "path": ["process"]
+        }
+      }
+    },
+    {
+      "name": "Process Natural Language Request - Parallel Execution",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"Execute multiple actions in parallel: update user permissions, clear cache, and restart services\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/process",
+          "host": ["{{base_url}}"],
+          "path": ["process"]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Register Actor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"register_actor\",\n  \"arguments\": {\n    \"name\": \"Charlie\",\n    \"role\": \"Developer\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=register_actor",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "register_actor"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Start Workflow",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"start_workflow\",\n  \"arguments\": {\n    \"title\": \"Postman API Test\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=start_workflow",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "start_workflow"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Propose Action",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"propose_action\",\n  \"arguments\": {\n    \"workflow_id\": \"workflow_1\",\n    \"actor_id\": \"actor_1\",\n    \"tool\": \"database_migration\",\n    \"params\": {\n      \"table_name\": \"users\",\n      \"operation\": \"create\"\n    },\n    \"reason\": \"Adding new users table for authentication system\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=propose_action",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "propose_action"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Review Action",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"review_action\",\n  \"arguments\": {\n    \"proposal_id\": \"proposal_1\",\n    \"reviewer_id\": \"actor_2\",\n    \"decision\": \"approve\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=review_action",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "review_action"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Execute Action",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"execute_action\",\n  \"arguments\": {\n    \"proposal_id\": \"proposal_1\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=execute_action",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "execute_action"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Execute Parallel",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"execute_parallel\",\n  \"arguments\": {\n    \"calls\": [\n      {\n        \"tool\": \"update_permissions\",\n        \"params\": {\n          \"user_id\": \"123\",\n          \"permissions\": [\"read\", \"write\"]\n        }\n      },\n      {\n        \"tool\": \"clear_cache\",\n        \"params\": {\n          \"cache_type\": \"user_sessions\"\n        }\n      },\n      {\n        \"tool\": \"restart_service\",\n        \"params\": {\n          \"service_name\": \"api\"\n        }\n      }\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=execute_parallel",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "execute_parallel"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Get Audit Log",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"get_audit_log\",\n  \"arguments\": {\n    \"workflow_id\": \"workflow_1\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=get_audit_log",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "get_audit_log"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Call Tool Directly - Set Policy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"connector_name\": \"workflow\",\n  \"tool_name\": \"set_policy\",\n  \"arguments\": {\n    \"dry_run\": true\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/tools/call?connector_name=workflow&tool_name=set_policy",
+          "host": ["{{base_url}}"],
+          "path": ["tools", "call"],
+          "query": [
+            {
+              "key": "connector_name",
+              "value": "workflow"
+            },
+            {
+              "key": "tool_name",
+              "value": "set_policy"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Remove Connector",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/connectors/workflow",
+          "host": ["{{base_url}}"],
+          "path": ["connectors", "workflow"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
