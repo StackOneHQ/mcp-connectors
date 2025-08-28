@@ -1,7 +1,7 @@
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { ModalConnectorConfig } from './modal';
 
@@ -23,9 +23,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.CREATE_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({}, mockContext);
@@ -55,9 +54,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.CREATE_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -88,9 +86,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.CREATE_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({}, mockContext);
@@ -120,9 +117,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.GET_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -144,9 +140,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.GET_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'nonexistent' }, mockContext);
@@ -183,9 +178,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.LIST_SANDBOXES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({}, mockContext);
@@ -209,9 +203,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.LIST_SANDBOXES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({}, mockContext);
@@ -234,9 +227,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.TERMINATE_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -257,9 +249,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.TERMINATE_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -290,9 +281,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.EXEC_IN_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -328,9 +318,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.EXEC_IN_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -359,9 +348,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.EXEC_IN_SANDBOX as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -401,9 +389,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.GET_PROCESS_STATUS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -432,9 +419,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.GET_PROCESS_STATUS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -471,9 +457,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.WAIT_FOR_PROCESS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -513,9 +498,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.WAIT_FOR_PROCESS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler(
@@ -552,9 +536,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.GET_SANDBOX_LOGS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -577,9 +560,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.GET_SANDBOX_LOGS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -606,9 +588,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.CREATE_SNAPSHOT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -632,9 +613,8 @@ describe('#ModalConnector', () => {
         server.listen();
 
         const tool = ModalConnectorConfig.tools.CREATE_SNAPSHOT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ sandboxId: 'sandbox-123' }, mockContext);
@@ -665,9 +645,8 @@ describe('#ModalConnector', () => {
 
         const tool = ModalConnectorConfig.tools
           .RESTORE_FROM_SNAPSHOT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ snapshotId: 'snapshot-123' }, mockContext);
@@ -690,9 +669,8 @@ describe('#ModalConnector', () => {
 
         const tool = ModalConnectorConfig.tools
           .RESTORE_FROM_SNAPSHOT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        vi.mocked(mockContext.getCredentials).mockResolvedValue({
-          token: 'ak-test-token',
+        const mockContext = createMockConnectorContext({
+          credentials: { token: 'ak-test-token' },
         });
 
         const actual = await tool.handler({ snapshotId: 'nonexistent' }, mockContext);
