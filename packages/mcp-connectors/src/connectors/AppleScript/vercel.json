@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/make-applescript.ts": { 
+      "runtime": "nodejs20.x" 
+    }
+  },
+  "routes": [
+    { 
+      "src": "/AppleScript/make-applescript", 
+      "dest": "/api/make-applescript.ts" 
+    }
+  ]
+}
