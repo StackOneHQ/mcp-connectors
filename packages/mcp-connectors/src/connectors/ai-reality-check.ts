@@ -830,7 +830,9 @@ export const AIRealityCheckConnectorConfig = mcpConnectorConfig({
         const recentInterventions = interventionHistory.filter(
           (i: InterventionRecord) => i.timestamp > cutoff
         );
-        const recentClaims = grandioseClaimsHistory.filter((c: GrandioseClaimHistory[0]) => c.timestamp > cutoff);
+        const recentClaims = grandioseClaimsHistory.filter(
+          (c: GrandioseClaimHistory[0]) => c.timestamp > cutoff
+        );
         const recentCrisisHelp = crisisResourcesProvided.filter(
           (r: CrisisResourceHistory[0]) => r.timestamp > cutoff
         );
@@ -838,10 +840,15 @@ export const AIRealityCheckConnectorConfig = mcpConnectorConfig({
         // Calculate metrics
         const avgRiskScore =
           recentClaims.length > 0
-            ? recentClaims.reduce((sum: number, c: GrandioseClaimHistory[0]) => sum + c.severity, 0) / recentClaims.length
+            ? recentClaims.reduce(
+                (sum: number, c: GrandioseClaimHistory[0]) => sum + c.severity,
+                0
+              ) / recentClaims.length
             : 0;
 
-        const trendDirection = calculateTrend(recentClaims.map((c: GrandioseClaimHistory[0]) => c.severity));
+        const trendDirection = calculateTrend(
+          recentClaims.map((c: GrandioseClaimHistory[0]) => c.severity)
+        );
 
         const report = {
           timeframe: args.timeframe,
