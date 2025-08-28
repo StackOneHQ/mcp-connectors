@@ -12,14 +12,13 @@
             "cache": false,
             "persistent": true
         },
+        "spawn": {
+            "cache": false,
+            "persistent": false
+        },
         "test": {},
         "types": {},
         "typecheck": {},
-        "deploy": {
-            "dependsOn": ["^build"],
-            "passThroughEnv": ["CLOUDFLARE_API_TOKEN"],
-            "cache": false
-        },
         "publish-release": {
             "dependsOn": ["^build", "^types", "^typecheck", "^test"],
             "cache": false

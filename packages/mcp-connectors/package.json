@@ -23,7 +23,6 @@
     "dependencies": {
         "@1password/connect": "^1.4.2",
         "@linear/sdk": "^55.0.0",
-        "@notionhq/client": "^4.0.1",
         "@orama/orama": "^3.1.11",
         "node-html-parser": "^7.0.1",
         "openai": "^5.12.1",

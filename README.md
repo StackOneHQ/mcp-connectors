@@ -46,15 +46,49 @@ npm install @stackone/mcp-connectors @stackone/mcp-config-types
 
 The connectors can be imported and used in your own MCP server implementations, and the config types provide TypeScript definitions for all connector configurations.
 
-## Development
+## Getting Started (First Time Setup)
+
+If you want to run the connectors locally or contribute to the project:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/stackone-ai/mcp-connectors.git
+   cd mcp-connectors
+   ```
+
+2. **Install Bun** (if you don't have it already):
+
+   ```bash
+   curl -fsSL https://bun.sh/install | bash
+   ```
+
+3. **Install dependencies:**
+
+   ```bash
+   bun install
+   ```
+
+4. **Build the project:**
+
+   ```bash
+   bun run build
+   ```
+
+5. **Run the tests:**
+
+   ```bash
+   bun test
+   ```
+
+5. **Check out the documentation:**
+   - See the [`docs/`](./docs/) directory for detailed guides
+   - Start with [Running Locally](./docs/running-locally.md) for setup instructions
+   - Read [Writing Connectors](./docs/writing-connectors.md) to create your own
+
+## Usage
 
 This is a monorepo managed with Bun and Turbo.
-
-### Install dependencies
-
-```bash
-bun install
-```
 
 ### Start a server from a connector
 

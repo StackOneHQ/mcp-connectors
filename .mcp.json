@@ -7,6 +7,10 @@
         "grep": {
             "type": "http",
             "url": "https://mcp.grep.app"
+        },
+        "localhost": {
+            "type": "http",
+            "url": "http://localhost:3000/mcp"
         }
     }
 }
