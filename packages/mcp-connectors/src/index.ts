@@ -17,6 +17,7 @@ import { GeminiImageConnectorConfig } from './connectors/gemini-image';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { HiBobConnectorConfig } from './connectors/hibob';
+import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
@@ -63,6 +64,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
+  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -108,6 +110,7 @@ export {
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
+  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
