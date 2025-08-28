@@ -42,6 +42,7 @@ import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 import { LocalizationConnectorConfig } from './connectors/localization';
+import { AccessibilityConnectorConfig } from './connectors/accessibility';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
@@ -69,6 +70,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
   LocalizationConnectorConfig,
+  AccessibilityConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
@@ -101,6 +103,7 @@ export {
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   LocalizationConnectorConfig,
+  AccessibilityConnectorConfig,
   FalConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
