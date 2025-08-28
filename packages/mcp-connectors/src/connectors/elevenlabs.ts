@@ -48,6 +48,57 @@ interface ElevenLabsTranscriptionResult {
   speakers?: unknown[];
 }
 
+// Conversational AI interfaces
+interface ConversationConfig {
+  agent?: {
+    prompt?: {
+      prompt?: string;
+    };
+    first_message?: string;
+    language?: string;
+  };
+  asr?: {
+    quality?: string;
+    provider?: string;
+  };
+  tts?: {
+    model_id?: string;
+    voice_id?: string;
+  };
+  transcriber?: {
+    model?: string;
+    language?: string;
+  };
+  llm?: {
+    model?: string;
+    provider?: string;
+  };
+}
+
+interface AgentCreateResponse {
+  agent_id: string;
+}
+
+interface PhoneCallResponse {
+  success: boolean;
+  message: string;
+  conversation_id?: string;
+  callSid?: string;
+}
+
+interface PhoneNumber {
+  phone_number_id: string;
+  phone_number: string;
+  name?: string;
+  status: string;
+  provider: string;
+  country_code: string;
+}
+
+interface PhoneNumbersResponse {
+  phone_numbers: PhoneNumber[];
+}
+
 // Helper function to make API calls to ElevenLabs
 const makeElevenLabsRequest = async (
   endpoint: string,
@@ -106,7 +157,7 @@ export const ElevenLabsConnectorConfig = mcpConnectorConfig({
   }),
   setup: z.object({}),
   examplePrompt:
-    'Generate speech from the text "Hello, welcome to our AI-powered assistant!" using Rachel\'s voice, then list all available voices for future use.',
+    'First list available phone numbers to see what Twilio numbers are configured, then create a conversational AI agent that introduces itself as a customer service representative, and finally use it to make a phone call to +1234567890 with a brief greeting message.',
   tools: (tool) => ({
     TEXT_TO_SPEECH: tool({
       name: 'text-to-speech',
@@ -498,6 +549,240 @@ export const ElevenLabsConnectorConfig = mcpConnectorConfig({
           });
         } catch (error) {
           console.error('Get user info error:', error);
+          return JSON.stringify({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+          });
+        }
+      },
+    }),
+
+    CREATE_AGENT: tool({
+      name: 'create-agent',
+      description:
+        'Create a conversational AI agent for voice interactions and phone calls',
+      schema: z.object({
+        name: z
+          .string()
+          .optional()
+          .describe('Name for the agent to make it easier to find'),
+        agent_prompt: z
+          .string()
+          .describe("The system prompt that guides the agent's behavior and personality"),
+        first_message: z
+          .string()
+          .describe(
+            'The first message the agent will speak when starting a conversation'
+          ),
+        voice_id: z
+          .string()
+          .optional()
+          .describe('Voice ID to use for the agent (default: Rachel)'),
+        language: z
+          .string()
+          .optional()
+          .describe('Language code for the agent (default: en)'),
+        model_id: z
+          .string()
+          .optional()
+          .describe('TTS model ID (default: eleven_turbo_v2)'),
+
+        asr_quality: z
+          .enum(['low', 'medium', 'high'])
+          .optional()
+          .describe('ASR quality setting'),
+        llm_model: z.string().optional().describe('LLM model to use (default: gpt-4)'),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe('Tags to help classify and filter the agent'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+
+          const conversationConfig: ConversationConfig = {
+            agent: {
+              prompt: {
+                prompt: args.agent_prompt,
+              },
+              first_message: args.first_message,
+              language: args.language || 'en',
+            },
+            asr: {
+              quality: args.asr_quality || 'high',
+              provider: 'elevenlabs',
+            },
+            tts: {
+              model_id: args.model_id || 'eleven_turbo_v2',
+              voice_id: args.voice_id || 'EXAVITQu4vr4xnSDxMaL', // Rachel voice
+            },
+            llm: {
+              model: args.llm_model || 'gpt-4',
+              provider: 'openai',
+            },
+          };
+
+          const requestBody = {
+            conversation_config: conversationConfig,
+            name: args.name || null,
+            tags: args.tags || null,
+          };
+
+          const response = await makeElevenLabsRequest('/convai/agents/create', apiKey, {
+            method: 'POST',
+            body: JSON.stringify(requestBody),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+          }
+
+          const result = (await response.json()) as AgentCreateResponse;
+
+          return JSON.stringify({
+            success: true,
+            agent_id: result.agent_id,
+            name: args.name || 'Unnamed Agent',
+            voice_id: args.voice_id || 'EXAVITQu4vr4xnSDxMaL',
+            language: args.language || 'en',
+            message:
+              'Conversational AI agent created successfully. Use this agent_id to make phone calls.',
+          });
+        } catch (error) {
+          console.error('Create agent error:', error);
+          return JSON.stringify({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+          });
+        }
+      },
+    }),
+
+    LIST_PHONE_NUMBERS: tool({
+      name: 'list-phone-numbers',
+      description:
+        'List all phone numbers (Twilio numbers) available for making outbound calls with conversational AI agents',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+
+          const response = await makeElevenLabsRequest('/convai/phone-numbers', apiKey);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+          }
+
+          const result = await response.json();
+
+          // Handle different possible response structures
+          let phoneNumbers = [];
+          if (result.phone_numbers && Array.isArray(result.phone_numbers)) {
+            phoneNumbers = result.phone_numbers;
+          } else if (Array.isArray(result)) {
+            phoneNumbers = result;
+          } else {
+            // Log the actual response structure for debugging
+            console.log('Unexpected API response structure:', JSON.stringify(result, null, 2));
+          }
+
+          return JSON.stringify({
+            success: true,
+            phone_numbers: phoneNumbers.map((phone: any) => ({
+              phone_number_id: phone.phone_number_id || phone.id,
+              phone_number: phone.phone_number || phone.number,
+              name: phone.name || 'Unnamed',
+              status: phone.status || 'unknown',
+              provider: phone.provider || 'unknown',
+              country_code: phone.country_code || phone.country,
+            })),
+            count: phoneNumbers.length,
+            raw_response: result,
+            message:
+              phoneNumbers.length > 0
+                ? 'Use the phone_number_id from this list as the from_phone_number_id parameter when making phone calls.'
+                : 'No phone numbers found. You may need to add a phone number to your ElevenLabs account first.',
+          });
+        } catch (error) {
+          console.error('List phone numbers error:', error);
+          return JSON.stringify({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+          });
+        }
+      },
+    }),
+
+    MAKE_PHONE_CALL: tool({
+      name: 'make-phone-call',
+      description:
+        'Initiate an outbound phone call using a conversational AI agent to deliver a message',
+      schema: z.object({
+        agent_id: z
+          .string()
+          .describe('The ID of the conversational AI agent to use for the call'),
+        to_number: z
+          .string()
+          .describe(
+            'The phone number to call (in international format, e.g., +1234567890)'
+          ),
+        message: z
+          .string()
+          .optional()
+          .describe(
+            'Additional context or message for the agent (will be part of the conversation flow)'
+          ),
+        from_phone_number_id: z
+          .string()
+          .describe(
+            'The ID of the phone number (Twilio number) to use for making the outbound call. You must first import your Twilio number into ElevenLabs via the dashboard.'
+          ),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+
+          const requestBody: Record<string, unknown> = {
+            agent_id: args.agent_id,
+            agent_phone_number_id: args.from_phone_number_id,
+            to_number: args.to_number,
+          };
+
+          // Add any additional context message
+          if (args.message) {
+            requestBody.additional_context = args.message;
+          }
+
+          const response = await makeElevenLabsRequest(
+            `/convai/twilio/outbound-call`,
+            apiKey,
+            {
+              method: 'POST',
+              body: JSON.stringify(requestBody),
+            }
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+          }
+
+          const result = (await response.json()) as PhoneCallResponse;
+
+          return JSON.stringify({
+            success: true,
+            conversation_id: result.conversation_id,
+            callSid: result.callSid,
+            agent_id: args.agent_id,
+            to_number: args.to_number,
+            from_phone_number_id: args.from_phone_number_id,
+            message: result.message || 'Phone call initiated successfully via Twilio.',
+          });
+        } catch (error) {
+          console.error('Make phone call error:', error);
           return JSON.stringify({
             success: false,
             error: error instanceof Error ? error.message : 'Unknown error occurred',

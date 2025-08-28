@@ -39,6 +39,7 @@ import { TestConnectorConfig } from './connectors/test';
 import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
+import { UnipileConnectorConfig } from './connectors/unipile';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 
@@ -81,6 +82,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
+  UnipileConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
 ] as const;
@@ -124,6 +126,7 @@ export {
   TinybirdConnectorConfig,
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
+  UnipileConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
 };
