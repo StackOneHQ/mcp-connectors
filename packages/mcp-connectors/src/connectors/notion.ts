@@ -4,7 +4,7 @@ import { z } from 'zod';
 const NOTION_API_VERSION = '2022-06-28';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 
-const notionRequest = async (path: string, token: string, method = 'GET', body?: any) => {
+const notionRequest = async (path: string, token: string, method = 'GET', body?: unknown) => {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     'Notion-Version': NOTION_API_VERSION,
@@ -165,11 +165,11 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           .describe('The type of parent (page or database)'),
         title: z.string().describe('The title of the page'),
         properties: z
-          .record(z.any())
+          .record(z.unknown())
           .optional()
           .describe('Properties for the page, following Notion property structure'),
         children: z
-          .array(z.any())
+          .array(z.unknown())
           .optional()
           .describe('Content blocks to add to the page'),
       }),
@@ -183,7 +183,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
               ? { page_id: parent_id }
               : { database_id: parent_id };
 
-          let pageProperties: any = {};
+          let pageProperties: Record<string, unknown> = {};
 
           if (parent_type === 'page_id') {
             pageProperties = {
@@ -217,7 +217,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
             }
           }
 
-          const body: any = {
+          const body: Record<string, unknown> = {
             parent,
             properties: pageProperties,
           };
@@ -239,7 +239,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
       schema: z.object({
         page_id: z.string().describe('The ID of the page to update'),
         properties: z
-          .record(z.any())
+          .record(z.unknown())
           .describe('Properties to update, following Notion property structure'),
         archived: z.boolean().optional().describe('Archive or restore the page'),
       }),
@@ -248,7 +248,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const { token } = await context.getCredentials();
           const { page_id, properties, archived } = args;
 
-          const body: any = { properties };
+          const body: Record<string, unknown> = { properties };
           if (archived !== undefined) {
             body.archived = archived;
           }
@@ -279,7 +279,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const { token } = await context.getCredentials();
           const { parent_id, parent_type, comment_text, discussion_id } = args;
 
-          const body: any = {
+          const body: Record<string, unknown> = {
             rich_text: [
               {
                 type: 'text',
@@ -356,7 +356,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const { token } = await context.getCredentials();
           const { query, filter, sort, page_size, start_cursor } = args;
 
-          const body: any = { query };
+          const body: Record<string, unknown> = { query };
 
           if (filter) {
             body.filter = { property: 'object', value: filter };
@@ -386,7 +386,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
         parent_page_id: z.string().describe('The ID of the parent page'),
         title: z.string().describe('The title of the database'),
         properties: z
-          .record(z.any())
+          .record(z.unknown())
           .describe('Database property schema following Notion property types'),
       }),
       handler: async (args, context) => {
@@ -431,7 +431,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
         try {
           const { token } = await context.getCredentials();
 
-          const body: any = {
+          const body: Record<string, unknown> = {
             filter: {
               property: 'object',
               value: 'database',
@@ -469,7 +469,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
       description: 'Query a database with filters and sorts',
       schema: z.object({
         database_id: z.string().describe('The ID of the database to query'),
-        filter: z.any().optional().describe('Filter conditions for the query'),
+        filter: z.unknown().optional().describe('Filter conditions for the query'),
         sorts: z
           .array(
             z.object({
@@ -493,7 +493,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
           const { token } = await context.getCredentials();
           const { database_id, filter, sorts, page_size, start_cursor } = args;
 
-          const body: any = {};
+          const body: Record<string, unknown> = {};
           if (filter) body.filter = filter;
           if (sorts) body.sorts = sorts;
           if (page_size) body.page_size = page_size;
@@ -548,7 +548,7 @@ export const NotionConnectorConfig = mcpConnectorConfig({
       description: 'Add new blocks as children to a page or block',
       schema: z.object({
         block_id: z.string().describe('The ID of the parent block (page or block)'),
-        children: z.array(z.any()).describe('Array of blocks to add as children'),
+        children: z.array(z.unknown()).describe('Array of blocks to add as children'),
       }),
       handler: async (args, context) => {
         try {

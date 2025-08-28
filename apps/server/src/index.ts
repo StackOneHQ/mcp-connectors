@@ -222,10 +222,10 @@ export const startServer = async (): Promise<{
 
     // Register tools
     for (const tool of Object.values(connectorConfig.tools)) {
-      // @ts-expect-error - TODO: fix this
       server.tool(
         tool.name,
         tool.description,
+        // @ts-expect-error - TODO: fix this
         tool.schema.shape,
         async (args: unknown) => {
           const startTime = Date.now();
