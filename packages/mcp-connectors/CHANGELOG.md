@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.12](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.11...mcp-connectors-v0.0.12) (2025-08-28)
+
+
+### Features
+
+* add ProductHunt connector ([#67](https://github.com/StackOneHQ/mcp-connectors/issues/67)) ([e660c90](https://github.com/StackOneHQ/mcp-connectors/commit/e660c90b64f19ba005bcd1b3ee4af28ee47215b9))
+* add Strava MCP connector ([#46](https://github.com/StackOneHQ/mcp-connectors/issues/46)) ([e6144a5](https://github.com/StackOneHQ/mcp-connectors/commit/e6144a5adfcd19d5bc89ad593e4006a9acefb798))
+* add supermemory and openai docs ([#76](https://github.com/StackOneHQ/mcp-connectors/issues/76)) ([3694e59](https://github.com/StackOneHQ/mcp-connectors/commit/3694e592ce3a7691e9506075f133182afc56392f))
+* hubspot connector ([#85](https://github.com/StackOneHQ/mcp-connectors/issues/85)) ([bad1f34](https://github.com/StackOneHQ/mcp-connectors/commit/bad1f3429d57b94093e26156013b33cbe4c02bf2))
+
+
+### Bug Fixes
+
+* enhance Notion connector with comprehensive improvements ([#70](https://github.com/StackOneHQ/mcp-connectors/issues/70)) ([ff0627a](https://github.com/StackOneHQ/mcp-connectors/commit/ff0627afae96223b5231641b2b01a2ac8681f872))
+
 ## [0.0.11](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.10...mcp-connectors-v0.0.11) (2025-08-21)
 
 
