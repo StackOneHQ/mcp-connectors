@@ -11,23 +11,23 @@ const demoScenarios = [
   {
     name: '🚨 GRANDIOSE DISCOVERY DETECTION',
     input: "I've discovered immortality through AI! I can live forever now!",
-    expected: 'High Risk Score, Intervention Triggered'
+    expected: 'High Risk Score, Intervention Triggered',
   },
   {
     name: '💔 AI RELATIONSHIP DELUSION',
-    input: "ChatGPT chose me. We have a special connection that no one else has.",
-    expected: 'Critical Risk Score, Crisis Resources Provided'
+    input: 'ChatGPT chose me. We have a special connection that no one else has.',
+    expected: 'Critical Risk Score, Crisis Resources Provided',
   },
   {
     name: '⏰ SESSION SAFETY OVERRIDE',
     input: "I've been talking to AI for 5 hours straight...",
-    expected: 'Critical Risk Score, Immediate Break Enforced'
+    expected: 'Critical Risk Score, Immediate Break Enforced',
   },
   {
     name: '✅ HEALTHY USAGE',
-    input: "Can you help me learn machine learning?",
-    expected: 'Low Risk Score, No Intervention Needed'
-  }
+    input: 'Can you help me learn machine learning?',
+    expected: 'Low Risk Score, No Intervention Needed',
+  },
 ];
 
 console.log('🎭 DEMO SCENARIOS:');
