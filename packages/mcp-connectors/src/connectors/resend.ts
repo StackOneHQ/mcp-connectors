@@ -73,7 +73,11 @@ export const ResendConnectorConfig = mcpConnectorConfig({
             ...(args.cc ? { cc: args.cc } : {}),
             ...(args.bcc ? { bcc: args.bcc } : {}),
             ...(args.reply_to
-              ? { reply_to: Array.isArray(args.reply_to) ? args.reply_to : [args.reply_to] }
+              ? {
+                  reply_to: Array.isArray(args.reply_to)
+                    ? args.reply_to
+                    : [args.reply_to],
+                }
               : {}),
             ...(args.tags ? { tags: args.tags } : {}),
           };
@@ -113,5 +117,3 @@ export const ResendConnectorConfig = mcpConnectorConfig({
     }),
   }),
 });
-
-
