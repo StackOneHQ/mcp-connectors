@@ -40,6 +40,7 @@ import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
+import { WorkFlowyConnectorConfig } from './connectors/workflowy';
 import { XeroConnectorConfig } from './connectors/xero';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
@@ -82,6 +83,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
+  WorkFlowyConnectorConfig,
   XeroConnectorConfig,
 ] as const;
 
@@ -125,5 +127,6 @@ export {
   TodoistConnectorConfig,
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
+  WorkFlowyConnectorConfig,
   XeroConnectorConfig,
 };
