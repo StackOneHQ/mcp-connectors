@@ -1,6 +1,6 @@
-import { create, insertMultiple, search } from '@orama/orama';
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
+import { type AnySearchableObject, createIndex, search } from '../utils/lexical-search';
 
 interface TFLLine {
   id: string;
@@ -215,37 +215,94 @@ interface TFLAirQuality {
   }>;
 }
 
-// Helper function to filter and summarize TfL responses using Orama
-async function filterTflResponse<T>(
+interface TFLAccidentDetail {
+  id: number;
+  latitude: number;
+  longitude: number;
+  location: string;
+  date: string;
+  severity: string;
+  borough: string;
+  casualties: number;
+  vehicles: number;
+}
+
+interface TFLBikePoint {
+  id: string;
+  url: string;
+  commonName: string;
+  placeType: string;
+  lat: number;
+  lon: number;
+  additionalProperties: Array<{
+    category: string;
+    key: string;
+    sourceSystemKey: string;
+    value: string;
+    modified: string;
+  }>;
+  children: unknown[];
+  childrenUrls: unknown[];
+}
+
+interface TFLPlace {
+  id: string;
+  url: string;
+  commonName: string;
+  placeType: string;
+  lat: number;
+  lon: number;
+  additionalProperties: Array<{
+    category: string;
+    key: string;
+    sourceSystemKey: string;
+    value: string;
+    modified: string;
+  }>;
+  children?: TFLPlace[];
+  childrenUrls?: string[];
+}
+
+interface TFLPlaceCategory {
+  category: string;
+  availableKeys: string[];
+}
+
+interface TFLPlaceType {
+  type: string;
+}
+
+// Helper function to search and filter TfL responses
+async function searchTflData<T>(
   data: T[],
-  schema: Record<string, 'string' | 'number' | 'boolean'>,
   query?: string,
-  limit = 10
+  options: {
+    fields?: string[];
+    maxResults?: number;
+    boost?: Record<string, number>;
+  } = {}
 ): Promise<T[]> {
   if (!data.length) return [];
 
   try {
-    const db = await create({
-      schema: schema,
-    });
+    const { fields, maxResults = 50, boost } = options;
 
-    await insertMultiple(db, data as Record<string, string | number | boolean>[]);
-
-    if (query) {
-      const results = await search(db, {
-        term: query,
-        limit,
-        threshold: 0.5,
-      });
-      return results.hits.map((hit) => hit.document as unknown as T);
+    if (!query || query.trim() === '') {
+      return data.slice(0, maxResults);
     }
 
-    // If no query, return first N items
-    return data.slice(0, limit);
+    const index = await createIndex(data as AnySearchableObject[], {
+      fields,
+      maxResults,
+      boost,
+      threshold: 0.3,
+    });
+
+    const results = await search(index, query);
+    return results.map((result) => result.item) as T[];
   } catch (error) {
-    // Fallback to simple truncation if Orama fails
-    console.warn('Orama search failed, falling back to simple truncation:', error);
-    return data.slice(0, limit);
+    console.warn('Search failed, falling back to simple truncation:', error);
+    return data.slice(0, options.maxResults || 50);
   }
 }
 
@@ -260,18 +317,15 @@ async function filterLineStatus(lines: TFLLine[], query?: string): Promise<TFLLi
     reason: line.lineStatuses?.[0]?.reason || '',
   }));
 
-  return filterTflResponse(
-    flattenedLines,
-    {
-      id: 'string',
-      name: 'string',
-      modeName: 'string',
-      statusSeverityDescription: 'string',
-      reason: 'string',
+  return searchTflData(flattenedLines, query, {
+    fields: ['id', 'name', 'modeName', 'statusSeverityDescription', 'reason'],
+    maxResults: 20,
+    boost: {
+      name: 2.0,
+      statusSeverityDescription: 1.5,
+      reason: 1.2,
     },
-    query,
-    20
-  );
+  });
 }
 
 async function filterStopPoints(
@@ -284,18 +338,14 @@ async function filterStopPoints(
     modesString: stop.modes?.join(' ') || '',
   }));
 
-  return filterTflResponse(
-    flattenedStopPoints,
-    {
-      id: 'string',
-      commonName: 'string',
-      modesString: 'string',
-      lat: 'number',
-      lon: 'number',
+  return searchTflData(flattenedStopPoints, query, {
+    fields: ['id', 'commonName', 'modesString'],
+    maxResults: 15,
+    boost: {
+      commonName: 2.0,
+      modesString: 1.3,
     },
-    query,
-    15
-  );
+  });
 }
 
 async function filterArrivals(
@@ -307,19 +357,57 @@ async function filterArrivals(
     .sort((a, b) => a.timeToStation - b.timeToStation)
     .slice(0, 10);
 
-  return filterTflResponse(
-    sortedArrivals,
-    {
-      id: 'string',
-      lineName: 'string',
-      platformName: 'string',
-      destinationName: 'string',
-      towards: 'string',
-      timeToStation: 'number',
+  return searchTflData(sortedArrivals, query, {
+    fields: ['lineName', 'platformName', 'destinationName', 'towards'],
+    maxResults: 8,
+    boost: {
+      lineName: 2.0,
+      destinationName: 1.8,
+      towards: 1.5,
+      platformName: 1.2,
     },
-    query,
-    8
-  );
+  });
+}
+
+async function filterAccidentStats(
+  accidents: TFLAccidentDetail[],
+  query?: string
+): Promise<TFLAccidentDetail[]> {
+  return searchTflData(accidents, query, {
+    fields: ['location', 'severity', 'borough'],
+    maxResults: 50,
+    boost: {
+      location: 2.0,
+      severity: 1.5,
+      borough: 1.3,
+    },
+  });
+}
+
+async function filterBikePoints(
+  bikePoints: TFLBikePoint[],
+  query?: string
+): Promise<TFLBikePoint[]> {
+  return searchTflData(bikePoints, query, {
+    fields: ['id', 'commonName', 'placeType'],
+    maxResults: 30,
+    boost: {
+      commonName: 2.0,
+      id: 1.3,
+    },
+  });
+}
+
+async function filterPlaces(places: TFLPlace[], query?: string): Promise<TFLPlace[]> {
+  return searchTflData(places, query, {
+    fields: ['id', 'commonName', 'placeType'],
+    maxResults: 50,
+    boost: {
+      commonName: 2.0,
+      placeType: 1.5,
+      id: 1.2,
+    },
+  });
 }
 
 async function filterJourneyPlan(
@@ -661,6 +749,144 @@ class TFLClient {
 
     return response.json() as Promise<TFLAirQuality>;
   }
+
+  async getAccidentStats(year: number): Promise<TFLAccidentDetail[]> {
+    const response = await fetch(this.buildUrl(`/AccidentStats/${year}`), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLAccidentDetail[]>;
+  }
+
+  async getBikePoints(): Promise<TFLBikePoint[]> {
+    const response = await fetch(this.buildUrl('/BikePoint'), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLBikePoint[]>;
+  }
+
+  async getBikePoint(id: string): Promise<TFLBikePoint> {
+    const response = await fetch(this.buildUrl(`/BikePoint/${id}`), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLBikePoint>;
+  }
+
+  async searchBikePoints(query: string): Promise<TFLBikePoint[]> {
+    const response = await fetch(this.buildUrl('/BikePoint/Search', { query }), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLBikePoint[]>;
+  }
+
+  async getPlaceCategories(): Promise<TFLPlaceCategory[]> {
+    const response = await fetch(this.buildUrl('/Place/Meta/Categories'), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLPlaceCategory[]>;
+  }
+
+  async getPlaceTypes(): Promise<TFLPlaceType[]> {
+    const response = await fetch(this.buildUrl('/Place/Meta/PlaceTypes'), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLPlaceType[]>;
+  }
+
+  async getPlace(id: string, includeChildren = false): Promise<TFLPlace> {
+    const params: Record<string, string> = {};
+    if (includeChildren) {
+      params.includeChildren = 'true';
+    }
+
+    const response = await fetch(this.buildUrl(`/Place/${id}`, params), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLPlace>;
+  }
+
+  async searchPlaces(name: string, types?: string[]): Promise<TFLPlace[]> {
+    const params: Record<string, string> = { name };
+    if (types && types.length > 0) {
+      params.types = types.join(',');
+    }
+
+    const response = await fetch(this.buildUrl('/Place/Search', params), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLPlace[]>;
+  }
+
+  async getPlacesByType(types: string[], activeOnly = false): Promise<TFLPlace[]> {
+    const params: Record<string, string> = {};
+    if (activeOnly) {
+      params.activeOnly = 'true';
+    }
+
+    const response = await fetch(
+      this.buildUrl(`/Place/Type/${types.join(',')}`, params),
+      {
+        headers: this.headers,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLPlace[]>;
+  }
+
+  async getPlacesAt(type: string, lat: number, lon: number): Promise<TFLPlace[]> {
+    const response = await fetch(this.buildUrl(`/Place/${type}/At/${lat}/${lon}`), {
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`TFL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<TFLPlace[]>;
+  }
 }
 
 export const TFLConnectorConfig = mcpConnectorConfig({
@@ -887,6 +1113,192 @@ export const TFLConnectorConfig = mcpConnectorConfig({
           return JSON.stringify(airQuality, null, 2);
         } catch (error) {
           return `Failed to get air quality: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_ACCIDENT_STATS: tool({
+      name: 'tfl_get_accident_stats',
+      description: 'Get accident statistics for a specific year in London',
+      schema: z.object({
+        year: z.number().describe('Year to get accident statistics for (e.g., 2023)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const accidents = await client.getAccidentStats(args.year);
+          const filtered = await filterAccidentStats(accidents);
+          return JSON.stringify(filtered, null, 2);
+        } catch (error) {
+          return `Failed to get accident stats: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_BIKE_POINTS: tool({
+      name: 'tfl_get_bike_points',
+      description: 'Get all bike point locations (cycle hire stations) in London',
+      schema: z.object({}),
+      handler: async (_, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const bikePoints = await client.getBikePoints();
+          const filtered = await filterBikePoints(bikePoints);
+          return JSON.stringify(filtered, null, 2);
+        } catch (error) {
+          return `Failed to get bike points: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_BIKE_POINT: tool({
+      name: 'tfl_get_bike_point',
+      description:
+        'Get detailed information about a specific bike point (cycle hire station)',
+      schema: z.object({
+        id: z.string().describe('Bike point ID (e.g., "BikePoints_1")'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const bikePoint = await client.getBikePoint(args.id);
+          return JSON.stringify(bikePoint, null, 2);
+        } catch (error) {
+          return `Failed to get bike point: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    SEARCH_BIKE_POINTS: tool({
+      name: 'tfl_search_bike_points',
+      description: 'Search for bike points (cycle hire stations) by name or location',
+      schema: z.object({
+        query: z
+          .string()
+          .describe('Search query (station name or area, e.g., "Hyde Park")'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const results = await client.searchBikePoints(args.query);
+          const filtered = await filterBikePoints(results, args.query);
+          return JSON.stringify(filtered, null, 2);
+        } catch (error) {
+          return `Failed to search bike points: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PLACE_CATEGORIES: tool({
+      name: 'tfl_get_place_categories',
+      description: 'Get all available place property categories and keys',
+      schema: z.object({}),
+      handler: async (_, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const categories = await client.getPlaceCategories();
+          return JSON.stringify(categories, null, 2);
+        } catch (error) {
+          return `Failed to get place categories: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PLACE_TYPES: tool({
+      name: 'tfl_get_place_types',
+      description: 'Get all available place types',
+      schema: z.object({}),
+      handler: async (_, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const types = await client.getPlaceTypes();
+          return JSON.stringify(types, null, 2);
+        } catch (error) {
+          return `Failed to get place types: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PLACE: tool({
+      name: 'tfl_get_place',
+      description: 'Get detailed information about a specific place',
+      schema: z.object({
+        id: z.string().describe('Place ID'),
+        includeChildren: z
+          .boolean()
+          .optional()
+          .describe('Include child places in response'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const place = await client.getPlace(args.id, args.includeChildren);
+          return JSON.stringify(place, null, 2);
+        } catch (error) {
+          return `Failed to get place: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    SEARCH_PLACES: tool({
+      name: 'tfl_search_places',
+      description: 'Search for places by name, optionally filtered by place types',
+      schema: z.object({
+        name: z.string().describe('Place name to search for'),
+        types: z
+          .array(z.string())
+          .optional()
+          .describe('Place types to filter by (e.g., ["StopPoint", "BikePoint"])'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const results = await client.searchPlaces(args.name, args.types);
+          const filtered = await filterPlaces(results, args.name);
+          return JSON.stringify(filtered, null, 2);
+        } catch (error) {
+          return `Failed to search places: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PLACES_BY_TYPE: tool({
+      name: 'tfl_get_places_by_type',
+      description: 'Get places of specific type(s)',
+      schema: z.object({
+        types: z
+          .array(z.string())
+          .describe('Place types to retrieve (e.g., ["StopPoint", "BikePoint"])'),
+        activeOnly: z.boolean().optional().describe('Only return active places'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const places = await client.getPlacesByType(args.types, args.activeOnly);
+          const filtered = await filterPlaces(places);
+          return JSON.stringify(filtered, null, 2);
+        } catch (error) {
+          return `Failed to get places by type: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PLACES_AT_LOCATION: tool({
+      name: 'tfl_get_places_at_location',
+      description: 'Find places of a specific type at geographic coordinates',
+      schema: z.object({
+        type: z.string().describe('Place type to search for'),
+        lat: z.number().describe('Latitude coordinate'),
+        lon: z.number().describe('Longitude coordinate'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { appKey } = await context.getCredentials();
+          const client = new TFLClient(appKey);
+          const places = await client.getPlacesAt(args.type, args.lat, args.lon);
+          const filtered = await filterPlaces(places);
+          return JSON.stringify(filtered, null, 2);
+        } catch (error) {
+          return `Failed to get places at location: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
