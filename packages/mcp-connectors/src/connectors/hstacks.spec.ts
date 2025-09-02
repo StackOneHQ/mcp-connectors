@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
+import { describe, expect, it } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { HStacksConnectorConfig } from './hstacks';
 
@@ -22,7 +22,8 @@ describe('#HStacksConnector', () => {
   describe('.GET_AVAILABLE_IMAGES', () => {
     describe('when valid credentials are provided', () => {
       it('returns available images', async () => {
-        const tool = HStacksConnectorConfig.tools.GET_AVAILABLE_IMAGES as MCPToolDefinition;
+        const tool = HStacksConnectorConfig.tools
+          .GET_AVAILABLE_IMAGES as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { accessToken: '58b011ed-28db-412e-b49f-e4724123c2a7' },
         });
@@ -36,7 +37,8 @@ describe('#HStacksConnector', () => {
 
     describe('when no credentials are provided', () => {
       it('returns an error message', async () => {
-        const tool = HStacksConnectorConfig.tools.GET_AVAILABLE_IMAGES as MCPToolDefinition;
+        const tool = HStacksConnectorConfig.tools
+          .GET_AVAILABLE_IMAGES as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: {},
         });
@@ -51,7 +53,8 @@ describe('#HStacksConnector', () => {
   describe('.GET_AVAILABLE_LOCATIONS', () => {
     describe('when valid credentials are provided', () => {
       it('returns available locations', async () => {
-        const tool = HStacksConnectorConfig.tools.GET_AVAILABLE_LOCATIONS as MCPToolDefinition;
+        const tool = HStacksConnectorConfig.tools
+          .GET_AVAILABLE_LOCATIONS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { accessToken: '58b011ed-28db-412e-b49f-e4724123c2a7' },
         });
@@ -64,7 +67,8 @@ describe('#HStacksConnector', () => {
 
     describe('when server type filter is provided', () => {
       it('filters locations by server type', async () => {
-        const tool = HStacksConnectorConfig.tools.GET_AVAILABLE_LOCATIONS as MCPToolDefinition;
+        const tool = HStacksConnectorConfig.tools
+          .GET_AVAILABLE_LOCATIONS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { accessToken: '58b011ed-28db-412e-b49f-e4724123c2a7' },
         });
@@ -79,7 +83,8 @@ describe('#HStacksConnector', () => {
   describe('.GET_AVAILABLE_SERVERS', () => {
     describe('when valid credentials are provided', () => {
       it('returns available server types', async () => {
-        const tool = HStacksConnectorConfig.tools.GET_AVAILABLE_SERVERS as MCPToolDefinition;
+        const tool = HStacksConnectorConfig.tools
+          .GET_AVAILABLE_SERVERS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { accessToken: '58b011ed-28db-412e-b49f-e4724123c2a7' },
         });
@@ -178,7 +183,9 @@ describe('#HStacksConnector', () => {
 
         const actual = await tool.handler(stackData, mockContext);
 
-        expect(actual).toContain('Failed to deploy stack: No access token provided in credentials');
+        expect(actual).toContain(
+          'Failed to deploy stack: No access token provided in credentials'
+        );
       });
     });
   });
