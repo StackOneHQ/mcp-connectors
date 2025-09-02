@@ -30,6 +30,7 @@ import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
+import { RetoolConnectorConfig } from './connectors/retool';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
 import { StackOneConnectorConfig } from './connectors/stackone';
@@ -74,6 +75,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  RetoolConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
@@ -117,6 +119,7 @@ export {
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  RetoolConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
