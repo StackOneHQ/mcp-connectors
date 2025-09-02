@@ -333,5 +333,63 @@ export const OnePasswordConnectorConfig = mcpConnectorConfig({
         }
       },
     }),
+    SHARE_ITEM: tool({
+      name: '1password_share_item',
+      description: 'Share an item securely with others using 1Password CLI',
+      schema: z.object({
+        vaultId: z.string().describe('The ID of the vault containing the item'),
+        itemId: z.string().describe('The ID of the item to share'),
+        emails: z
+          .array(z.string().email())
+          .optional()
+          .describe('Optional email addresses to restrict sharing to specific people'),
+        expiresIn: z
+          .string()
+          .optional()
+          .describe('How long the shared item is valid for (e.g., "1d", "1w", "30d")'),
+      }),
+      handler: async (args, context) => {
+        try {
+          // First verify the item exists using the Connect API
+          const { serverUrl, token } = await context.getCredentials();
+          const op = OnePasswordConnect({
+            serverURL: serverUrl,
+            token,
+            keepAlive: true,
+          });
+
+          // Verify item exists
+          await op.getItem(args.vaultId, args.itemId);
+
+          // Build the CLI command
+          const { exec } = require('node:child_process');
+          const { promisify } = require('node:util');
+          const execAsync = promisify(exec);
+
+          let command = `op item share "${args.itemId}" --vault="${args.vaultId}"`;
+
+          if (args.emails && args.emails.length > 0) {
+            command += ` --emails="${args.emails.join(',')}"`;
+          }
+
+          if (args.expiresIn) {
+            command += ` --expires-in="${args.expiresIn}"`;
+          }
+
+          const { stdout, stderr } = await execAsync(command);
+
+          if (stderr) {
+            return `Warning: ${stderr}\nShare URL: ${stdout.trim()}`;
+          }
+
+          return `Item shared successfully. Share URL: ${stdout.trim()}`;
+        } catch (error) {
+          if (error instanceof Error && error.message.includes('Command failed')) {
+            return `Failed to share item via CLI: ${error.message}. Please ensure 1Password CLI is installed and authenticated.`;
+          }
+          return `Failed to share item: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
   }),
 });
