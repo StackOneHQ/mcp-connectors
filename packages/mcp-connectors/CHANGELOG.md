@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.14](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.13...mcp-connectors-v0.0.14) (2025-09-02)
+
+
+### Bug Fixes
+
+* update Modal connector implementation ([#119](https://github.com/StackOneHQ/mcp-connectors/issues/119)) ([d486e18](https://github.com/StackOneHQ/mcp-connectors/commit/d486e18f94d80d0aaabc92b9a687ee860f98e984))
+
 ## [0.0.13](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.12...mcp-connectors-v0.0.13) (2025-09-02)
 
 
