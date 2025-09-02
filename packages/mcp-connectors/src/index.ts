@@ -30,6 +30,7 @@ import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
+import { RetoolConnectorConfig } from './connectors/retool';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
 import { StackOneConnectorConfig } from './connectors/stackone';
@@ -42,6 +43,7 @@ import { TodoListConnectorConfig } from './connectors/todolist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
+import { ZapierConnectorConfig } from './connectors/zapier';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
@@ -75,6 +77,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  RetoolConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
@@ -85,6 +88,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+  ZapierConnectorConfig,
 ] as const;
 
 export {
@@ -119,6 +123,7 @@ export {
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  RetoolConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
@@ -129,4 +134,5 @@ export {
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+  ZapierConnectorConfig,
 };
