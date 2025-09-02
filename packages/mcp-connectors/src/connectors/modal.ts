@@ -51,7 +51,7 @@ export const ModalConnectorConfig = mcpConnectorConfig({
   name: 'Modal',
   key: 'modal',
   version: '1.0.0',
-  logo: 'https://modal.com/favicon.ico',
+  logo: 'https://modal.com/assets/favicon.svg',
   credentials: z.object({
     tokenId: z
       .string()
@@ -107,10 +107,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log(
-            '[Modal SDK] CREATE_SANDBOX called with args:',
-            JSON.stringify(args, null, 2)
-          );
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           // Initialize Modal client
@@ -147,10 +143,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           // Create sandbox
           const sandbox = await app.createSandbox(image, sandboxOptions);
 
-          console.log('[Modal SDK] Sandbox created:', sandbox.sandboxId);
           return formatSandboxInfo(sandbox);
         } catch (error) {
-          console.error('[Modal SDK] CREATE_SANDBOX error:', error);
           return `Failed to create sandbox: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -163,7 +157,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] GET_SANDBOX called for:', args.sandboxId);
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -183,7 +176,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] GET_SANDBOX error:', error);
           return `Failed to get sandbox: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -196,7 +188,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] TERMINATE_SANDBOX called for:', args.sandboxId);
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -204,10 +195,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           const sandbox = await Sandbox.fromId(args.sandboxId);
           await sandbox.terminate();
 
-          console.log('[Modal SDK] Sandbox terminated successfully:', args.sandboxId);
           return `Sandbox ${args.sandboxId} terminated successfully`;
         } catch (error) {
-          console.error('[Modal SDK] TERMINATE_SANDBOX error:', error);
           return `Failed to terminate sandbox: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -232,10 +221,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] EXEC_IN_SANDBOX called');
-          console.log('[Modal SDK] Sandbox:', args.sandboxId);
-          console.log('[Modal SDK] Command:', args.command);
-          console.log('[Modal SDK] Background:', args.background);
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -259,7 +244,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
 
           // If background mode, return immediately without waiting
           if (args.background) {
-            console.log('[Modal SDK] Process started in background');
             return JSON.stringify(
               {
                 message: 'Command started in background',
@@ -272,10 +256,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           }
 
           const result = await formatProcessInfo(process);
-          console.log('[Modal SDK] Process completed');
           return result;
         } catch (error) {
-          console.error('[Modal SDK] EXEC_IN_SANDBOX error:', error);
           return `Failed to execute command: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -287,7 +269,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       schema: z.object({}),
       handler: async (_args, context) => {
         try {
-          console.log('[Modal SDK] LIST_SANDBOXES called');
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -304,7 +285,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] LIST_SANDBOXES error:', error);
           return `Failed to list sandboxes: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -335,7 +315,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] CREATE_SANDBOX_WITH_VOLUME called');
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -363,7 +342,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
 
           const sandbox = await app.createSandbox(image, sandboxOptions);
 
-          console.log('[Modal SDK] Sandbox with volume created:', sandbox.sandboxId);
           return JSON.stringify(
             {
               sandbox_id: sandbox.sandboxId,
@@ -375,7 +353,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] CREATE_SANDBOX_WITH_VOLUME error:', error);
           return `Failed to create sandbox with volume: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -389,7 +366,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] SANDBOX_READ_FILE called');
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -413,7 +389,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] SANDBOX_READ_FILE error:', error);
           return `Failed to read file: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -428,7 +403,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] SANDBOX_WRITE_FILE called');
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -450,7 +424,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] SANDBOX_WRITE_FILE error:', error);
           return `Failed to write file: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -463,7 +436,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] GET_SANDBOX_TUNNELS called');
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -488,7 +460,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] GET_SANDBOX_TUNNELS error:', error);
           return `Failed to get tunnels: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
@@ -501,7 +472,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          console.log('[Modal SDK] WAIT_FOR_SANDBOX called');
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -519,7 +489,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
             2
           );
         } catch (error) {
-          console.error('[Modal SDK] WAIT_FOR_SANDBOX error:', error);
           return `Failed to wait for sandbox: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
