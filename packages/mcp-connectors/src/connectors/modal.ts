@@ -222,12 +222,20 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           .describe('Command to execute (e.g., ["python", "-c", "print(\'hello\')"])'),
         workdir: z.string().optional().describe('Working directory for the command'),
         stdin: z.string().optional().describe('Input to send to the command'),
+        background: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe(
+            'Run the command in background without waiting for completion. Useful for servers or other very long-running processes.'
+          ),
       }),
       handler: async (args, context) => {
         try {
           console.log('[Modal SDK] EXEC_IN_SANDBOX called');
           console.log('[Modal SDK] Sandbox:', args.sandboxId);
           console.log('[Modal SDK] Command:', args.command);
+          console.log('[Modal SDK] Background:', args.background);
           const { tokenId, tokenSecret } = await context.getCredentials();
 
           setupModalClient(tokenId, tokenSecret);
@@ -247,6 +255,20 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           if (args.stdin && process.stdin) {
             await process.stdin.writeText(args.stdin);
             await process.stdin.close();
+          }
+
+          // If background mode, return immediately without waiting
+          if (args.background) {
+            console.log('[Modal SDK] Process started in background');
+            return JSON.stringify(
+              {
+                message: 'Command started in background',
+                sandbox_id: args.sandboxId,
+                is_running: true,
+              },
+              null,
+              2
+            );
           }
 
           const result = await formatProcessInfo(process);
