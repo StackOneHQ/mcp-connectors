@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.13](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.12...mcp-connectors-v0.0.13) (2025-09-02)
+
+
+### Features
+
+* add Modal connector with sandbox execution and logging tools ([#64](https://github.com/StackOneHQ/mcp-connectors/issues/64)) ([c0c377c](https://github.com/StackOneHQ/mcp-connectors/commit/c0c377ccea42c04b7186e49ab4fad58d4aa950f1))
+
 ## [0.0.12](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.11...mcp-connectors-v0.0.12) (2025-09-02)
 
 
