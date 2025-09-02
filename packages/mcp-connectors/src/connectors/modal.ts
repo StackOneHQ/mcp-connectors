@@ -1,16 +1,23 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
-import {
-  App,
-  type ContainerProcess,
-  Image,
-  Sandbox,
-  type SandboxCreateOptions,
-  initializeClient,
-} from 'modal';
 import { z } from 'zod';
 
+// Custom interface for sandbox options to avoid importing Modal types
+interface SandboxOptions {
+  command?: string[];
+  timeout?: number;
+  encryptedPorts?: number[];
+  unencryptedPorts?: number[];
+  cpu?: number;
+  memory?: number;
+  gpu?: string;
+  workdir?: string;
+  secrets?: any[];
+  volumes?: Record<string, any>;
+}
+
 // Initialize the Modal client with credentials
-function setupModalClient(tokenId: string, tokenSecret: string) {
+async function setupModalClient(tokenId: string, tokenSecret: string) {
+  const { initializeClient } = await import('modal');
   initializeClient({
     tokenId,
     tokenSecret,
@@ -18,7 +25,9 @@ function setupModalClient(tokenId: string, tokenSecret: string) {
 }
 
 // Helper to format sandbox info for display
-function formatSandboxInfo(sandbox: Sandbox): string {
+function formatSandboxInfo(sandbox: {
+  sandboxId: string;
+}): string {
   return JSON.stringify(
     {
       sandbox_id: sandbox.sandboxId,
@@ -30,7 +39,11 @@ function formatSandboxInfo(sandbox: Sandbox): string {
 }
 
 // Helper to format process info for display
-async function formatProcessInfo(process: ContainerProcess<string>): Promise<string> {
+async function formatProcessInfo(process: {
+  stdout?: { readText: () => Promise<string> };
+  stderr?: { readText: () => Promise<string> };
+  wait?: () => Promise<number>;
+}): Promise<string> {
   const stdout = (await process.stdout?.readText()) || '';
   const stderr = (await process.stderr?.readText()) || '';
   const exitCode = (await process.wait?.()) || 0;
@@ -109,8 +122,11 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
+          // Dynamically import Modal
+          const { App, Image, Secret } = await import('modal');
+
           // Initialize Modal client
-          setupModalClient(tokenId, tokenSecret);
+          await setupModalClient(tokenId, tokenSecret);
 
           // Create or get app
           const app = await App.lookup(args.appName || 'mcp-sandbox', {
@@ -122,7 +138,7 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           const image = Image.fromRegistry(imageTag);
 
           // Prepare sandbox options
-          const sandboxOptions: SandboxCreateOptions = {
+          const sandboxOptions: SandboxOptions = {
             command: args.entrypoint,
             timeout: args.timeout,
             encryptedPorts: args.encrypted_ports,
@@ -135,7 +151,6 @@ export const ModalConnectorConfig = mcpConnectorConfig({
 
           // Handle secrets if provided
           if (args.secrets) {
-            const { Secret } = await import('modal');
             const secretObj = await Secret.fromObject(args.secrets);
             sandboxOptions.secrets = [secretObj];
           }
@@ -159,7 +174,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -190,7 +206,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
           await sandbox.terminate();
@@ -223,7 +240,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -271,7 +289,7 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          await setupModalClient(tokenId, tokenSecret);
 
           // Note: The Modal SDK doesn't provide a direct way to list all sandboxes
           // This is a limitation of the current SDK
@@ -317,9 +335,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
-
-          const { Volume } = await import('modal');
+          const { App, Image, Volume } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const app = await App.lookup(args.appName || 'mcp-sandbox', {
             createIfMissing: true,
@@ -332,7 +349,7 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           const imageTag = args.image || 'python:3.12-slim';
           const image = Image.fromRegistry(imageTag);
 
-          const sandboxOptions: SandboxCreateOptions = {
+          const sandboxOptions: SandboxOptions = {
             command: args.entrypoint,
             timeout: args.timeout,
             volumes: {
@@ -368,7 +385,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -405,7 +423,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -438,7 +457,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
           const tunnels = await sandbox.tunnels();
@@ -446,8 +466,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
           const tunnelInfo: Record<string, { url: string; port: number }> = {};
           for (const [port, tunnel] of Object.entries(tunnels)) {
             tunnelInfo[port] = {
-              url: tunnel.url,
-              port: tunnel.port,
+              url: (tunnel as any).url,
+              port: (tunnel as any).port,
             };
           }
 
@@ -474,7 +494,8 @@ export const ModalConnectorConfig = mcpConnectorConfig({
         try {
           const { tokenId, tokenSecret } = await context.getCredentials();
 
-          setupModalClient(tokenId, tokenSecret);
+          const { Sandbox } = await import('modal');
+          await setupModalClient(tokenId, tokenSecret);
 
           const sandbox = await Sandbox.fromId(args.sandboxId);
           const exitCode = await sandbox.wait();
