@@ -1,0 +1,21 @@
+{
+  "name": "@stackone/mcp-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "spawn": "bun run src/spawn-server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "*",
+    "@stackone/mcp-config-types": "workspace:*",
+    "@stackone/mcp-connectors": "workspace:*",
+    "express": "^4.21.2",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.5"
+  }
+}

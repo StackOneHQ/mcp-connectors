@@ -21,6 +21,21 @@ Rules:
 
 - capabilities should be named like `<connector name>_<tool name>` or `<connector name>_<resource name>`
 
+## Logos
+
+In general we want to use the stackone-logos.com api when we specify the logos. The format is `https://stackone-logos.com/api/<connector-key>/<logo-type>/<format>`
+
+- connector-key is the key of the connector
+- logo-type is the type of logo you want to use.
+- format is the format of the logo you want to use.
+- example: `https://stackone-logos.com/api/googledrive/filled/svg`
+- the logo type can be `filled` or `icon`
+- the format can be `svg` or `png`
+
+the connector keys are all lower case with special characters and spaces removed.
+
+Otherwise we can accept an external image url as a logo.
+
 ## Testing Requirements
 
 ### File Organization
