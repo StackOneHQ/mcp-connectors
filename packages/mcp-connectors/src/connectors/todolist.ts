@@ -19,8 +19,10 @@ export const TodoListConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   credentials: z.object({}),
   setup: z.object({}),
-  description: 'A memory-based todo list connector that allows you to create, list, update, and delete todos with persistent storage.',
-  examplePrompt: 'Create a new todo item for "Buy groceries", then list all todos and mark it as completed.',
+  description:
+    'A memory-based todo list connector that allows you to create, list, update, and delete todos with persistent storage.',
+  examplePrompt:
+    'Create a new todo item for "Buy groceries", then list all todos and mark it as completed.',
   logo: 'https://stackone-logos.com/api/todolist/filled/svg',
   tools: (tool) => ({
     LIST_TODOS: tool({
@@ -29,18 +31,23 @@ export const TodoListConnectorConfig = mcpConnectorConfig({
       schema: z.object({}),
       handler: async (_args, context) => {
         try {
-          
-          const todos = await context.getData<Todo[]>('todos') || [];
-          
+          const todos = (await context.getData<Todo[]>('todos')) || [];
+
           if (todos.length === 0) {
             return 'No todos found. Use create_todo to add your first todo.';
           }
 
-          const todoList = todos.map(todo => {
-            const dueDateStr = todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date';
-            const priorityStr = todo.priority ? `Priority: ${todo.priority}` : 'No priority';
-            return `ID: ${todo.id}\nTitle: ${todo.title || 'No title'}\nDescription: ${todo.description || 'No description'}\nDue Date: ${dueDateStr}\n${priorityStr}\nCreated: ${todo.createdAt ? new Date(todo.createdAt).toLocaleDateString() : 'Unknown'}\nUpdated: ${todo.updatedAt ? new Date(todo.updatedAt).toLocaleDateString() : 'Unknown'}`;
-          }).join('\n\n---\n\n');
+          const todoList = todos
+            .map((todo) => {
+              const dueDateStr = todo.dueDate
+                ? new Date(todo.dueDate).toLocaleDateString()
+                : 'No due date';
+              const priorityStr = todo.priority
+                ? `Priority: ${todo.priority}`
+                : 'No priority';
+              return `ID: ${todo.id}\nTitle: ${todo.title || 'No title'}\nDescription: ${todo.description || 'No description'}\nDue Date: ${dueDateStr}\n${priorityStr}\nCreated: ${todo.createdAt ? new Date(todo.createdAt).toLocaleDateString() : 'Unknown'}\nUpdated: ${todo.updatedAt ? new Date(todo.updatedAt).toLocaleDateString() : 'Unknown'}`;
+            })
+            .join('\n\n---\n\n');
 
           return `Found ${todos.length} todo(s):\n\n${todoList}`;
         } catch (error) {
@@ -56,16 +63,21 @@ export const TodoListConnectorConfig = mcpConnectorConfig({
         title: z.string().describe('Title of the todo'),
         description: z.string().optional().describe('Description of the todo'),
         dueDate: z.string().optional().describe('Due date in YYYY-MM-DD format'),
-        priority: z.number().min(1).max(5).optional().describe('Priority level (1-5, where 5 is highest)'),
+        priority: z
+          .number()
+          .min(1)
+          .max(5)
+          .optional()
+          .describe('Priority level (1-5, where 5 is highest)'),
       }),
       handler: async (args, context) => {
         try {
-          const todos = await context.getData<Todo[]>('todos') || [];
-          const nextId = todos.length > 0 ? Math.max(...todos.map(t => t.id)) + 1 : 1;
-          
+          const todos = (await context.getData<Todo[]>('todos')) || [];
+          const nextId = todos.length > 0 ? Math.max(...todos.map((t) => t.id)) + 1 : 1;
+
           const now = new Date();
           const dueDate = args.dueDate ? new Date(args.dueDate) : null;
-          
+
           const newTodo: Todo = {
             id: nextId,
             title: args.title,
@@ -94,23 +106,35 @@ export const TodoListConnectorConfig = mcpConnectorConfig({
         title: z.string().optional().describe('New title for the todo'),
         description: z.string().optional().describe('New description for the todo'),
         dueDate: z.string().optional().describe('New due date in YYYY-MM-DD format'),
-        priority: z.number().min(1).max(5).optional().describe('New priority level (1-5, where 5 is highest)'),
+        priority: z
+          .number()
+          .min(1)
+          .max(5)
+          .optional()
+          .describe('New priority level (1-5, where 5 is highest)'),
       }),
       handler: async (args, context) => {
         try {
-          const todos = await context.getData<Todo[]>('todos') || [];
-          const todoIndex = todos.findIndex(todo => todo.id === args.id);
-          
+          const todos = (await context.getData<Todo[]>('todos')) || [];
+          const todoIndex = todos.findIndex((todo) => todo.id === args.id);
+
           if (todoIndex === -1) {
             return `Todo with ID ${args.id} not found. Use list_todos to see available todos.`;
           }
 
-          const existingTodo = todos[todoIndex]!;
+          const existingTodo = todos[todoIndex];
+          if (!existingTodo) {
+            return `Todo with ID ${args.id} not found. Use list_todos to see available todos.`;
+          }
           const updatedTodo: Todo = {
             id: existingTodo.id,
             title: args.title !== undefined ? args.title : existingTodo.title,
-            description: args.description !== undefined ? args.description : existingTodo.description,
-            dueDate: args.dueDate !== undefined ? new Date(args.dueDate) : existingTodo.dueDate,
+            description:
+              args.description !== undefined
+                ? args.description
+                : existingTodo.description,
+            dueDate:
+              args.dueDate !== undefined ? new Date(args.dueDate) : existingTodo.dueDate,
             priority: args.priority !== undefined ? args.priority : existingTodo.priority,
             createdAt: existingTodo.createdAt,
             updatedAt: new Date(),
@@ -134,14 +158,17 @@ export const TodoListConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const todos = await context.getData<Todo[]>('todos') || [];
-          const todoIndex = todos.findIndex(todo => todo.id === args.id);
-          
+          const todos = (await context.getData<Todo[]>('todos')) || [];
+          const todoIndex = todos.findIndex((todo) => todo.id === args.id);
+
           if (todoIndex === -1) {
             return `Todo with ID ${args.id} not found. Use list_todos to see available todos.`;
           }
 
-          const deletedTodo = todos[todoIndex]!;
+          const deletedTodo = todos[todoIndex];
+          if (!deletedTodo) {
+            return `Todo with ID ${args.id} not found. Use list_todos to see available todos.`;
+          }
           todos.splice(todoIndex, 1);
           await context.setData('todos', todos);
 

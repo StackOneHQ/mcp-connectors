@@ -79,28 +79,42 @@ describe('#TodoListConnector', () => {
     describe('when creating todo with all fields', () => {
       it('creates todo successfully', async () => {
         const existingTodos = [
-          { id: 1, title: 'Existing', description: null, dueDate: null, priority: null, createdAt: new Date(), updatedAt: new Date() }
+          {
+            id: 1,
+            title: 'Existing',
+            description: null,
+            dueDate: null,
+            priority: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ];
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
         const tool = TodoListConnectorConfig.tools.CREATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({
-          title: 'New Todo',
-          description: 'New Description',
-          dueDate: '2025-01-01',
-          priority: 5,
-        }, mockContext);
-
-        expect(mockContext.setData).toHaveBeenCalledWith('todos', expect.arrayContaining([
-          expect.objectContaining({ id: 1 }),
-          expect.objectContaining({
-            id: 2,
+        const actual = await tool.handler(
+          {
             title: 'New Todo',
             description: 'New Description',
+            dueDate: '2025-01-01',
             priority: 5,
-          }),
-        ]));
+          },
+          mockContext
+        );
+
+        expect(mockContext.setData).toHaveBeenCalledWith(
+          'todos',
+          expect.arrayContaining([
+            expect.objectContaining({ id: 1 }),
+            expect.objectContaining({
+              id: 2,
+              title: 'New Todo',
+              description: 'New Description',
+              priority: 5,
+            }),
+          ])
+        );
         expect(actual).toContain('Todo created successfully!');
         expect(actual).toContain('ID: 2');
         expect(actual).toContain('Title: New Todo');
@@ -114,19 +128,25 @@ describe('#TodoListConnector', () => {
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
         const tool = TodoListConnectorConfig.tools.CREATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({
-          title: 'Simple Todo',
-        }, mockContext);
-
-        expect(mockContext.setData).toHaveBeenCalledWith('todos', expect.arrayContaining([
-          expect.objectContaining({
-            id: 1,
+        const actual = await tool.handler(
+          {
             title: 'Simple Todo',
-            description: null,
-            dueDate: null,
-            priority: null,
-          }),
-        ]));
+          },
+          mockContext
+        );
+
+        expect(mockContext.setData).toHaveBeenCalledWith(
+          'todos',
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: 1,
+              title: 'Simple Todo',
+              description: null,
+              dueDate: null,
+              priority: null,
+            }),
+          ])
+        );
         expect(actual).toContain('Todo created successfully!');
         expect(actual).toContain('ID: 1');
         expect(actual).toContain('No description');
@@ -166,20 +186,26 @@ describe('#TodoListConnector', () => {
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
         const tool = TodoListConnectorConfig.tools.UPDATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({
-          id: 1,
-          title: 'Updated Title',
-          priority: 5,
-        }, mockContext);
-
-        expect(mockContext.setData).toHaveBeenCalledWith('todos', expect.arrayContaining([
-          expect.objectContaining({
+        const actual = await tool.handler(
+          {
             id: 1,
             title: 'Updated Title',
-            description: 'Original Description',
             priority: 5,
-          }),
-        ]));
+          },
+          mockContext
+        );
+
+        expect(mockContext.setData).toHaveBeenCalledWith(
+          'todos',
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: 1,
+              title: 'Updated Title',
+              description: 'Original Description',
+              priority: 5,
+            }),
+          ])
+        );
         expect(actual).toContain('Todo updated successfully!');
         expect(actual).toContain('ID: 1');
         expect(actual).toContain('Title: Updated Title');
@@ -194,14 +220,24 @@ describe('#TodoListConnector', () => {
         const tool = TodoListConnectorConfig.tools.UPDATE_TODO as MCPToolDefinition;
         const actual = await tool.handler({ id: 999 }, mockContext);
 
-        expect(actual).toBe('Todo with ID 999 not found. Use list_todos to see available todos.');
+        expect(actual).toBe(
+          'Todo with ID 999 not found. Use list_todos to see available todos.'
+        );
       });
     });
 
     describe('when setData throws error', () => {
       it('returns error message', async () => {
         const existingTodos = [
-          { id: 1, title: 'Test', description: null, dueDate: null, priority: null, createdAt: new Date(), updatedAt: new Date() }
+          {
+            id: 1,
+            title: 'Test',
+            description: null,
+            dueDate: null,
+            priority: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ];
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockRejectedValue(new Error('Storage error'));
@@ -218,8 +254,24 @@ describe('#TodoListConnector', () => {
     describe('when todo exists', () => {
       it('deletes todo successfully', async () => {
         const existingTodos = [
-          { id: 1, title: 'First Todo', description: null, dueDate: null, priority: null, createdAt: new Date(), updatedAt: new Date() },
-          { id: 2, title: 'Second Todo', description: null, dueDate: null, priority: null, createdAt: new Date(), updatedAt: new Date() },
+          {
+            id: 1,
+            title: 'First Todo',
+            description: null,
+            dueDate: null,
+            priority: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 2,
+            title: 'Second Todo',
+            description: null,
+            dueDate: null,
+            priority: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ];
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
@@ -227,12 +279,16 @@ describe('#TodoListConnector', () => {
         const tool = TodoListConnectorConfig.tools.DELETE_TODO as MCPToolDefinition;
         const actual = await tool.handler({ id: 1 }, mockContext);
 
-        expect(mockContext.setData).toHaveBeenCalledWith('todos', expect.arrayContaining([
-          expect.objectContaining({ id: 2, title: 'Second Todo' }),
-        ]));
-        expect(mockContext.setData).toHaveBeenCalledWith('todos', expect.not.arrayContaining([
-          expect.objectContaining({ id: 1 }),
-        ]));
+        expect(mockContext.setData).toHaveBeenCalledWith(
+          'todos',
+          expect.arrayContaining([
+            expect.objectContaining({ id: 2, title: 'Second Todo' }),
+          ])
+        );
+        expect(mockContext.setData).toHaveBeenCalledWith(
+          'todos',
+          expect.not.arrayContaining([expect.objectContaining({ id: 1 })])
+        );
         expect(actual).toContain('Todo deleted successfully!');
         expect(actual).toContain('Deleted: "First Todo" (ID: 1)');
       });
@@ -245,14 +301,24 @@ describe('#TodoListConnector', () => {
         const tool = TodoListConnectorConfig.tools.DELETE_TODO as MCPToolDefinition;
         const actual = await tool.handler({ id: 999 }, mockContext);
 
-        expect(actual).toBe('Todo with ID 999 not found. Use list_todos to see available todos.');
+        expect(actual).toBe(
+          'Todo with ID 999 not found. Use list_todos to see available todos.'
+        );
       });
     });
 
     describe('when setData throws error', () => {
       it('returns error message', async () => {
         const existingTodos = [
-          { id: 1, title: 'Test', description: null, dueDate: null, priority: null, createdAt: new Date(), updatedAt: new Date() }
+          {
+            id: 1,
+            title: 'Test',
+            description: null,
+            dueDate: null,
+            priority: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ];
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockRejectedValue(new Error('Storage error'));
@@ -293,12 +359,7 @@ describe('#TodoListConnector', () => {
       expect(typeof TodoListConnectorConfig.tools).toBe('object');
       expect(TodoListConnectorConfig.tools).toBeDefined();
 
-      const expectedTools = [
-        'LIST_TODOS',
-        'CREATE_TODO',
-        'UPDATE_TODO',
-        'DELETE_TODO',
-      ];
+      const expectedTools = ['LIST_TODOS', 'CREATE_TODO', 'UPDATE_TODO', 'DELETE_TODO'];
 
       for (const toolName of expectedTools) {
         expect(TodoListConnectorConfig.tools[toolName]).toBeDefined();
