@@ -273,11 +273,12 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
   }),
   setup: z.object({}),
   examplePrompt:
-    'Show me my recent cycling trips from RideWithGPS, get my user profile, and list my created routes with detailed information.',
+    'Get my RideWithGPS cycling profile and show my recent rides with performance data. Find my favorite routes and analyze the most challenging climbs. Discover upcoming cycling events in my area.',
   tools: (tool) => ({
     GET_CURRENT_USER: tool({
       name: 'ridewithgps_get_current_user',
-      description: 'Get the authenticated user profile and cycling statistics',
+      description:
+        "Get cyclist profile with total distance, trips, routes, location, and cycling preferences. Essential first step to understand the rider's cycling background and stats.",
       schema: z.object({}),
       handler: async (_args, context) => {
         try {
@@ -292,7 +293,8 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
     }),
     GET_ROUTES: tool({
       name: 'ridewithgps_get_routes',
-      description: 'Get user-owned cycling routes with basic information',
+      description:
+        "List user's planned cycling routes. These are pre-built routes that the user created for future bike rides, showing distance, elevation, and location details.",
       schema: z.object({
         userId: z
           .number()
@@ -315,7 +317,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
     GET_ROUTE_DETAILS: tool({
       name: 'ridewithgps_get_route_details',
       description:
-        'Get comprehensive information about a specific route including track points',
+        'Get complete route analysis with GPS coordinates, elevation profile, turn-by-turn directions, and points of interest. Use when you need detailed navigation or route analysis.',
       schema: z.object({
         routeId: z.number().describe('The ID of the route'),
       }),
@@ -330,49 +332,204 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
         }
       },
     }),
-    GET_TRIPS: tool({
-      name: 'ridewithgps_get_trips',
-      description: 'Get cycling trips/activities with performance metrics',
+    GET_RIDES: tool({
+      name: 'ridewithgps_get_rides',
+      description:
+        'View completed cycling activities with speed, power, heart rate, and performance analytics. Perfect for tracking fitness progress and analyzing ride history.',
       schema: z.object({
         userId: z
           .number()
           .optional()
           .describe('User ID (defaults to authenticated user)'),
         offset: z.number().default(0).describe('Offset for pagination'),
-        limit: z.number().default(20).describe('Number of trips to retrieve (max 50)'),
+        limit: z.number().default(20).describe('Number of rides to retrieve (max 50)'),
       }),
       handler: async (args, context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
-          const trips = await client.getTrips(args.userId, args.offset, args.limit);
-          return JSON.stringify(trips, null, 2);
+          const rides = await client.getTrips(args.userId, args.offset, args.limit);
+          return JSON.stringify(rides, null, 2);
         } catch (error) {
-          return `Failed to get trips: ${error instanceof Error ? error.message : String(error)}`;
+          return `Failed to get rides: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
-    GET_TRIP_DETAILS: tool({
-      name: 'ridewithgps_get_trip_details',
+    GET_RIDE_DETAILS: tool({
+      name: 'ridewithgps_get_ride_details',
       description:
-        'Get detailed performance data for a specific trip including track points',
+        'Deep dive into ride performance with GPS tracking, elevation changes, speed zones, power analysis, and heart rate data. Essential for detailed workout analysis.',
       schema: z.object({
-        tripId: z.number().describe('The ID of the trip'),
+        rideId: z.number().describe('The ID of the ride'),
       }),
       handler: async (args, context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
-          const trip = await client.getTripDetails(args.tripId);
-          return JSON.stringify(trip, null, 2);
+          const ride = await client.getTripDetails(args.rideId);
+          return JSON.stringify(ride, null, 2);
         } catch (error) {
-          return `Failed to get trip details: ${error instanceof Error ? error.message : String(error)}`;
+          return `Failed to get ride details: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    SEARCH_ROUTES: tool({
+      name: 'ridewithgps_search_routes',
+      description:
+        'Search for cycling routes by location, keywords, or criteria. Use this when you want to FIND routes in a specific area or with certain characteristics. Examples: "mountain routes near Portland", "gravel rides under 50km", "scenic coastal routes in California". Returns clickable URLs to open routes in RideWithGPS. Use this tool any time someone wants to discover or find cycling routes.',
+      schema: z.object({
+        keywords: z
+          .string()
+          .optional()
+          .describe(
+            'Search terms: "mountain", "gravel", "scenic", "coastal", "challenging", "beginner-friendly", etc.'
+          ),
+        startLocation: z
+          .string()
+          .optional()
+          .describe(
+            'Geographic search center: "Portland, OR", "London, UK", "Paris, France", "California", etc.'
+          ),
+        startDistance: z
+          .number()
+          .optional()
+          .describe(
+            'Search radius in miles from location (try 15, 25, 50, or 100 miles)'
+          ),
+        minLength: z
+          .number()
+          .optional()
+          .describe('Minimum distance in km (e.g., 20 for routes 20km+)'),
+        maxLength: z
+          .number()
+          .optional()
+          .describe('Maximum distance in km (e.g., 100 for routes under 100km)'),
+        minElevation: z
+          .number()
+          .optional()
+          .describe('Minimum climbing in meters (e.g., 500 for hilly routes)'),
+        maxElevation: z
+          .number()
+          .optional()
+          .describe('Maximum climbing in meters (e.g., 1000 for moderate routes)'),
+        sortBy: z
+          .enum([
+            'length asc',
+            'length desc',
+            'elevation_gain asc',
+            'elevation_gain desc',
+            'created_at desc',
+          ])
+          .optional()
+          .describe(
+            'Sort by: "length asc" (shortest first), "length desc" (longest first), "elevation_gain asc" (easiest climbs), "elevation_gain desc" (hardest climbs), "created_at desc" (newest routes)'
+          ),
+        limit: z
+          .number()
+          .default(20)
+          .describe('Number of routes to return (max 100, default 20)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, authToken } = await context.getCredentials();
+
+          // Build search parameters
+          const searchParams = new URLSearchParams();
+
+          if (args.keywords) searchParams.set('search[keywords]', args.keywords);
+          if (args.startLocation)
+            searchParams.set('search[start_location]', args.startLocation);
+          if (args.startDistance)
+            searchParams.set('search[start_distance]', args.startDistance.toString());
+          if (args.minLength)
+            searchParams.set('search[length_min]', args.minLength.toString());
+          if (args.maxLength)
+            searchParams.set('search[length_max]', args.maxLength.toString());
+          if (args.minElevation)
+            searchParams.set('search[elevation_min]', args.minElevation.toString());
+          if (args.maxElevation)
+            searchParams.set('search[elevation_max]', args.maxElevation.toString());
+          if (args.sortBy) searchParams.set('search[sort_by]', args.sortBy);
+
+          searchParams.set('search[offset]', '0');
+          searchParams.set('search[limit]', Math.min(args.limit, 100).toString());
+
+          // Make search request
+          const searchUrl = `/find/search.json?${searchParams.toString()}`;
+          console.log('Search URL:', searchUrl);
+
+          const client = new RideWithGPSClient(apiKey, authToken);
+          const response = await client.makeRequest<{ results: any[] }>(searchUrl);
+
+          // Enhance routes with URLs and formatted data
+          const enhancedRoutes = response.results.map((item) => {
+            // Handle both routes and trips from search results
+            const data = item.type === 'trip' ? item.trip : item.route || item;
+            const id = data.id;
+            const itemType = item.type || 'route';
+
+            return {
+              ...item,
+              ridewithgps_url:
+                itemType === 'trip'
+                  ? `https://ridewithgps.com/trips/${id}`
+                  : `https://ridewithgps.com/routes/${id}`,
+              distance_km: data.distance
+                ? Math.round((data.distance / 1000) * 10) / 10
+                : null,
+              distance_miles: data.distance
+                ? Math.round((data.distance / 1609.34) * 10) / 10
+                : null,
+              elevation_gain_ft: data.elevation_gain
+                ? Math.round(data.elevation_gain * 3.28084)
+                : null,
+              quick_stats:
+                data.distance && data.elevation_gain
+                  ? `${Math.round(data.distance / 1000)}km, ${Math.round(data.elevation_gain)}m climb`
+                  : null,
+              location_summary: [
+                data.locality,
+                data.administrative_area,
+                data.country_code,
+              ]
+                .filter(Boolean)
+                .join(', '),
+              result_type: itemType,
+              name: data.name,
+            };
+          });
+
+          // Create search summary
+          const summary = {
+            total_found: enhancedRoutes.length,
+            search_tip:
+              "Click the 'ridewithgps_url' links to open routes directly in RideWithGPS!",
+            search_parameters: {
+              keywords: args.keywords || null,
+              start_location: args.startLocation || null,
+              search_radius_miles: args.startDistance || null,
+              length_range_km:
+                args.minLength || args.maxLength
+                  ? `${args.minLength || 0} - ${args.maxLength || '∞'}`
+                  : null,
+              elevation_range_m:
+                args.minElevation || args.maxElevation
+                  ? `${args.minElevation || 0} - ${args.maxElevation || '∞'}`
+                  : null,
+              sort_by: args.sortBy || 'relevance',
+            },
+          };
+
+          return JSON.stringify({ summary, routes: enhancedRoutes }, null, 2);
+        } catch (error) {
+          return `Failed to search routes: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
     GET_EVENTS: tool({
       name: 'ridewithgps_get_events',
-      description: 'Get cycling events the user has participated in or created',
+      description:
+        'Find cycling events, group rides, races, and challenges. Discover local cycling community activities, organized rides, and competitive events to join.',
       schema: z.object({
         userId: z
           .number()
