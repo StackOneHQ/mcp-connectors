@@ -142,9 +142,11 @@ interface RideWithGPSEvent {
 class RideWithGPSClient {
   private baseUrl = 'https://ridewithgps.com';
   private apiKey: string;
+  private authToken: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, authToken: string) {
     this.apiKey = apiKey;
+    this.authToken = authToken;
   }
 
   private async makeRequest<T>(
@@ -187,9 +189,13 @@ class RideWithGPSClient {
   }
 
   async getRoutes(userId?: number, offset = 0, limit = 20): Promise<RideWithGPSRoute[]> {
-    let endpoint = '/users/current/routes.json';
+    let endpoint: string;
     if (userId) {
       endpoint = `/users/${userId}/routes.json`;
+    } else {
+      // Get current user ID first since "current" doesn't work for routes endpoint
+      const user = await this.getCurrentUser();
+      endpoint = `/users/${user.id}/routes.json`;
     }
 
     const params = {
@@ -212,9 +218,13 @@ class RideWithGPSClient {
   }
 
   async getTrips(userId?: number, offset = 0, limit = 20): Promise<RideWithGPSTrip[]> {
-    let endpoint = '/users/current/trips.json';
+    let endpoint: string;
     if (userId) {
       endpoint = `/users/${userId}/trips.json`;
+    } else {
+      // Get current user ID first since "current" doesn't work for trips endpoint
+      const user = await this.getCurrentUser();
+      endpoint = `/users/${user.id}/trips.json`;
     }
 
     const params = {
@@ -237,14 +247,213 @@ class RideWithGPSClient {
   }
 
   async getEvents(userId?: number): Promise<RideWithGPSEvent[]> {
-    let endpoint = '/users/current/events.json';
+    let endpoint: string;
     if (userId) {
       endpoint = `/users/${userId}/events.json`;
+    } else {
+      // Get current user ID first since "current" doesn't work for events endpoint
+      const user = await this.getCurrentUser();
+      endpoint = `/users/${user.id}/events.json`;
     }
 
     const response = await this.makeRequest<{ results: RideWithGPSEvent[] }>(endpoint);
     return response.results;
   }
+}
+
+// Export utility functions
+function generateGPX(
+  route: RideWithGPSRoute,
+  options: { includePOI: boolean; includeCoursePoints: boolean }
+): string {
+  const { name, description, track_points, course_points, points_of_interest } = route;
+
+  let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="RideWithGPS Connector" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${escapeXml(name)}</name>
+    <desc>${escapeXml(description || '')}</desc>
+  </metadata>
+  <rte>
+    <name>${escapeXml(name)}</name>`;
+
+  // Add track points as route points
+  if (track_points && track_points.length > 0) {
+    for (const point of track_points) {
+      gpx += `
+    <rtept lat="${point.y}" lon="${point.x}">`;
+      if (point.e !== undefined) {
+        gpx += `
+      <ele>${point.e}</ele>`;
+      }
+      gpx += `
+    </rtept>`;
+    }
+  }
+
+  gpx += `
+  </rte>`;
+
+  // Add course points as waypoints for navigation
+  if (options.includeCoursePoints && course_points && course_points.length > 0) {
+    for (const cue of course_points) {
+      gpx += `
+  <wpt lat="${cue.y}" lon="${cue.x}">
+    <name>${escapeXml(cue.t || 'Turn')}</name>
+    <desc>${escapeXml(cue.n || '')}</desc>
+    <type>turn</type>
+  </wpt>`;
+    }
+  }
+
+  // Add points of interest
+  if (options.includePOI && points_of_interest && points_of_interest.length > 0) {
+    for (const poi of points_of_interest) {
+      gpx += `
+  <wpt lat="${poi.lat}" lon="${poi.lng}">
+    <name>${escapeXml(poi.name || poi.type_name)}</name>
+    <desc>${escapeXml(poi.description || '')}</desc>
+    <type>${poi.type}</type>
+  </wpt>`;
+    }
+  }
+
+  gpx += `
+</gpx>`;
+
+  return gpx;
+}
+
+function generateTCX(route: RideWithGPSRoute): string {
+  const { name, track_points, distance } = route;
+
+  let tcx = `<?xml version="1.0" encoding="UTF-8"?>
+<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">
+  <Courses>
+    <Course>
+      <Name>${escapeXml(name)}</Name>
+      <Lap>
+        <TotalTimeSeconds>0</TotalTimeSeconds>
+        <DistanceMeters>${distance}</DistanceMeters>
+        <BeginPosition>
+          <LatitudeDegrees>${track_points?.[0]?.y || 0}</LatitudeDegrees>
+          <LongitudeDegrees>${track_points?.[0]?.x || 0}</LongitudeDegrees>
+        </BeginPosition>
+        <EndPosition>
+          <LatitudeDegrees>${track_points?.[track_points.length - 1]?.y || 0}</LatitudeDegrees>
+          <LongitudeDegrees>${track_points?.[track_points.length - 1]?.x || 0}</LongitudeDegrees>
+        </EndPosition>
+      </Lap>
+      <Track>`;
+
+  if (track_points && track_points.length > 0) {
+    for (const point of track_points) {
+      tcx += `
+        <Trackpoint>
+          <Position>
+            <LatitudeDegrees>${point.y}</LatitudeDegrees>
+            <LongitudeDegrees>${point.x}</LongitudeDegrees>
+          </Position>`;
+      if (point.e !== undefined) {
+        tcx += `
+          <AltitudeMeters>${point.e}</AltitudeMeters>`;
+      }
+      if (point.d !== undefined) {
+        tcx += `
+          <DistanceMeters>${point.d}</DistanceMeters>`;
+      }
+      tcx += `
+        </Trackpoint>`;
+    }
+  }
+
+  tcx += `
+      </Track>
+    </Course>
+  </Courses>
+</TrainingCenterDatabase>`;
+
+  return tcx;
+}
+
+function generateTripGPX(
+  trip: RideWithGPSTrip,
+  options: { includePerformanceData: boolean }
+): string {
+  const { name, description, track_points, departed_at } = trip;
+
+  let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="RideWithGPS Connector" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${escapeXml(name)}</name>
+    <desc>${escapeXml(description || '')}</desc>
+    <time>${departed_at}</time>
+  </metadata>
+  <trk>
+    <name>${escapeXml(name)}</name>
+    <trkseg>`;
+
+  if (track_points && track_points.length > 0) {
+    for (const point of track_points) {
+      gpx += `
+      <trkpt lat="${point.y}" lon="${point.x}">`;
+
+      if (point.e !== undefined) {
+        gpx += `
+        <ele>${point.e}</ele>`;
+      }
+
+      if (point.t !== undefined) {
+        const timestamp = new Date(point.t * 1000).toISOString();
+        gpx += `
+        <time>${timestamp}</time>`;
+      }
+
+      if (options.includePerformanceData) {
+        gpx += `
+        <extensions>`;
+
+        if (point.h !== undefined) {
+          gpx += `
+          <heartrate>${point.h}</heartrate>`;
+        }
+        if (point.c !== undefined) {
+          gpx += `
+          <cadence>${point.c}</cadence>`;
+        }
+        if (point.p !== undefined) {
+          gpx += `
+          <power>${point.p}</power>`;
+        }
+        if (point.s !== undefined) {
+          gpx += `
+          <speed>${point.s / 3.6}</speed>`; // Convert km/h to m/s
+        }
+
+        gpx += `
+        </extensions>`;
+      }
+
+      gpx += `
+      </trkpt>`;
+    }
+  }
+
+  gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+  return gpx;
+}
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export const RideWithGPSConnectorConfig = mcpConnectorConfig({
@@ -255,9 +464,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
   credentials: z.object({
     apiKey: z
       .string()
-      .describe(
-        'RideWithGPS API Key obtained by contacting support :: your-api-key-here :: https://ridewithgps.com/api'
-      ),
+      .describe('RideWithGPS API Key :: testkey1 :: From RideWithGPS API documentation'),
     authToken: z
       .string()
       .describe(
@@ -380,6 +587,79 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
           return JSON.stringify(events, null, 2);
         } catch (error) {
           return `Failed to get events: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    EXPORT_ROUTE_GPX: tool({
+      name: 'ridewithgps_export_route_gpx',
+      description: 'Export a route to GPX format for Garmin/Wahoo bike computers',
+      schema: z.object({
+        routeId: z.number().describe('The ID of the route to export'),
+        includePOI: z
+          .boolean()
+          .optional()
+          .describe('Include points of interest in the export (default: true)'),
+        includeCoursePoints: z
+          .boolean()
+          .optional()
+          .describe('Include turn-by-turn navigation cues (default: true)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, authToken } = await context.getCredentials();
+          const client = new RideWithGPSClient(apiKey, authToken);
+          const route = await client.getRouteDetails(args.routeId);
+
+          const includePOI = args.includePOI ?? true;
+          const includeCoursePoints = args.includeCoursePoints ?? true;
+
+          const gpx = generateGPX(route, { includePOI, includeCoursePoints });
+          return gpx;
+        } catch (error) {
+          return `Failed to export route: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    EXPORT_ROUTE_TCX: tool({
+      name: 'ridewithgps_export_route_tcx',
+      description: 'Export a route to TCX format for Garmin devices',
+      schema: z.object({
+        routeId: z.number().describe('The ID of the route to export'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, authToken } = await context.getCredentials();
+          const client = new RideWithGPSClient(apiKey, authToken);
+          const route = await client.getRouteDetails(args.routeId);
+
+          const tcx = generateTCX(route);
+          return tcx;
+        } catch (error) {
+          return `Failed to export route: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    EXPORT_TRIP_GPX: tool({
+      name: 'ridewithgps_export_trip_gpx',
+      description: 'Export a recorded trip to GPX format with performance data',
+      schema: z.object({
+        tripId: z.number().describe('The ID of the trip to export'),
+        includePerformanceData: z
+          .boolean()
+          .optional()
+          .describe('Include heart rate, power, cadence data (default: true)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, authToken } = await context.getCredentials();
+          const client = new RideWithGPSClient(apiKey, authToken);
+          const trip = await client.getTripDetails(args.tripId);
+
+          const includePerformanceData = args.includePerformanceData ?? true;
+          const gpx = generateTripGPX(trip, { includePerformanceData });
+          return gpx;
+        } catch (error) {
+          return `Failed to export trip: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
