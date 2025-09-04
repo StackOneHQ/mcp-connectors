@@ -151,7 +151,7 @@ class RideWithGPSClient {
     this.authToken = authToken;
   }
 
-  private async makeRequest<T>(
+  async makeRequest<T>(
     endpoint: string,
     params?: Record<string, string>
   ): Promise<T> {
@@ -474,8 +474,14 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
           const enhancedRoutes = response.results.map((item) => {
             // Handle both routes and trips from search results
             const data = item.type === 'trip' ? item.trip : item.route || item;
+            if (!data) {
+              return item;
+            }
+            
             const id = data.id;
             const itemType = item.type || 'route';
+            const distance = typeof data.distance === 'number' ? data.distance : 0;
+            const elevationGain = typeof data.elevation_gain === 'number' ? data.elevation_gain : 0;
 
             return {
               ...item,
@@ -483,18 +489,18 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
                 itemType === 'trip'
                   ? `https://ridewithgps.com/trips/${id}`
                   : `https://ridewithgps.com/routes/${id}`,
-              distance_km: data.distance
-                ? Math.round((data.distance / 1000) * 10) / 10
+              distance_km: distance
+                ? Math.round((distance / 1000) * 10) / 10
                 : null,
-              distance_miles: data.distance
-                ? Math.round((data.distance / 1609.34) * 10) / 10
+              distance_miles: distance
+                ? Math.round((distance / 1609.34) * 10) / 10
                 : null,
-              elevation_gain_ft: data.elevation_gain
-                ? Math.round(data.elevation_gain * 3.28084)
+              elevation_gain_ft: elevationGain
+                ? Math.round(elevationGain * 3.28084)
                 : null,
               quick_stats:
-                data.distance && data.elevation_gain
-                  ? `${Math.round(data.distance / 1000)}km, ${Math.round(data.elevation_gain)}m climb`
+                distance && elevationGain
+                  ? `${Math.round(distance / 1000)}km, ${Math.round(elevationGain)}m climb`
                   : null,
               location_summary: [
                 data.locality,
