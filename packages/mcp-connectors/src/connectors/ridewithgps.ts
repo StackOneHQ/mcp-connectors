@@ -1,6 +1,13 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
 
+interface RideWithGPSSearchResult {
+  type?: string;
+  route?: RideWithGPSRoute;
+  trip?: RideWithGPSTrip;
+  [key: string]: unknown;
+}
+
 interface RideWithGPSUser {
   id: number;
   name: string;
@@ -459,7 +466,9 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
           console.log('Search URL:', searchUrl);
 
           const client = new RideWithGPSClient(apiKey, authToken);
-          const response = await client.makeRequest<{ results: any[] }>(searchUrl);
+          const response = await client.makeRequest<{
+            results: RideWithGPSSearchResult[];
+          }>(searchUrl);
 
           // Enhance routes with URLs and formatted data
           const enhancedRoutes = response.results.map((item) => {
