@@ -264,7 +264,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
   name: 'RideWithGPS',
   key: 'ridewithgps',
   version: '1.0.0',
-  logo: 'https://d2t78mz16qmt2u.cloudfront.net/static/images/ridewithgps_icon_114.png',
+  logo: 'https://ridewithgps.com/favicon-32x32.png?2000000008', // todo replace with real logos
   credentials: z.object({
     apiKey: z
       .string()
