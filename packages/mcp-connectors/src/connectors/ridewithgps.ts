@@ -151,10 +151,7 @@ class RideWithGPSClient {
     this.authToken = authToken;
   }
 
-  async makeRequest<T>(
-    endpoint: string,
-    params?: Record<string, string>
-  ): Promise<T> {
+  async makeRequest<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
     const url = new URL(`${this.baseUrl}${endpoint}`);
 
     // Add API key and auth token to all requests
@@ -477,11 +474,12 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
             if (!data) {
               return item;
             }
-            
+
             const id = data.id;
             const itemType = item.type || 'route';
             const distance = typeof data.distance === 'number' ? data.distance : 0;
-            const elevationGain = typeof data.elevation_gain === 'number' ? data.elevation_gain : 0;
+            const elevationGain =
+              typeof data.elevation_gain === 'number' ? data.elevation_gain : 0;
 
             return {
               ...item,
@@ -489,9 +487,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
                 itemType === 'trip'
                   ? `https://ridewithgps.com/trips/${id}`
                   : `https://ridewithgps.com/routes/${id}`,
-              distance_km: distance
-                ? Math.round((distance / 1000) * 10) / 10
-                : null,
+              distance_km: distance ? Math.round((distance / 1000) * 10) / 10 : null,
               distance_miles: distance
                 ? Math.round((distance / 1609.34) * 10) / 10
                 : null,
