@@ -101,7 +101,10 @@ describe('#RideWithGPSConnector', () => {
         };
 
         server.use(
-          http.get('https://ridewithgps.com/users/current/routes.json', () => {
+          http.get('https://ridewithgps.com/users/current.json', () => {
+            return HttpResponse.json({ user: { id: 123, name: 'Test User' } });
+          }),
+          http.get('https://ridewithgps.com/users/123/routes.json', () => {
             return HttpResponse.json(mockRoutes);
           })
         );
@@ -232,9 +235,9 @@ describe('#RideWithGPSConnector', () => {
     });
   });
 
-  describe('.GET_TRIPS', () => {
+  describe('.GET_RIDES', () => {
     describe('when request is successful', () => {
-      it('returns user trips list', async () => {
+      it('returns user rides list', async () => {
         const mockTrips = {
           results: [
             {
@@ -252,14 +255,17 @@ describe('#RideWithGPSConnector', () => {
         };
 
         server.use(
-          http.get('https://ridewithgps.com/users/current/trips.json', () => {
+          http.get('https://ridewithgps.com/users/current.json', () => {
+            return HttpResponse.json({ user: { id: 123, name: 'Test User' } });
+          }),
+          http.get('https://ridewithgps.com/users/123/trips.json', () => {
             return HttpResponse.json(mockTrips);
           })
         );
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools.GET_TRIPS as MCPToolDefinition;
+        const tool = RideWithGPSConnectorConfig.tools.GET_RIDES as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
         });
@@ -276,9 +282,9 @@ describe('#RideWithGPSConnector', () => {
     });
   });
 
-  describe('.GET_TRIP_DETAILS', () => {
-    describe('when trip exists', () => {
-      it('returns detailed trip information with performance data', async () => {
+  describe('.GET_RIDE_DETAILS', () => {
+    describe('when ride exists', () => {
+      it('returns detailed ride information with performance data', async () => {
         const mockTrip = {
           trip: {
             id: 789,
@@ -311,12 +317,12 @@ describe('#RideWithGPSConnector', () => {
         server.listen();
 
         const tool = RideWithGPSConnectorConfig.tools
-          .GET_TRIP_DETAILS as MCPToolDefinition;
+          .GET_RIDE_DETAILS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
         });
 
-        const actual = await tool.handler({ tripId: 789 }, mockContext);
+        const actual = await tool.handler({ rideId: 789 }, mockContext);
 
         expect(actual).toContain('"id": 789');
         expect(actual).toContain('"name": "Epic Mountain Ride"');
@@ -328,7 +334,7 @@ describe('#RideWithGPSConnector', () => {
       });
     });
 
-    describe('when trip does not exist', () => {
+    describe('when ride does not exist', () => {
       it('returns error message', async () => {
         server.use(
           http.get('https://ridewithgps.com/trips/999.json', () => {
@@ -339,14 +345,14 @@ describe('#RideWithGPSConnector', () => {
         server.listen();
 
         const tool = RideWithGPSConnectorConfig.tools
-          .GET_TRIP_DETAILS as MCPToolDefinition;
+          .GET_RIDE_DETAILS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
         });
 
-        const actual = await tool.handler({ tripId: 999 }, mockContext);
+        const actual = await tool.handler({ rideId: 999 }, mockContext);
 
-        expect(actual).toContain('Failed to get trip details');
+        expect(actual).toContain('Failed to get ride details');
         expect(actual).toContain('404');
 
         server.close();
@@ -375,7 +381,10 @@ describe('#RideWithGPSConnector', () => {
         };
 
         server.use(
-          http.get('https://ridewithgps.com/users/current/events.json', () => {
+          http.get('https://ridewithgps.com/users/current.json', () => {
+            return HttpResponse.json({ user: { id: 123, name: 'Test User' } });
+          }),
+          http.get('https://ridewithgps.com/users/123/events.json', () => {
             return HttpResponse.json(mockEvents);
           })
         );
@@ -405,7 +414,10 @@ describe('#RideWithGPSConnector', () => {
         };
 
         server.use(
-          http.get('https://ridewithgps.com/users/current/events.json', () => {
+          http.get('https://ridewithgps.com/users/current.json', () => {
+            return HttpResponse.json({ user: { id: 123, name: 'Test User' } });
+          }),
+          http.get('https://ridewithgps.com/users/123/events.json', () => {
             return HttpResponse.json(mockEvents);
           })
         );
