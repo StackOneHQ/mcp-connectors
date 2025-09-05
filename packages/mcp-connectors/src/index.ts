@@ -12,6 +12,7 @@ import { DuckDuckGoConnectorConfig } from './connectors/duckduckgo';
 import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
 import { ExaConnectorConfig } from './connectors/exa';
 import { FalConnectorConfig } from './connectors/fal';
+import { FigmaConnectorConfig } from './connectors/figma';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
@@ -62,6 +63,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
+  FigmaConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
@@ -111,6 +113,7 @@ export {
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
+  FigmaConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
