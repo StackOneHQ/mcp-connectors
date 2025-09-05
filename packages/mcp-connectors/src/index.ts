@@ -32,6 +32,7 @@ import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
 import { RetoolConnectorConfig } from './connectors/retool';
+import { RideWithGPSConnectorConfig } from './connectors/ridewithgps';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
 import { StackOneConnectorConfig } from './connectors/stackone';
@@ -81,6 +82,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   PylonConnectorConfig,
   ReplicateConnectorConfig,
   RetoolConnectorConfig,
+  RideWithGPSConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
@@ -129,6 +131,7 @@ export {
   PylonConnectorConfig,
   ReplicateConnectorConfig,
   RetoolConnectorConfig,
+  RideWithGPSConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
