@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.15](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.14...mcp-connectors-v0.0.15) (2025-09-05)
+
+
+### Features
+
+* ridewithgps full server ([#123](https://github.com/StackOneHQ/mcp-connectors/issues/123)) ([2d9eb81](https://github.com/StackOneHQ/mcp-connectors/commit/2d9eb81c495feb4b84b5d2f11eb703b2edde328d))
+
 ## [0.0.14](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.13...mcp-connectors-v0.0.14) (2025-09-02)
 
 
