@@ -9,7 +9,7 @@ import { DeelConnectorConfig } from './connectors/deel';
 import { DeepseekConnectorConfig } from './connectors/deepseek';
 import { DocumentationConnectorConfig } from './connectors/documentation';
 import { DuckDuckGoConnectorConfig } from './connectors/duckduckgo';
-import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
+
 import { ExaConnectorConfig } from './connectors/exa';
 import { FalConnectorConfig } from './connectors/fal';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
@@ -44,6 +44,7 @@ import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
 import { TodoListConnectorConfig } from './connectors/todolist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
+import { UnipileConnectorConfig } from './connectors/unipile';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 import { ZapierConnectorConfig } from './connectors/zapier';
@@ -59,7 +60,6 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   DeepseekConnectorConfig,
   DocumentationConnectorConfig,
   DuckDuckGoConnectorConfig,
-  ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
   GitHubConnectorConfig,
@@ -92,6 +92,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   TodoistConnectorConfig,
   TodoListConnectorConfig,
   TurbopufferConnectorConfig,
+  UnipileConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
   ZapierConnectorConfig,
@@ -108,7 +109,6 @@ export {
   DeepseekConnectorConfig,
   DocumentationConnectorConfig,
   DuckDuckGoConnectorConfig,
-  ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
   GitHubConnectorConfig,
@@ -141,6 +141,7 @@ export {
   TodoistConnectorConfig,
   TodoListConnectorConfig,
   TurbopufferConnectorConfig,
+  UnipileConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
   ZapierConnectorConfig,
