@@ -16,6 +16,7 @@ import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { HiBobConnectorConfig } from './connectors/hibob';
+import { HStacksConnectorConfig } from './connectors/hstacks';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
@@ -65,6 +66,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
+  HStacksConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
@@ -114,6 +116,7 @@ export {
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
   HiBobConnectorConfig,
+  HStacksConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
