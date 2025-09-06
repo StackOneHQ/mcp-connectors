@@ -27,6 +27,7 @@ import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
 import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
+import { PolymarketConnectorConfig } from './connectors/polymarket';
 import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
@@ -78,6 +79,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PolymarketConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
@@ -127,6 +129,7 @@ export {
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PolymarketConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
