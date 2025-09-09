@@ -38,7 +38,7 @@ async function main() {
 
   try {
     // Get the path to the test-data MCP server
-    const testDataServerPath = path.join(__dirname, 'test-data-mcp-server.ts');
+    const testDataServerPath = path.join(__dirname, 'internal-server.ts');
 
     const mcpConfig: Record<string, McpServerConfig> = {
       'internal-helper': {
