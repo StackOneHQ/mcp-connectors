@@ -7,6 +7,7 @@ import { type McpServerConfig, query } from '@anthropic-ai/claude-code';
 import { parseCli } from './cli';
 import { discoverTools } from './discover-tools';
 import { createTestingPrompt } from './prompt';
+import { which } from './utils';
 
 async function main() {
   const options = parseCli();
@@ -66,7 +67,7 @@ async function main() {
         mcpServers: mcpConfig,
         strictMcpConfig: true,
         model: 'claude-sonnet-4-20250514',
-        pathToClaudeCodeExecutable: process.env.CLAUDE_CODE_PATH || 'claude',
+        pathToClaudeCodeExecutable: process.env.CLAUDE_CODE_PATH ?? which('claude'),
         disallowedTools: [
           'Bash',
           'BashOutput',
