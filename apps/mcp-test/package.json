@@ -1,0 +1,43 @@
+{
+  "name": "@stackone/mcp-test",
+  "version": "0.0.3",
+  "description": "automated testing for MCP servers",
+  "module": "index.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "mcp-test": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --minify",
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsgo --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "agent",
+    "modelcontextprotocol",
+    "testing",
+    "claude-code",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.109",
+    "@faker-js/faker": "^10.0.0",
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "commander": "^14.0.0",
+    "zod": "^4.1.5"
+  }
+}
