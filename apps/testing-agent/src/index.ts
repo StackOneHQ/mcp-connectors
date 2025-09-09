@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
-import { query, type McpServerConfig } from '@anthropic-ai/claude-code';
-import { parseCli } from './cli';
-import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
+import { type McpServerConfig, query } from '@anthropic-ai/claude-code';
+import { parseCli } from './cli';
 import { discoverTools } from './discover-tools';
 import { createTestingPrompt } from './prompt';
 
