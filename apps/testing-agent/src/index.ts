@@ -123,7 +123,7 @@ async function main() {
 
         // Read the results file created by the agent
         const agentResults = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
-        
+
         // Add our metadata to the results
         const enrichedResults = {
           timestamp: new Date().toISOString(),
@@ -131,7 +131,7 @@ async function main() {
           tool_count: discoveredTools.length,
           ...agentResults,
         };
-        
+
         // Generate filename with server URL and timestamp
         const urlSlug = options.url.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
