@@ -282,6 +282,42 @@ class PylonClient {
 
     return (await response.json()) as PylonSearchResult;
   }
+
+  async createIssue(issueData: {
+    title: string;
+    body_html: string;
+    account_id?: string;
+    assignee_id?: string;
+    attachment_urls?: string[];
+    contact_id?: string;
+    created_at?: string;
+    custom_fields?: Record<string, unknown>[];
+    priority?: 'urgent' | 'high' | 'medium' | 'low';
+    requester_avatar_url?: string;
+    requester_email?: string;
+    requester_id?: string;
+    requester_name?: string;
+    tags?: string[];
+    team_id?: string;
+    user_id?: string;
+  }): Promise<PylonIssue> {
+    const response = await fetch(`${this.baseUrl}/issues`, {
+      method: 'POST',
+      headers: {
+        ...this.headers,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(issueData),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to create Pylon issue: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return (await response.json()) as PylonIssue;
+  }
 }
 
 export const PylonConnectorConfig = mcpConnectorConfig({
@@ -402,6 +438,55 @@ export const PylonConnectorConfig = mcpConnectorConfig({
         } catch (error) {
           throw new Error(
             `Error listing Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      },
+    }),
+    CREATE_INTERNAL_ISSUE: tool({
+      name: 'pylon_create_internal_issue',
+      description: 'Create a new internal issue in Pylon',
+      schema: z.object({
+        title: z.string().describe('The title of the issue'),
+        body_html: z.string().describe('The HTML content of the issue body'),
+        account_id: z.string().optional().describe('Account ID the issue belongs to'),
+        assignee_id: z.string().optional().describe('User ID to assign the issue to'),
+        attachment_urls: z
+          .array(z.string())
+          .optional()
+          .describe('URLs of attachments to include with the issue'),
+        contact_id: z.string().optional().describe('Contact ID to post message as'),
+        created_at: z
+          .string()
+          .optional()
+          .describe('Timestamp of issue creation (RFC3339 format)'),
+        custom_fields: z
+          .array(z.record(z.unknown()))
+          .optional()
+          .describe('Custom fields for the issue'),
+        priority: z
+          .enum(['urgent', 'high', 'medium', 'low'])
+          .optional()
+          .describe('Priority level of the issue'),
+        requester_avatar_url: z
+          .string()
+          .optional()
+          .describe('URL of the requester avatar'),
+        requester_email: z.string().optional().describe('Email of the requester'),
+        requester_id: z.string().optional().describe('ID of the requester'),
+        requester_name: z.string().optional().describe('Full name of the requester'),
+        tags: z.array(z.string()).optional().describe('Tags to apply to the issue'),
+        team_id: z.string().optional().describe('ID of team to assign issue to'),
+        user_id: z.string().optional().describe('User ID to post message as'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new PylonClient(apiToken);
+          const issue = await client.createIssue(args);
+          return JSON.stringify(issue, null, 2);
+        } catch (error) {
+          throw new Error(
+            `Error creating Pylon issue: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
         }
       },
