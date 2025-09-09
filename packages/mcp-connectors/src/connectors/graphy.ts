@@ -87,6 +87,18 @@ class GraphyClient {
     if (contentType?.includes('application/json')) {
       return response.json();
     }
+    
+    // Handle binary formats (like XLSX) by returning base64-encoded data
+    if (
+      contentType?.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') ||
+      contentType?.includes('application/octet-stream') ||
+      path.includes('format=xlsx')
+    ) {
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      return `data:${contentType || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
+    }
+    
     return response.text();
   }
 
@@ -455,6 +467,10 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
           const data = await client.getBoardData(args.boardId, args.format);
           if (args.format === 'json') {
             return JSON.stringify(data, null, 2);
+          }
+          // For binary formats like XLSX, data is already base64-encoded data URL
+          if (args.format === 'xlsx' && typeof data === 'string' && data.startsWith('data:')) {
+            return data;
           }
           return String(data);
         } catch (error) {
