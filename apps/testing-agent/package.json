@@ -1,6 +1,6 @@
 {
   "name": "@stackone/testing-agent",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Automated testing agent for MCP servers",
   "module": "index.ts",
   "type": "module",
