@@ -66,7 +66,16 @@ async function main() {
         mcpServers: mcpConfig,
         strictMcpConfig: true,
         model: 'claude-sonnet-4-20250514',
-        disallowedTools: ['Bash', 'WebSearch', 'WebFetch', 'Edit', 'Read'],
+        disallowedTools: [
+          'Bash',
+          'BashOutput',
+          'KillBash',
+          'WebSearch',
+          'WebFetch',
+          'Edit',
+          'MultiEdit',
+          'Read',
+        ],
         allowedTools: [
           ...allowedTools,
           'mcp__internal-helper__generate_test_data',
@@ -75,6 +84,7 @@ async function main() {
         cwd: tempDir,
       },
     })) {
+      console.log('\n[Turn]:', JSON.stringify(turn, null, 2));
       if (turn.type === 'user') {
         console.log('\n[User]:', JSON.stringify(turn.message.content, null, 2));
       }
