@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import { faker } from '@faker-js/faker';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
