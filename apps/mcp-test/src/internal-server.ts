@@ -409,7 +409,4 @@ async function main() {
   console.error('Test Data Generator MCP Server running on stdio');
 }
 
-main().catch((error) => {
-  console.error('Server error:', error);
-  process.exit(1);
-});
+await main();

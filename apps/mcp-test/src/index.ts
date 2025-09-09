@@ -159,9 +159,4 @@ async function main() {
   }
 }
 
-if (import.meta.main) {
-  main().catch((error) => {
-    console.error('Unhandled error:', error);
-    process.exit(1);
-  });
-}
+await main();
