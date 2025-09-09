@@ -84,7 +84,6 @@ async function main() {
         cwd: tempDir,
       },
     })) {
-      console.log('\n[Turn]:', JSON.stringify(turn, null, 2));
       if (turn.type === 'user') {
         console.log('\n[User]:', JSON.stringify(turn.message.content, null, 2));
       }
