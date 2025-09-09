@@ -98,6 +98,7 @@ Test results are saved to `.agent/results_<server>_<timestamp>.json` with the fo
 {
   "timestamp": "2025-01-09T10:30:00.000Z",
   "server_url": "http://localhost:3000/mcp",
+  "tool_count": 2,
   "tools_tested": [
     {
       "name": "search",

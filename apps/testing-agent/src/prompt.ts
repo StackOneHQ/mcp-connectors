@@ -13,8 +13,7 @@ Write the result to a file called ./results.json.
 
 Try to clean up after yourself where possible. So if you create some resource using MCP and there is a tool to delete it, try to delete it.
 
-In your report include:
-- list of tools tested.
+In your report include a list of tools tested.
 For each tool include:
 - tool name
 - input data
@@ -25,8 +24,6 @@ For each tool include:
 
 The results.json should be a valid JSON file with the following structure:
 {
-  "timestamp": "ISO timestamp",
-  "server_url": "the MCP server URL",
   "tools_tested": [
     {
       "name": "tool_name",

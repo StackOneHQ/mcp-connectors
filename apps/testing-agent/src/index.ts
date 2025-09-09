@@ -121,13 +121,24 @@ async function main() {
           fs.writeFileSync(path.join(outputDir, '.gitignore'), '*\n');
         }
 
+        // Read the results file created by the agent
+        const agentResults = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
+        
+        // Add our metadata to the results
+        const enrichedResults = {
+          timestamp: new Date().toISOString(),
+          server_url: options.url,
+          tool_count: discoveredTools.length,
+          ...agentResults,
+        };
+        
         // Generate filename with server URL and timestamp
         const urlSlug = options.url.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const outputFile = path.join(outputDir, `results_${urlSlug}_${timestamp}.json`);
 
-        // Copy the results file
-        fs.copyFileSync(resultsPath, outputFile);
+        // Write the enriched results
+        fs.writeFileSync(outputFile, JSON.stringify(enrichedResults, null, 2));
         console.log(`\n📋 Results saved to: ${outputFile}`);
       } else {
         console.warn('\n⚠️ No results.json file was created');
