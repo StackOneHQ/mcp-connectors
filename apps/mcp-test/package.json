@@ -1,12 +1,12 @@
 {
-  "name": "@stackone/testing-agent",
+  "name": "@stackone/mcp-test",
   "version": "0.0.2",
-  "description": "Automated testing agent for MCP servers",
+  "description": "automated testing for MCP servers",
   "module": "index.ts",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "testing-agent": "./dist/index.js"
+    "mcp-test": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -19,6 +19,7 @@
   },
   "keywords": [
     "mcp",
+    "agent",
     "modelcontextprotocol",
     "testing",
     "claude-code",

@@ -39,7 +39,7 @@
     },
     "apps/testing-agent": {
       "name": "@stackone/testing-agent",
-      "version": "1.0.0",
+      "version": "0.0.2",
       "bin": {
         "testing-agent": "./dist/index.js",
       },

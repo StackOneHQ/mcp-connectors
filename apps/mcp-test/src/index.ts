@@ -11,7 +11,7 @@ import { createTestingPrompt } from './prompt';
 async function main() {
   const options = parseCli();
 
-  console.log('Starting MCP Testing Agent...');
+  console.log('Starting MCP Test...');
   console.log(`Testing MCP server at: ${options.url}`);
   console.log(`Transport: ${options.transport}`);
 
@@ -66,6 +66,7 @@ async function main() {
         mcpServers: mcpConfig,
         strictMcpConfig: true,
         model: 'claude-sonnet-4-20250514',
+        pathToClaudeCodeExecutable: process.env.CLAUDE_CODE_PATH || 'claude',
         disallowedTools: [
           'Bash',
           'BashOutput',

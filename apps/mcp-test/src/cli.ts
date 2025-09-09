@@ -10,8 +10,8 @@ export function parseCli(): CliOptions {
   const program = new Command();
 
   program
-    .name('mcp-testing-agent')
-    .description('Automated testing agent for MCP servers')
+    .name('mcp-test')
+    .description('Automated testing tool for MCP servers')
     .requiredOption('--transport <type>', 'Transport type (only http supported)', 'http')
     .requiredOption('--url <url>', 'MCP server URL')
     .option('--headers <json>', 'HTTP headers as JSON string', '{}');
