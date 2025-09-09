@@ -1,15 +1,9 @@
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { GraphyConnectorConfig } from './graphy';
-
-const server = setupServer();
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
 
 describe('#GraphyConnector', () => {
   describe('.LIST_BOARDS', () => {
@@ -37,7 +31,7 @@ describe('#GraphyConnector', () => {
             },
           ];
 
-          server.use(
+          const server = setupServer(
             http.get('https://api.graphy.app/rest/v1/boards', ({ request }) => {
               const url = new URL(request.url);
               expect(url.searchParams.get('limit')).toBe('50');
@@ -45,6 +39,7 @@ describe('#GraphyConnector', () => {
               return HttpResponse.json({ results: mockBoards });
             })
           );
+          server.listen();
 
           const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
@@ -53,6 +48,7 @@ describe('#GraphyConnector', () => {
 
           const actual = await tool.handler({}, mockContext);
 
+          server.close();
           expect(actual).toBe(JSON.stringify(mockBoards, null, 2));
         });
       });
@@ -71,7 +67,7 @@ describe('#GraphyConnector', () => {
             },
           ];
 
-          server.use(
+          const server = setupServer(
             http.get('https://api.graphy.app/rest/v1/boards', ({ request }) => {
               const url = new URL(request.url);
               expect(url.searchParams.get('limit')).toBe('10');
@@ -79,6 +75,7 @@ describe('#GraphyConnector', () => {
               return HttpResponse.json({ results: mockBoards });
             })
           );
+          server.listen();
 
           const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
@@ -87,18 +84,20 @@ describe('#GraphyConnector', () => {
 
           const actual = await tool.handler({ limit: 10, offset: 5 }, mockContext);
 
+          server.close();
           expect(actual).toBe(JSON.stringify(mockBoards, null, 2));
         });
       });
     });
 
     describe('when API returns unauthorized error', () => {
-      it('returns authorization error message', async () => {
-        server.use(
+      it('returns original API error message', async () => {
+        const server = setupServer(
           http.get('https://api.graphy.app/rest/v1/boards', () => {
             return HttpResponse.json({ message: 'Unauthorized access' }, { status: 401 });
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -107,17 +106,19 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({}, mockContext);
 
-        expect(actual).toBe('Error: Unauthorized. Please check your Graphy API token and permissions.');
+        server.close();
+        expect(actual).toBe('Unauthorized access');
       });
     });
 
     describe('when API returns not found error', () => {
-      it('returns not found error message with API guidance', async () => {
-        server.use(
+      it('returns original API error message', async () => {
+        const server = setupServer(
           http.get('https://api.graphy.app/rest/v1/boards', () => {
-            return HttpResponse.json({ message: 'Not found' }, { status: 404 });
+            return HttpResponse.json({ message: 'Endpoint not found' }, { status: 404 });
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -126,7 +127,8 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({}, mockContext);
 
-        expect(actual).toBe('Error: API endpoint not found. The Graphy REST API may not be available yet or the endpoint path may have changed. Please check the API documentation at https://visualize.graphy.app/rest-api for the correct endpoints.');
+        server.close();
+        expect(actual).toBe('Endpoint not found');
       });
     });
   });
@@ -144,11 +146,12 @@ describe('#GraphyConnector', () => {
           is_public: false,
         };
 
-        server.use(
+        const server = setupServer(
           http.get('https://api.graphy.app/rest/v1/boards/board-1', () => {
             return HttpResponse.json(mockBoard);
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.GET_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -157,17 +160,19 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({ boardId: 'board-1' }, mockContext);
 
+        server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
       });
     });
 
     describe('when board does not exist', () => {
-      it('returns not found error message', async () => {
-        server.use(
+      it('returns original API error message', async () => {
+        const server = setupServer(
           http.get('https://api.graphy.app/rest/v1/boards/nonexistent', () => {
             return HttpResponse.json({ message: 'Board not found' }, { status: 404 });
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.GET_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -176,7 +181,8 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({ boardId: 'nonexistent' }, mockContext);
 
-        expect(actual).toBe('Error: API endpoint not found. The Graphy REST API may not be available yet or the endpoint path may have changed. Please check the API documentation at https://visualize.graphy.app/rest-api for the correct endpoints.');
+        server.close();
+        expect(actual).toBe('Board not found');
       });
     });
   });
@@ -194,11 +200,12 @@ describe('#GraphyConnector', () => {
           is_public: false,
         };
 
-        server.use(
+        const server = setupServer(
           http.post('https://api.graphy.app/rest/v1/boards', () => {
             return HttpResponse.json(mockBoard);
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.CREATE_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -210,17 +217,19 @@ describe('#GraphyConnector', () => {
           mockContext
         );
 
+        server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
       });
     });
 
     describe('when board creation fails due to validation', () => {
-      it('returns validation error message', async () => {
-        server.use(
+      it('returns original API error message', async () => {
+        const server = setupServer(
           http.post('https://api.graphy.app/rest/v1/boards', () => {
             return HttpResponse.json({ message: 'Title is required' }, { status: 400 });
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.CREATE_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -229,7 +238,8 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({ title: '', type: 'line' }, mockContext);
 
-        expect(actual).toBe('Error: Title is required');
+        server.close();
+        expect(actual).toBe('Title is required');
       });
     });
   });
@@ -247,11 +257,12 @@ describe('#GraphyConnector', () => {
           is_public: true,
         };
 
-        server.use(
+        const server = setupServer(
           http.put('https://api.graphy.app/rest/v1/boards/board-1', () => {
             return HttpResponse.json(mockBoard);
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.UPDATE_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -259,10 +270,15 @@ describe('#GraphyConnector', () => {
         });
 
         const actual = await tool.handler(
-          { boardId: 'board-1', title: 'Updated Board', description: 'Updated description' },
+          {
+            boardId: 'board-1',
+            title: 'Updated Board',
+            description: 'Updated description',
+          },
           mockContext
         );
 
+        server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
       });
     });
@@ -271,11 +287,12 @@ describe('#GraphyConnector', () => {
   describe('.DELETE_BOARD', () => {
     describe('when board deletion is successful', () => {
       it('returns success message', async () => {
-        server.use(
+        const server = setupServer(
           http.delete('https://api.graphy.app/rest/v1/boards/board-1', () => {
             return new HttpResponse(null, { status: 204 });
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.DELETE_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -284,6 +301,7 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({ boardId: 'board-1' }, mockContext);
 
+        server.close();
         expect(actual).toBe('Board board-1 deleted successfully');
       });
     });
@@ -307,11 +325,12 @@ describe('#GraphyConnector', () => {
           },
         ];
 
-        server.use(
+        const server = setupServer(
           http.get('https://api.graphy.app/rest/v1/datasets', () => {
             return HttpResponse.json({ results: mockDatasets });
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.LIST_DATASETS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -320,6 +339,7 @@ describe('#GraphyConnector', () => {
 
         const actual = await tool.handler({}, mockContext);
 
+        server.close();
         expect(actual).toBe(JSON.stringify(mockDatasets, null, 2));
       });
     });
@@ -341,11 +361,12 @@ describe('#GraphyConnector', () => {
           updated_at: '2024-01-01T00:00:00Z',
         };
 
-        server.use(
+        const server = setupServer(
           http.post('https://api.graphy.app/rest/v1/datasets', () => {
             return HttpResponse.json(mockDataset);
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.CREATE_DATASET as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
@@ -368,6 +389,7 @@ describe('#GraphyConnector', () => {
           mockContext
         );
 
+        server.close();
         expect(actual).toBe(JSON.stringify(mockDataset, null, 2));
       });
     });
@@ -381,21 +403,29 @@ describe('#GraphyConnector', () => {
           { month: 'February', revenue: 12000 },
         ];
 
-        server.use(
-          http.get('https://api.graphy.app/rest/v1/boards/board-1/data', ({ request }) => {
-            const url = new URL(request.url);
-            expect(url.searchParams.get('format')).toBe('json');
-            return HttpResponse.json(mockData);
-          })
+        const server = setupServer(
+          http.get(
+            'https://api.graphy.app/rest/v1/boards/board-1/data',
+            ({ request }) => {
+              const url = new URL(request.url);
+              expect(url.searchParams.get('format')).toBe('json');
+              return HttpResponse.json(mockData);
+            }
+          )
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.GET_BOARD_DATA as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiToken: 'test-token' },
         });
 
-        const actual = await tool.handler({ boardId: 'board-1', format: 'json' }, mockContext);
+        const actual = await tool.handler(
+          { boardId: 'board-1', format: 'json' },
+          mockContext
+        );
 
+        server.close();
         expect(actual).toBe(JSON.stringify(mockData, null, 2));
       });
     });
@@ -408,20 +438,27 @@ describe('#GraphyConnector', () => {
           embed_url: 'https://visualize.graphy.app/embed/board-1',
         };
 
-        server.use(
+        const server = setupServer(
           http.post('https://api.graphy.app/rest/v1/boards/board-1/share', () => {
             return HttpResponse.json(mockResponse);
           })
         );
+        server.listen();
 
         const tool = GraphyConnectorConfig.tools.SHARE_BOARD as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiToken: 'test-token' },
         });
 
-        const actual = await tool.handler({ boardId: 'board-1', isPublic: true }, mockContext);
+        const actual = await tool.handler(
+          { boardId: 'board-1', isPublic: true },
+          mockContext
+        );
 
-        expect(actual).toBe('Board shared successfully. Embed URL: https://visualize.graphy.app/embed/board-1');
+        server.close();
+        expect(actual).toBe(
+          'Board shared successfully. Embed URL: https://visualize.graphy.app/embed/board-1'
+        );
       });
     });
   });
