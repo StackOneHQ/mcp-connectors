@@ -51,7 +51,8 @@ class GraphyClient {
   private async makeRequest(
     path: string,
     method = 'GET',
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
+    expectBinary = false
   ): Promise<unknown> {
     const options: RequestInit = {
       method,
@@ -84,6 +85,11 @@ class GraphyClient {
     }
 
     const contentType = response.headers.get('content-type');
+    
+    if (expectBinary) {
+      return response.arrayBuffer();
+    }
+    
     if (contentType?.includes('application/json')) {
       return response.json();
     }
@@ -199,7 +205,8 @@ class GraphyClient {
 
   async getBoardData(boardId: string, format = 'json'): Promise<unknown> {
     const params = new URLSearchParams({ format });
-    return this.makeRequest(`/boards/${boardId}/data?${params}`);
+    const expectBinary = format === 'xlsx';
+    return this.makeRequest(`/boards/${boardId}/data?${params}`, 'GET', undefined, expectBinary);
   }
 
   async shareBoard(boardId: string, isPublic = true): Promise<string> {
@@ -455,6 +462,13 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
           const data = await client.getBoardData(args.boardId, args.format);
           if (args.format === 'json') {
             return JSON.stringify(data, null, 2);
+          }
+          if (args.format === 'xlsx') {
+            // Return base64 encoded binary data for XLSX
+            const buffer = data as ArrayBuffer;
+            const uint8Array = new Uint8Array(buffer);
+            const base64 = Buffer.from(uint8Array).toString('base64');
+            return `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64}`;
           }
           return String(data);
         } catch (error) {
