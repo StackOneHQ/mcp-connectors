@@ -227,7 +227,7 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
   name: 'Graphy',
   key: 'graphy',
   version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/graphy/filled/svg',
+  logo: 'https://stackone-logos.com/api/graphy/squared/png',
   credentials: z.object({
     apiToken: z
       .string()
