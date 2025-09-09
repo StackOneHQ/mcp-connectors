@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.2...mcp-test-v0.0.3) (2025-09-09)
+
+
+### Features
+
+* add CLAUDE_CODE_PATH ([#128](https://github.com/StackOneHQ/mcp-connectors/issues/128)) ([4545523](https://github.com/StackOneHQ/mcp-connectors/commit/4545523c57210f3470ab0b9568a13a706059cf10))
+
 ## [0.0.2](https://github.com/StackOneHQ/mcp-connectors/compare/testing-agent-v0.0.1...testing-agent-v0.0.2) (2025-09-09)
 
 
