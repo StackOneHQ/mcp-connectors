@@ -14,7 +14,7 @@ export async function discoverTools(
 
   const client = new Client(
     {
-      name: 'mcp-testing-agent-discovery',
+      name: 'mcp-test-discovery',
       version: '1.0.0',
     },
     {
