@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.16](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.15...mcp-connectors-v0.0.16) (2025-09-09)
+
+
+### Features
+
+* add Graphy connector with board and dataset management ([#125](https://github.com/StackOneHQ/mcp-connectors/issues/125)) ([ab7c6aa](https://github.com/StackOneHQ/mcp-connectors/commit/ab7c6aa4f29a56aafdbd67f4fcc0f13105edb938))
+
 ## [0.0.15](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.14...mcp-connectors-v0.0.15) (2025-09-05)
 
 
