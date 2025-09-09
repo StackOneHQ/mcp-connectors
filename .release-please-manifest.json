@@ -1,4 +1,5 @@
 {
     "packages/mcp-connectors": "0.0.15",
-    "packages/mcp-config-types": "0.0.10"
+    "packages/mcp-config-types": "0.0.10",
+    "apps/testing-agent": "0.0.1"
 }
