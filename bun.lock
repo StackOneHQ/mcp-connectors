@@ -24,7 +24,7 @@
     },
     "apps/mcp-test": {
       "name": "@stackone/mcp-test",
-      "version": "0.0.2",
+      "version": "0.0.3",
       "bin": {
         "mcp-test": "./dist/index.js",
       },
@@ -37,8 +37,6 @@
       },
       "devDependencies": {
         "@types/bun": "latest",
-      },
-      "peerDependencies": {
         "typescript": "^5",
       },
     },
@@ -69,7 +67,7 @@
     },
     "packages/mcp-connectors": {
       "name": "@stackone/mcp-connectors",
-      "version": "0.0.15",
+      "version": "0.0.16",
       "dependencies": {
         "@1password/connect": "^1.4.2",
         "@linear/sdk": "^55.0.0",

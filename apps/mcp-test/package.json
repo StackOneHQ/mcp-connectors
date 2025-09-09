@@ -28,10 +28,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "typescript": "^5",
     "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.109",
