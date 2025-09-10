@@ -7,8 +7,8 @@ import { type McpServerConfig, query } from '@anthropic-ai/claude-code';
 import { parseCli } from './cli';
 import { discoverTools } from './discover-tools';
 import { createTestingPrompt } from './prompt';
-import { which } from './utils/which';
 import { ui } from './utils/ui';
+import { which } from './utils/which';
 
 async function main() {
   const options = parseCli();
