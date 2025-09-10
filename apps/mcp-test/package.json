@@ -1,6 +1,6 @@
 {
   "name": "@stackone/mcp-test",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "automated testing for MCP servers",
   "module": "index.ts",
   "type": "module",
