@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { ui } from './utils/ui';
 
 export interface CliOptions {
   transport: 'http';
@@ -25,7 +26,7 @@ export function parseCli(): CliOptions {
     try {
       headers = JSON.parse(options.headers);
     } catch (error) {
-      console.error('Invalid JSON for headers:', error);
+      ui.error(`Invalid JSON for headers: ${error}`);
       process.exit(1);
     }
   }

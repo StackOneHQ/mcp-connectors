@@ -1,32 +1,49 @@
 # MCP Testing Agent
 
-> Can Claude accurately use your MCP server tools?
+Automated testing agent for model context protocol (MCP) servers. Test your MCP servers with just a URL.
 
-Automated testing tool for remote model context protocol (MCP) servers.
+## Overview
 
-Claude Code tries to use all available tools exposed by an MCP server and generates test reports.
+This tool provides automated testing for MCP servers using the HTTP streaming transport. It leverages Claude Code SDK to systematically test all available tools exposed by an MCP server, generating comprehensive test reports.
 
-The tool automatically discovers available tools from the MCP server using the official MCP client SDK before testing begins.
+The agent automatically discovers available tools from the MCP server by connecting and listing all tools before testing begins.
 
 ## Features
 
 - **Auto-discovery**: Automatically discovers and tests all available MCP tools
-- **AI-powered testing**: Uses Claude + faker-js to generate realistic test data and validate responses
+- **AI-powered testing**: Uses Claude to generate realistic test data and validate responses
 - **Comprehensive reports**: Generates detailed JSON reports with test results
 - **Clean testing**: Attempts to clean up created resources after testing
 - **Authentication support**: Supports custom headers for authenticated endpoints
 
-## Prerequisites
+## Installation
 
-### Required
-
-1. **Claude Code CLI must be installed globally:**
+### NPM
 
 ```bash
-npm install -g @anthropic-ai/claude-code
+npx @stackone/testing-agent --transport http --url http://localhost:3000/mcp
 ```
 
-2. **Set your Anthropic API key:**
+### Bun
+
+```bash
+bunx @stackone/testing-agent --transport http --url http://localhost:3000/mcp
+```
+
+### From Source
+
+```bash
+git clone https://github.com/your-org/mcp-connectors.git
+cd apps/testing-agent
+bun install
+bun start --transport http --url http://localhost:3000/mcp
+```
+
+## Usage
+
+### Prerequisites
+
+Set your Anthropic API key in environment variables:
 
 ```bash
 export ANTHROPIC_API_KEY=your-api-key
@@ -38,52 +55,12 @@ Or create a `.env` file (Bun will load it automatically):
 ANTHROPIC_API_KEY=your-api-key
 ```
 
-## Limitations
-
-- Currently only supports HTTP streaming transport
-- Requires an Anthropic API key
-- Testing is limited to 50 turns to prevent infinite loops
-- Large response outputs may be truncated in console logs
-
-### Troubleshooting
-
-If you encounter "Claude Code executable not found" errors:
-
-```bash
-# Set the path to your Claude installation
-export CLAUDE_CODE_PATH=$(which claude)
-```
-
-## Installation
-
-### Quick Start (with npx)
-
-```bash
-npx @stackone/mcp-test --transport http --url http://localhost:3000/mcp
-```
-
-### Global Installation
-
-```bash
-npm install -g @stackone/mcp-test
-mcp-test --transport http --url http://localhost:3000/mcp
-```
-
-### From Source
-
-```bash
-git clone https://github.com/your-org/mcp-connectors.git
-cd apps/mcp-test
-bun install
-bun start --transport http --url http://localhost:3000/mcp
-```
-
-## Usage
+### Basic Usage
 
 Test an MCP server running locally:
 
 ```bash
-mcp-test --transport http --url http://localhost:3000/mcp
+bunx @stackone/testing-agent --transport http --url http://localhost:3000/mcp
 ```
 
 ### With Authentication
@@ -91,7 +68,7 @@ mcp-test --transport http --url http://localhost:3000/mcp
 Include authentication headers:
 
 ```bash
-mcp-test \
+bunx @stackone/testing-agent \
   --transport http \
   --url https://api.example.com/mcp \
   --headers '{"Authorization": "Bearer your-token"}'
@@ -99,7 +76,7 @@ mcp-test \
 
 ## How It Works
 
-The testing tool follows this process:
+The testing agent follows this process:
 
 1. **Connect to MCP server**: Establishes connection using the MCP client SDK
 2. **Discover tools**: Automatically discovers all available tools by calling `listTools()` on the official MCP client SDK
@@ -109,7 +86,7 @@ The testing tool follows this process:
 
 ### Test Process
 
-For each discovered tool, the tool:
+For each discovered tool, the agent:
 
 - Generates realistic input data using AI
 - Calls the tool with the generated data
@@ -156,7 +133,7 @@ Test results are saved to `.agent/results_<server>_<timestamp>.json` with the fo
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/mcp-connectors.git
-cd apps/mcp-test
+cd apps/testing-agent
 
 # Install dependencies
 bun install
@@ -167,6 +144,13 @@ bun test
 # Build for production
 bun run build
 ```
+
+## Limitations
+
+- Currently only supports HTTP streaming transport
+- Requires an Anthropic API key
+- Testing is limited to 50 turns to prevent infinite loops
+- Large response outputs may be truncated in console logs
 
 ## License
 
