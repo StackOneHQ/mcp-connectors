@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import { faker } from '@faker-js/faker';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -406,10 +406,12 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
+  // Using console.error for stdio server to avoid interfering with stdio transport
   console.error('Test Data Generator MCP Server running on stdio');
 }
 
 main().catch((error) => {
+  // Using console.error for stdio server to avoid interfering with stdio transport
   console.error('Server error:', error);
   process.exit(1);
 });
