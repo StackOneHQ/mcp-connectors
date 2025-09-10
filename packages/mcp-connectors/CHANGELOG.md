@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.0.16](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.15...mcp-connectors-v0.0.16) (2025-09-09)
+
+
+### Features
+
+* add Graphy connector with board and dataset management ([#125](https://github.com/StackOneHQ/mcp-connectors/issues/125)) ([ab7c6aa](https://github.com/StackOneHQ/mcp-connectors/commit/ab7c6aa4f29a56aafdbd67f4fcc0f13105edb938))
+
+## [0.0.15](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.14...mcp-connectors-v0.0.15) (2025-09-05)
+
+
+### Features
+
+* ridewithgps full server ([#123](https://github.com/StackOneHQ/mcp-connectors/issues/123)) ([2d9eb81](https://github.com/StackOneHQ/mcp-connectors/commit/2d9eb81c495feb4b84b5d2f11eb703b2edde328d))
+
+## [0.0.14](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.13...mcp-connectors-v0.0.14) (2025-09-02)
+
+
+### Bug Fixes
+
+* update Modal connector implementation ([#119](https://github.com/StackOneHQ/mcp-connectors/issues/119)) ([d486e18](https://github.com/StackOneHQ/mcp-connectors/commit/d486e18f94d80d0aaabc92b9a687ee860f98e984))
+
+## [0.0.13](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.12...mcp-connectors-v0.0.13) (2025-09-02)
+
+
+### Features
+
+* add Modal connector with sandbox execution and logging tools ([#64](https://github.com/StackOneHQ/mcp-connectors/issues/64)) ([c0c377c](https://github.com/StackOneHQ/mcp-connectors/commit/c0c377ccea42c04b7186e49ab4fad58d4aa950f1))
+
+## [0.0.12](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.11...mcp-connectors-v0.0.12) (2025-09-02)
+
+
+### Features
+
+* add ProductHunt connector ([#67](https://github.com/StackOneHQ/mcp-connectors/issues/67)) ([e660c90](https://github.com/StackOneHQ/mcp-connectors/commit/e660c90b64f19ba005bcd1b3ee4af28ee47215b9))
+* add Strava MCP connector ([#46](https://github.com/StackOneHQ/mcp-connectors/issues/46)) ([e6144a5](https://github.com/StackOneHQ/mcp-connectors/commit/e6144a5adfcd19d5bc89ad593e4006a9acefb798))
+* add supermemory and openai docs ([#76](https://github.com/StackOneHQ/mcp-connectors/issues/76)) ([3694e59](https://github.com/StackOneHQ/mcp-connectors/commit/3694e592ce3a7691e9506075f133182afc56392f))
+* hubspot connector ([#85](https://github.com/StackOneHQ/mcp-connectors/issues/85)) ([bad1f34](https://github.com/StackOneHQ/mcp-connectors/commit/bad1f3429d57b94093e26156013b33cbe4c02bf2))
+* retool connector ([#84](https://github.com/StackOneHQ/mcp-connectors/issues/84)) ([6226f2f](https://github.com/StackOneHQ/mcp-connectors/commit/6226f2fea70e7b4322682c0b4dbe081d9f2546b8))
+* TFL server - Team 6 ([#108](https://github.com/StackOneHQ/mcp-connectors/issues/108)) ([128a723](https://github.com/StackOneHQ/mcp-connectors/commit/128a723ec1b23d4beb89c907fec4e542399570e4))
+* todo list connector first pass ([#99](https://github.com/StackOneHQ/mcp-connectors/issues/99)) ([0198682](https://github.com/StackOneHQ/mcp-connectors/commit/01986829c589730b6f45ac76a22865662bcb856a))
+* zapier connection ([#97](https://github.com/StackOneHQ/mcp-connectors/issues/97)) ([73072ab](https://github.com/StackOneHQ/mcp-connectors/commit/73072ab1606e4e287130ac490fc7b7e3abea4b85))
+
+
+### Bug Fixes
+
+* enhance Notion connector with comprehensive improvements ([#70](https://github.com/StackOneHQ/mcp-connectors/issues/70)) ([ff0627a](https://github.com/StackOneHQ/mcp-connectors/commit/ff0627afae96223b5231641b2b01a2ac8681f872))
+
 ## [0.0.11](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.10...mcp-connectors-v0.0.11) (2025-08-21)
 
 
