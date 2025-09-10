@@ -7,35 +7,35 @@ import { type McpServerConfig, query } from '@anthropic-ai/claude-code';
 import { parseCli } from './cli';
 import { discoverTools } from './discover-tools';
 import { createTestingPrompt } from './prompt';
-import { which } from './utils';
+import { ui } from './utils/ui';
+import { which } from './utils/which';
 
 async function main() {
   const options = parseCli();
 
-  console.log('Starting MCP Test...');
-  console.log(`Testing MCP server at: ${options.url}`);
-  console.log(`Transport: ${options.transport}`);
+  ui.header('MCP Test Runner');
+  ui.detail('Server URL', options.url);
+  ui.detail('Transport', options.transport);
 
   if (options.headers && Object.keys(options.headers).length > 0) {
-    console.log('Using custom headers');
+    ui.info('Using custom headers');
   }
 
-  // Discover available tools from the MCP server
-  console.log('\nDiscovering available tools from MCP server...');
+  ui.section('Spinning up an MCP Client');
+  const spinner = ui.spinner('Connecting to MCP server...');
   const discoveredTools = await discoverTools(options.url, options.headers);
+  spinner.stop();
 
   if (discoveredTools.length === 0) {
-    console.error('No tools discovered from the MCP server');
+    ui.error('No tools discovered from the MCP server');
     process.exit(1);
   }
 
-  console.log(
-    `Discovered ${discoveredTools.length} tools: ${discoveredTools.join(', ')}`
-  );
+  ui.success(`Discovered ${discoveredTools.length} tools`);
+  ui.list(discoveredTools);
 
   // Create temp dir to run claude in (isolated from current project)
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-testing-'));
-  console.log(`Created temp directory for Claude Code: ${tempDir}`);
 
   try {
     // Get the path to the test-data MCP server
@@ -54,11 +54,19 @@ async function main() {
       },
     };
 
-    console.log('\nInitializing Claude Code SDK with MCP configuration...');
+    ui.section('Initializing Claude Code SDK');
+    const claudeSpinner = ui.spinner('Setting up Claude Code configuration...');
 
+    const pathToClaudeCodeExecutable = process.env.CLAUDE_CODE_PATH ?? which('claude');
+    if (!pathToClaudeCodeExecutable) {
+      ui.error('Claude Code executable not found');
+      process.exit(1);
+    }
     // Create allowed tools list for the agent
     const allowedTools = discoveredTools.map((tool) => `mcp__server-to-test__${tool}`);
-    console.log(`\nAllowing tools: ${allowedTools.join(', ')}`);
+
+    claudeSpinner.stop();
+    ui.success('Claude Code ready');
 
     for await (const turn of query({
       prompt: createTestingPrompt(discoveredTools),
@@ -67,7 +75,7 @@ async function main() {
         mcpServers: mcpConfig,
         strictMcpConfig: true,
         model: 'claude-sonnet-4-20250514',
-        pathToClaudeCodeExecutable: process.env.CLAUDE_CODE_PATH ?? which('claude'),
+        pathToClaudeCodeExecutable,
         disallowedTools: [
           'Bash',
           'BashOutput',
@@ -86,27 +94,26 @@ async function main() {
         cwd: tempDir,
       },
     })) {
-      if (turn.type === 'user') {
-        console.log('\n[User]:', JSON.stringify(turn.message.content, null, 2));
-      }
       if (turn.type === 'assistant') {
-        console.log('\n[Agent]:', JSON.stringify(turn.message.content, null, 2));
+        ui.formatTurn(turn);
+      }
+      if (turn.type === 'user') {
+        // User turns contain tool results - show them but truncated
+        ui.formatTurn(turn);
       }
       if (turn.type === 'result') {
+        ui.newline();
         if (turn.subtype === 'success') {
-          console.log('\n✅ Testing completed successfully!');
+          ui.success('Testing completed successfully!');
         } else if (turn.subtype === 'error_max_turns') {
-          console.error('\n⚠️ Testing stopped: Maximum turns reached');
+          ui.warning('Testing stopped: Maximum turns reached');
         } else if (turn.subtype === 'error_during_execution') {
-          console.error(
-            '\n❌ Testing failed:',
-            'error' in turn ? turn.error : 'Unknown error'
-          );
+          ui.error(`Testing failed: ${'error' in turn ? turn.error : 'Unknown error'}`);
         }
       }
     }
   } catch (error) {
-    console.error('Fatal error:', error);
+    ui.error(`Fatal error: ${error}`);
     process.exit(1);
   } finally {
     // Copy results.json to our working directory before cleanup
@@ -141,27 +148,33 @@ async function main() {
 
         // Write the enriched results
         fs.writeFileSync(outputFile, JSON.stringify(enrichedResults, null, 2));
-        console.log(`\n📋 Results saved to: ${outputFile}`);
+        ui.newline();
+        ui.success(`Results saved to: ${ui.path(outputFile)}`);
       } else {
-        console.warn('\n⚠️ No results.json file was created');
+        ui.warning('No results.json file was created');
       }
     } catch (copyError) {
-      console.error(`Failed to save results: ${copyError}`);
+      ui.error(`Failed to save results: ${copyError}`);
     }
 
     // Clean up: remove temp dir
     try {
+      ui.section('Cleaning up test environment');
+      const cleanupSpinner = ui.spinner('Cleaning up test environment...');
+
       fs.rmSync(tempDir, { recursive: true, force: true });
-      console.log(`Cleaned up temp directory: ${tempDir}`);
+      cleanupSpinner.stop();
+
+      ui.success('Removed temporary directory. Testing complete :)');
     } catch (cleanupError) {
-      console.warn(`Warning: Could not clean up temp directory: ${cleanupError}`);
+      ui.warning(`Could not clean up temp directory: ${cleanupError}`);
     }
   }
 }
 
 if (import.meta.main) {
   main().catch((error) => {
-    console.error('Unhandled error:', error);
+    ui.error(`Unhandled error: ${error}`);
     process.exit(1);
   });
 }
