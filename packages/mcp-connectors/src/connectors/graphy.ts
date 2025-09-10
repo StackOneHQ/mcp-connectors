@@ -40,9 +40,9 @@ class GraphyClient {
     Accept: string;
   };
 
-  constructor(apiToken: string) {
+  constructor(apiKey: string) {
     this.headers = {
-      Authorization: `Bearer ${apiToken}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
@@ -87,6 +87,20 @@ class GraphyClient {
     if (contentType?.includes('application/json')) {
       return response.json();
     }
+
+    // Handle binary formats (like XLSX) by returning base64-encoded data
+    if (
+      contentType?.includes(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ) ||
+      contentType?.includes('application/octet-stream') ||
+      path.includes('format=xlsx')
+    ) {
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      return `data:${contentType || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
+    }
+
     return response.text();
   }
 
@@ -229,10 +243,10 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/graphy/squared/png',
   credentials: z.object({
-    apiToken: z
+    apiKey: z
       .string()
       .describe(
-        'Graphy API token from your account settings :: token_1234567890abcdef :: https://visualize.graphy.app/account/api'
+        'Graphy API key from Account settings > API keys :: token_1234567890abcdef :: Create at https://visualize.graphy.app/account/api'
       ),
   }),
   setup: z.object({}),
@@ -259,8 +273,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const boards = await client.getBoards(args.limit, args.offset);
           return JSON.stringify(boards, null, 2);
         } catch (error) {
@@ -276,8 +290,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const board = await client.getBoard(args.boardId);
           return JSON.stringify(board, null, 2);
         } catch (error) {
@@ -297,8 +311,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const board = await client.createBoard(
             args.title,
             args.type,
@@ -326,8 +340,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const board = await client.updateBoard(
             args.boardId,
             args.title,
@@ -348,8 +362,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           await client.deleteBoard(args.boardId);
           return `Board ${args.boardId} deleted successfully`;
         } catch (error) {
@@ -377,8 +391,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const datasets = await client.getDatasets(args.limit, args.offset);
           return JSON.stringify(datasets, null, 2);
         } catch (error) {
@@ -394,8 +408,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const dataset = await client.getDataset(args.datasetId);
           return JSON.stringify(dataset, null, 2);
         } catch (error) {
@@ -423,8 +437,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const dataset = await client.createDataset(
             args.name,
             args.data,
@@ -450,11 +464,19 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const data = await client.getBoardData(args.boardId, args.format);
           if (args.format === 'json') {
             return JSON.stringify(data, null, 2);
+          }
+          // For binary formats like XLSX, data is already base64-encoded data URL
+          if (
+            args.format === 'xlsx' &&
+            typeof data === 'string' &&
+            data.startsWith('data:')
+          ) {
+            return data;
           }
           return String(data);
         } catch (error) {
@@ -475,8 +497,8 @@ export const GraphyConnectorConfig = mcpConnectorConfig({
       }),
       handler: async (args, context) => {
         try {
-          const { apiToken } = await context.getCredentials();
-          const client = new GraphyClient(apiToken);
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
           const embedUrl = await client.shareBoard(args.boardId, args.isPublic);
           return `Board shared successfully. Embed URL: ${embedUrl}`;
         } catch (error) {
