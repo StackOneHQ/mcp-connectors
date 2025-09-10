@@ -2,6 +2,8 @@
 
 > Can Claude accurately use your MCP server tools?
 
+![MCP Test UI](../../docs/assets/mcp-test-ui.png)
+
 Automated testing tool for remote model context protocol (MCP) servers.
 
 Claude Code tries to use all available tools exposed by an MCP server and generates test reports.
