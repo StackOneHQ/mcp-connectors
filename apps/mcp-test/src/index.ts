@@ -5,12 +5,12 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { type McpServerConfig, query } from '@anthropic-ai/claude-code';
-import { define, cli } from 'gunshi';
+import { cli, define } from 'gunshi';
+import { description, version } from '../package.json';
 import { discoverTools } from './discover-tools';
 import { createTestingPrompt } from './prompt';
 import { ui } from './utils/ui';
 import { which } from './utils/which';
-import { version, description } from '../package.json';
 
 const command = define({
   args: {
