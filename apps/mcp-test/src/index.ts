@@ -21,9 +21,15 @@ const command = define({
       default: 'http',
     },
     url: {
-      type: 'string',
+      type: 'custom',
       description: 'MCP server URL',
       required: true,
+      parse(value: string) {
+        if (!URL.canParse(value)) {
+          throw new Error('Invalid URL');
+        }
+        return value;
+      },
     },
     headers: {
       type: 'custom',
