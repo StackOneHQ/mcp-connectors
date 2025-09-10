@@ -1,7 +1,7 @@
+import type { SDKAssistantMessage, SDKUserMessage } from '@anthropic-ai/claude-code';
 import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
 import treeify, { type TreeObject } from 'treeify';
-import type { SDKAssistantMessage, SDKUserMessage } from '@anthropic-ai/claude-code';
 
 export const ui = {
   // Headers
