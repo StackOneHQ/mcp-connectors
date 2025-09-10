@@ -1,6 +1,6 @@
 {
     "name": "@stackone/mcp-config-types",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "MCP config types for disco.dev connectors",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
