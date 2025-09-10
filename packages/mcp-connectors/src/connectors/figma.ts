@@ -402,12 +402,12 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
   name: 'Figma',
   key: 'figma',
   version: '1.0.0',
-  logo: 'https://cdn.brandfetch.io/idZHcZ_i7F/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1729268241679',
+  logo: 'https://stackone-logos.com/api/figma/filled/svg',
   credentials: z.object({
     personalAccessToken: z
       .string()
       .describe(
-        'Figma Personal Access Token :: figd_1234567890abcdefGHIJKLMNOP :: https://www.figma.com/developers/api#access-tokens'
+        'Figma Personal Access Token :: figd_1234567890abcdefGHIJKLMNOP :: https://www.figma.com/developers/api#access-tokens' // cspell:disable-line
       ),
   }),
   setup: z.object({}),
@@ -612,7 +612,65 @@ export const FigmaConnectorConfig = mcpConnectorConfig({
             use_absolute_bounds: args.useAbsoluteBounds,
             version: args.version,
           });
-          return JSON.stringify(images, null, 2);
+
+          // For SVG format, return as text content
+          if (args.format === 'svg') {
+            const svgResults: Record<string, string> = {};
+            for (const [nodeId, url] of Object.entries(images.images)) {
+              if (url) {
+                try {
+                  const response = await fetch(url);
+                  if (response.ok) {
+                    svgResults[nodeId] = await response.text();
+                  } else {
+                    svgResults[nodeId] = `Error fetching SVG: ${response.statusText}`;
+                  }
+                } catch (fetchError) {
+                  svgResults[nodeId] = `Error fetching SVG: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`;
+                }
+              } else {
+                svgResults[nodeId] = 'No URL returned for this node';
+              }
+            }
+            return JSON.stringify({ format: 'svg', images: svgResults }, null, 2);
+          }
+
+          // For binary formats (PNG, JPG, PDF), fetch and return as base64
+          const binaryResults: Record<string, { data: string; mimeType: string }> = {};
+          const mimeType = args.format === 'pdf' ? 'application/pdf' : `image/${args.format || 'png'}`;
+          
+          for (const [nodeId, url] of Object.entries(images.images)) {
+            if (url) {
+              try {
+                const response = await fetch(url);
+                if (response.ok) {
+                  const buffer = await response.arrayBuffer();
+                  const base64 = Buffer.from(buffer).toString('base64');
+                  binaryResults[nodeId] = {
+                    data: base64,
+                    mimeType: mimeType
+                  };
+                } else {
+                  binaryResults[nodeId] = {
+                    data: '',
+                    mimeType: 'text/plain'
+                  };
+                }
+              } catch (fetchError) {
+                binaryResults[nodeId] = {
+                  data: `Error fetching image: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
+                  mimeType: 'text/plain'
+                };
+              }
+            } else {
+              binaryResults[nodeId] = {
+                data: 'No URL returned for this node',
+                mimeType: 'text/plain'
+              };
+            }
+          }
+          
+          return JSON.stringify({ format: args.format || 'png', images: binaryResults }, null, 2);
         } catch (error) {
           return `Failed to get images: ${error instanceof Error ? error.message : String(error)}`;
         }
