@@ -644,7 +644,7 @@ describe('#TelegramConnector', () => {
           setup: {},
         });
 
-        const actual = await resource.handler('telegram://updates', mockContext);
+        const actual = await resource.handler(mockContext);
         const result = JSON.parse(actual);
 
         expect(result.total_updates).toBe(2);
@@ -674,7 +674,7 @@ describe('#TelegramConnector', () => {
           setup: {},
         });
 
-        const actual = await resource.handler('telegram://updates', mockContext);
+        const actual = await resource.handler(mockContext);
 
         expect(actual).toBe('Error retrieving updates: Unauthorized');
       });
@@ -710,7 +710,7 @@ describe('#TelegramConnector', () => {
           setup: {},
         });
 
-        const actual = await resource.handler('telegram://bot', mockContext);
+        const actual = await resource.handler(mockContext);
         const result = JSON.parse(actual);
 
         expect(result.id).toBe(123456789);
@@ -738,7 +738,7 @@ describe('#TelegramConnector', () => {
           setup: {},
         });
 
-        const actual = await resource.handler('telegram://bot', mockContext);
+        const actual = await resource.handler(mockContext);
 
         expect(actual).toBe('No bot information available');
       });

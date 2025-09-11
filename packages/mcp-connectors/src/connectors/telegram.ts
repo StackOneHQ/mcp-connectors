@@ -13,7 +13,6 @@ interface TelegramUser {
   can_join_groups?: boolean;
   can_read_all_group_messages?: boolean;
   supports_inline_queries?: boolean;
-  [key: string]: unknown;
 }
 
 interface TelegramChat {
@@ -23,7 +22,6 @@ interface TelegramChat {
   username?: string;
   first_name?: string;
   last_name?: string;
-  [key: string]: unknown;
 }
 
 interface TelegramMessage {
@@ -34,7 +32,6 @@ interface TelegramMessage {
   chat: TelegramChat;
   text?: string;
   caption?: string;
-  [key: string]: unknown;
 }
 
 interface TelegramUpdate {
@@ -46,7 +43,6 @@ interface TelegramUpdate {
   inline_query?: unknown;
   chosen_inline_result?: unknown;
   callback_query?: unknown;
-  [key: string]: unknown;
 }
 
 interface TelegramResponse<T = unknown> {
@@ -67,8 +63,7 @@ class TelegramClient {
   private baseUrl: string;
 
   constructor(
-    private botToken: string,
-    private defaultChatId?: string
+    private botToken: string
   ) {
     this.baseUrl = `https://api.telegram.org/bot${botToken}`;
   }
@@ -269,7 +264,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
           .describe(
             'Chat ID to send message to. If not provided, uses default chat ID from setup'
           ),
-        text: z.string().describe('Message text to send (1-4096 characters)'),
+        text: z.string().min(1).max(4096).describe('Message text to send (1-4096 characters)'),
         parse_mode: z
           .enum(['HTML', 'Markdown', 'MarkdownV2'])
           .optional()
@@ -288,7 +283,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
         try {
           const { botToken } = await context.getCredentials();
           const { defaultChatId } = await context.getSetup();
-          const client = new TelegramClient(botToken, defaultChatId);
+          const client = new TelegramClient(botToken);
 
           const chatId = args.chat_id || defaultChatId;
           if (!chatId) {
@@ -322,7 +317,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
           .describe(
             'Photo to send. Pass a file_id to resend a photo that exists on the Telegram servers, or pass an HTTP URL for Telegram to get a photo from the Internet'
           ),
-        caption: z.string().optional().describe('Photo caption (0-1024 characters)'),
+        caption: z.string().max(1024).optional().describe('Photo caption (0-1024 characters)'),
         parse_mode: z
           .enum(['HTML', 'Markdown', 'MarkdownV2'])
           .optional()
@@ -337,7 +332,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
         try {
           const { botToken } = await context.getCredentials();
           const { defaultChatId } = await context.getSetup();
-          const client = new TelegramClient(botToken, defaultChatId);
+          const client = new TelegramClient(botToken);
 
           const chatId = args.chat_id || defaultChatId;
           if (!chatId) {
@@ -371,7 +366,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
           .describe(
             'Document to send. Pass a file_id to resend a document that exists on the Telegram servers, or pass an HTTP URL for Telegram to get a document from the Internet'
           ),
-        caption: z.string().optional().describe('Document caption (0-1024 characters)'),
+        caption: z.string().max(1024).optional().describe('Document caption (0-1024 characters)'),
         parse_mode: z
           .enum(['HTML', 'Markdown', 'MarkdownV2'])
           .optional()
@@ -386,7 +381,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
         try {
           const { botToken } = await context.getCredentials();
           const { defaultChatId } = await context.getSetup();
-          const client = new TelegramClient(botToken, defaultChatId);
+          const client = new TelegramClient(botToken);
 
           const chatId = args.chat_id || defaultChatId;
           if (!chatId) {
@@ -416,7 +411,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
             'Chat ID where the message was sent. If not provided, uses default chat ID from setup'
           ),
         message_id: z.number().describe('ID of the message to edit'),
-        text: z.string().describe('New text of the message (1-4096 characters)'),
+        text: z.string().min(1).max(4096).describe('New text of the message (1-4096 characters)'),
         parse_mode: z
           .enum(['HTML', 'Markdown', 'MarkdownV2'])
           .optional()
@@ -430,7 +425,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
         try {
           const { botToken } = await context.getCredentials();
           const { defaultChatId } = await context.getSetup();
-          const client = new TelegramClient(botToken, defaultChatId);
+          const client = new TelegramClient(botToken);
 
           const chatId = args.chat_id || defaultChatId;
           if (!chatId) {
@@ -468,7 +463,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
         try {
           const { botToken } = await context.getCredentials();
           const { defaultChatId } = await context.getSetup();
-          const client = new TelegramClient(botToken, defaultChatId);
+          const client = new TelegramClient(botToken);
 
           const chatId = args.chat_id || defaultChatId;
           if (!chatId) {
@@ -568,6 +563,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
           .describe('Unique identifier for the query to be answered'),
         text: z
           .string()
+          .max(200)
           .optional()
           .describe('Text of the notification (0-200 characters)'),
         show_alert: z
@@ -606,7 +602,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
       name: 'telegram_updates',
       description: 'Recent updates from Telegram bot (messages, callback queries, etc.)',
       uri: 'telegram://updates',
-      handler: async (_, context) => {
+      handler: async (context) => {
         try {
           const { botToken } = await context.getCredentials();
           const client = new TelegramClient(botToken);
@@ -647,7 +643,7 @@ export const TelegramConnectorConfig = mcpConnectorConfig({
       name: 'telegram_bot',
       description: 'Information about the Telegram bot',
       uri: 'telegram://bot',
-      handler: async (_, context) => {
+      handler: async (context) => {
         try {
           const { botToken } = await context.getCredentials();
           const client = new TelegramClient(botToken);
