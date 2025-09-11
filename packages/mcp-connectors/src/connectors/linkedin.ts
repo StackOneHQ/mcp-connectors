@@ -156,11 +156,13 @@ export const LinkedInConnectorConfig = mcpConnectorConfig({
     clientId: z
       .string()
       .describe(
-        'LinkedIn OAuth2 Client ID :: 861abc123def45 :: https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication#application-authorization-2-legged-oauth-client-credential-flow'
+        'LinkedIn OAuth2 Client ID. Get from LinkedIn Developer Portal: 1) Go to developer.linkedin.com and sign in 2) Click "Create App" 3) Fill app details (name, company, description) 4) After creation, find your Client ID on the Auth tab :: 861abc123def45'
       ),
     clientSecret: z
       .string()
-      .describe('LinkedIn OAuth2 Client Secret :: AbCdEfGhIjKlMnOp'),
+      .describe(
+        'LinkedIn OAuth2 Client Secret. Found on the Auth tab of your LinkedIn app, next to the Client ID. Keep this secure and never share it publicly :: AbCdEfGhIjKlMnOp'
+      ),
   }),
   setup: z.object({}),
   oauth2: {
