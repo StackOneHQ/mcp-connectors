@@ -388,7 +388,9 @@ describe('#PostHogConnector', () => {
 
         const actual = await tool.handler({}, mockContext);
 
-        expect(actual).toContain('Personal API Key is required for getting feature flags');
+        expect(actual).toContain(
+          'Personal API Key is required for getting feature flags'
+        );
       });
     });
 
@@ -541,7 +543,9 @@ describe('#PostHogConnector', () => {
           mockContext
         );
 
-        expect(actual).toContain('Project API Key is required for feature flag evaluation');
+        expect(actual).toContain(
+          'Project API Key is required for feature flag evaluation'
+        );
       });
     });
 
