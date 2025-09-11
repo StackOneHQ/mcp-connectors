@@ -24,7 +24,7 @@ describe('#PostHogConnector', () => {
 
           const tool = PostHogConnectorConfig.tools.CAPTURE_EVENT as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
+            credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
             setup: { host: 'https://us.posthog.com' },
           });
 
@@ -42,6 +42,27 @@ describe('#PostHogConnector', () => {
       });
     });
 
+    describe('when projectApiKey is missing', () => {
+      it('returns error message about missing project API key', async () => {
+        const tool = PostHogConnectorConfig.tools.CAPTURE_EVENT as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' }, // Only personal API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler(
+          {
+            event: 'test_event',
+            distinctId: 'user123',
+            properties: {},
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('Project API Key is required for event capture');
+      });
+    });
+
     describe('when API returns an error', () => {
       it('returns error message', async () => {
         server.use(
@@ -52,7 +73,7 @@ describe('#PostHogConnector', () => {
 
         const tool = PostHogConnectorConfig.tools.CAPTURE_EVENT as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'invalid-key' },
+          credentials: { apiKey: 'invalid-key', projectApiKey: 'test-project-key' },
           setup: { host: 'https://us.posthog.com' },
         });
 
@@ -83,7 +104,7 @@ describe('#PostHogConnector', () => {
           const tool = PostHogConnectorConfig.tools
             .CAPTURE_BATCH_EVENTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
+            credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
             setup: { host: 'https://us.posthog.com' },
           });
 
@@ -110,6 +131,32 @@ describe('#PostHogConnector', () => {
       });
     });
 
+    describe('when projectApiKey is missing', () => {
+      it('returns error message about missing project API key', async () => {
+        const tool = PostHogConnectorConfig.tools
+          .CAPTURE_BATCH_EVENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' }, // Only personal API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler(
+          {
+            events: [
+              {
+                event: 'test_event',
+                distinctId: 'user123',
+                properties: {},
+              },
+            ],
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('Project API Key is required for batch event capture');
+      });
+    });
+
     describe('when API returns an error', () => {
       it('returns error message', async () => {
         server.use(
@@ -121,7 +168,7 @@ describe('#PostHogConnector', () => {
         const tool = PostHogConnectorConfig.tools
           .CAPTURE_BATCH_EVENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+          credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
           setup: { host: 'https://us.posthog.com' },
         });
 
@@ -179,6 +226,20 @@ describe('#PostHogConnector', () => {
       });
     });
 
+    describe('when apiKey is missing', () => {
+      it('returns error message about missing personal API key', async () => {
+        const tool = PostHogConnectorConfig.tools.GET_EVENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { projectApiKey: 'test-project-key' }, // Only project API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler({ limit: 10 }, mockContext);
+
+        expect(actual).toContain('Personal API Key is required for getting events');
+      });
+    });
+
     describe('when API returns unauthorized', () => {
       it('returns error message', async () => {
         server.use(
@@ -212,7 +273,7 @@ describe('#PostHogConnector', () => {
 
           const tool = PostHogConnectorConfig.tools.IDENTIFY_USER as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
+            credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
             setup: { host: 'https://us.posthog.com' },
           });
 
@@ -229,6 +290,26 @@ describe('#PostHogConnector', () => {
       });
     });
 
+    describe('when projectApiKey is missing', () => {
+      it('returns error message about missing project API key', async () => {
+        const tool = PostHogConnectorConfig.tools.IDENTIFY_USER as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' }, // Only personal API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler(
+          {
+            distinctId: 'user123',
+            properties: {},
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('Project API Key is required for user identification');
+      });
+    });
+
     describe('when API returns an error', () => {
       it('returns error message', async () => {
         server.use(
@@ -239,7 +320,7 @@ describe('#PostHogConnector', () => {
 
         const tool = PostHogConnectorConfig.tools.IDENTIFY_USER as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+          credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
           setup: { host: 'https://us.posthog.com' },
         });
 
@@ -294,6 +375,20 @@ describe('#PostHogConnector', () => {
           expect(actual).toContain('Beta Feature');
           expect(actual).toContain('beta-feature');
         });
+      });
+    });
+
+    describe('when apiKey is missing', () => {
+      it('returns error message about missing personal API key', async () => {
+        const tool = PostHogConnectorConfig.tools.GET_FEATURE_FLAGS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { projectApiKey: 'test-project-key' }, // Only project API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler({}, mockContext);
+
+        expect(actual).toContain('Personal API Key is required for getting feature flags');
       });
     });
 
@@ -411,7 +506,7 @@ describe('#PostHogConnector', () => {
           const tool = PostHogConnectorConfig.tools
             .EVALUATE_FEATURE_FLAG as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
+            credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
             setup: { host: 'https://us.posthog.com' },
           });
 
@@ -429,6 +524,27 @@ describe('#PostHogConnector', () => {
       });
     });
 
+    describe('when projectApiKey is missing', () => {
+      it('returns error message about missing project API key', async () => {
+        const tool = PostHogConnectorConfig.tools
+          .EVALUATE_FEATURE_FLAG as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' }, // Only personal API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler(
+          {
+            key: 'test-flag',
+            distinctId: 'user123',
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('Project API Key is required for feature flag evaluation');
+      });
+    });
+
     describe('when API returns an error', () => {
       it('returns error message', async () => {
         server.use(
@@ -440,7 +556,7 @@ describe('#PostHogConnector', () => {
         const tool = PostHogConnectorConfig.tools
           .EVALUATE_FEATURE_FLAG as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+          credentials: { apiKey: 'test-api-key', projectApiKey: 'test-project-key' },
           setup: { host: 'https://us.posthog.com' },
         });
 
@@ -488,6 +604,20 @@ describe('#PostHogConnector', () => {
 
           expect(actual).toContain('User Signups');
         });
+      });
+    });
+
+    describe('when apiKey is missing', () => {
+      it('returns error message about missing personal API key', async () => {
+        const tool = PostHogConnectorConfig.tools.GET_INSIGHTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { projectApiKey: 'test-project-key' }, // Only project API key
+          setup: { host: 'https://us.posthog.com' },
+        });
+
+        const actual = await tool.handler({ limit: 10 }, mockContext);
+
+        expect(actual).toContain('Personal API Key is required for getting insights');
       });
     });
 
