@@ -76,7 +76,7 @@ class PostHogClient {
   private apiKey: string;
   private projectApiKey?: string;
   private headers: {
-    'Authorization': string;
+    Authorization: string;
     'Content-Type': string;
   };
   private baseUrl: string;
@@ -85,7 +85,7 @@ class PostHogClient {
     this.apiKey = apiKey;
     this.projectApiKey = projectApiKey;
     this.headers = {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     };
     this.baseUrl = host.endsWith('/') ? host.slice(0, -1) : host;
@@ -98,7 +98,9 @@ class PostHogClient {
     timestamp?: string
   ): Promise<{ status: string }> {
     if (!this.projectApiKey) {
-      throw new Error('Project API Key is required for event capture. Please provide projectApiKey in credentials.');
+      throw new Error(
+        'Project API Key is required for event capture. Please provide projectApiKey in credentials.'
+      );
     }
 
     const payload = {
@@ -126,12 +128,14 @@ class PostHogClient {
 
   async captureBatchEvents(events: PostHogEvent[]): Promise<{ status: string }> {
     if (!this.projectApiKey) {
-      throw new Error('Project API Key is required for batch event capture. Please provide projectApiKey in credentials.');
+      throw new Error(
+        'Project API Key is required for batch event capture. Please provide projectApiKey in credentials.'
+      );
     }
 
     const payload = {
       api_key: this.projectApiKey,
-      batch: events.map(event => ({
+      batch: events.map((event) => ({
         ...event,
         timestamp: event.timestamp || new Date().toISOString(),
       })),
@@ -156,9 +160,12 @@ class PostHogClient {
       offset: offset.toString(),
     });
 
-    const response = await fetch(`${this.baseUrl}/api/projects/@current/events/?${params}`, {
-      headers: this.headers,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/api/projects/@current/events/?${params}`,
+      {
+        headers: this.headers,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`PostHog API error: ${response.status} ${response.statusText}`);
@@ -183,7 +190,7 @@ class PostHogClient {
   async createFeatureFlag(
     name: string,
     key: string,
-    active: boolean = false,
+    active = false,
     filters: Record<string, unknown> = {}
   ): Promise<PostHogFeatureFlag> {
     const payload = {
@@ -212,7 +219,9 @@ class PostHogClient {
     groups: Record<string, unknown> = {}
   ): Promise<{ featureFlag: boolean | string }> {
     if (!this.projectApiKey) {
-      throw new Error('Project API Key is required for feature flag evaluation. Please provide projectApiKey in credentials.');
+      throw new Error(
+        'Project API Key is required for feature flag evaluation. Please provide projectApiKey in credentials.'
+      );
     }
 
     const payload = {
@@ -231,7 +240,9 @@ class PostHogClient {
       throw new Error(`PostHog API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = (await response.json()) as { featureFlags?: Record<string, boolean | string> };
+    const result = (await response.json()) as {
+      featureFlags?: Record<string, boolean | string>;
+    };
     return { featureFlag: result.featureFlags?.[key] || false };
   }
 
@@ -241,9 +252,12 @@ class PostHogClient {
       offset: offset.toString(),
     });
 
-    const response = await fetch(`${this.baseUrl}/api/projects/@current/insights/?${params}`, {
-      headers: this.headers,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/api/projects/@current/insights/?${params}`,
+      {
+        headers: this.headers,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`PostHog API error: ${response.status} ${response.statusText}`);
@@ -349,9 +363,12 @@ class PostHogClient {
       offset: offset.toString(),
     });
 
-    const response = await fetch(`${this.baseUrl}/api/projects/@current/persons/?${params}`, {
-      headers: this.headers,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/api/projects/@current/persons/?${params}`,
+      {
+        headers: this.headers,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`PostHog API error: ${response.status} ${response.statusText}`);
@@ -365,7 +382,9 @@ class PostHogClient {
     properties: Record<string, unknown> = {}
   ): Promise<{ status: string }> {
     if (!this.projectApiKey) {
-      throw new Error('Project API Key is required for user identification. Please provide projectApiKey in credentials.');
+      throw new Error(
+        'Project API Key is required for user identification. Please provide projectApiKey in credentials.'
+      );
     }
 
     const payload = {
@@ -422,7 +441,9 @@ export const PostHogConnectorConfig = mcpConnectorConfig({
     host: z
       .string()
       .default('https://eu.posthog.com')
-      .describe('PostHog host URL (e.g., https://us.posthog.com, https://eu.posthog.com, or your self-hosted instance) :: https://eu.posthog.com'),
+      .describe(
+        'PostHog host URL (e.g., https://us.posthog.com, https://eu.posthog.com, or your self-hosted instance) :: https://eu.posthog.com'
+      ),
   }),
   examplePrompt:
     'Capture a user signup event, check feature flag status, get recent events, create a new dashboard for tracking user engagement, and analyze user cohorts.',
@@ -463,34 +484,36 @@ export const PostHogConnectorConfig = mcpConnectorConfig({
       name: 'posthog_capture_batch_events',
       description: 'Capture multiple events in a single request for better performance',
       schema: z.object({
-        events: z.array(
-          z.object({
-            event: z.string().describe('The name of the event'),
-            distinctId: z.string().describe('Unique identifier for the user or device'),
-            properties: z
-              .record(z.unknown())
-              .default({})
-              .describe('Additional properties for the event'),
-            timestamp: z
-              .string()
-              .optional()
-              .describe('ISO 8601 timestamp (defaults to current time)'),
-          })
-        ).describe('Array of events to capture'),
+        events: z
+          .array(
+            z.object({
+              event: z.string().describe('The name of the event'),
+              distinctId: z.string().describe('Unique identifier for the user or device'),
+              properties: z
+                .record(z.unknown())
+                .default({})
+                .describe('Additional properties for the event'),
+              timestamp: z
+                .string()
+                .optional()
+                .describe('ISO 8601 timestamp (defaults to current time)'),
+            })
+          )
+          .describe('Array of events to capture'),
       }),
       handler: async (args, context) => {
         try {
           const { apiKey, projectApiKey } = await context.getCredentials();
           const { host } = await context.getSetup();
           const client = new PostHogClient(apiKey, host, projectApiKey);
-          
-          const events = args.events.map(event => ({
+
+          const events = args.events.map((event) => ({
             event: event.event,
             distinct_id: event.distinctId,
             properties: event.properties,
             timestamp: event.timestamp,
           }));
-          
+
           const response = await client.captureBatchEvents(events);
           return JSON.stringify(response, null, 2);
         } catch (error) {
@@ -616,7 +639,10 @@ export const PostHogConnectorConfig = mcpConnectorConfig({
       description: 'Get insights and analytics from PostHog',
       schema: z.object({
         limit: z.number().default(25).describe('Maximum number of insights to return'),
-        offset: z.number().default(0).describe('Number of insights to skip for pagination'),
+        offset: z
+          .number()
+          .default(0)
+          .describe('Number of insights to skip for pagination'),
       }),
       handler: async (args, context) => {
         try {
@@ -671,7 +697,10 @@ export const PostHogConnectorConfig = mcpConnectorConfig({
       schema: z.object({
         name: z.string().describe('Name for the cohort'),
         groups: z.array(z.unknown()).describe('Group definitions for the cohort'),
-        description: z.string().optional().describe('Optional description for the cohort'),
+        description: z
+          .string()
+          .optional()
+          .describe('Optional description for the cohort'),
       }),
       handler: async (args, context) => {
         try {
@@ -710,7 +739,10 @@ export const PostHogConnectorConfig = mcpConnectorConfig({
       description: 'Create a new dashboard',
       schema: z.object({
         name: z.string().describe('Name for the dashboard'),
-        description: z.string().optional().describe('Optional description for the dashboard'),
+        description: z
+          .string()
+          .optional()
+          .describe('Optional description for the dashboard'),
       }),
       handler: async (args, context) => {
         try {
@@ -729,7 +761,10 @@ export const PostHogConnectorConfig = mcpConnectorConfig({
       description: 'Get persons (users) from PostHog',
       schema: z.object({
         limit: z.number().default(100).describe('Maximum number of persons to return'),
-        offset: z.number().default(0).describe('Number of persons to skip for pagination'),
+        offset: z
+          .number()
+          .default(0)
+          .describe('Number of persons to skip for pagination'),
       }),
       handler: async (args, context) => {
         try {

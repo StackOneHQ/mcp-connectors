@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeAll, afterEach, afterAll } from 'vitest';
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { PostHogConnectorConfig } from './posthog';
 
@@ -80,7 +80,8 @@ describe('#PostHogConnector', () => {
             })
           );
 
-          const tool = PostHogConnectorConfig.tools.CAPTURE_BATCH_EVENTS as MCPToolDefinition;
+          const tool = PostHogConnectorConfig.tools
+            .CAPTURE_BATCH_EVENTS as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
             credentials: { apiKey: 'test-api-key' },
             setup: { host: 'https://us.posthog.com' },
@@ -117,7 +118,8 @@ describe('#PostHogConnector', () => {
           })
         );
 
-        const tool = PostHogConnectorConfig.tools.CAPTURE_BATCH_EVENTS as MCPToolDefinition;
+        const tool = PostHogConnectorConfig.tools
+          .CAPTURE_BATCH_EVENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiKey: 'test-api-key' },
           setup: { host: 'https://us.posthog.com' },
@@ -272,12 +274,16 @@ describe('#PostHogConnector', () => {
           };
 
           server.use(
-            http.get('https://us.posthog.com/api/projects/@current/feature_flags/', () => {
-              return HttpResponse.json(mockFlags, { status: 200 });
-            })
+            http.get(
+              'https://us.posthog.com/api/projects/@current/feature_flags/',
+              () => {
+                return HttpResponse.json(mockFlags, { status: 200 });
+              }
+            )
           );
 
-          const tool = PostHogConnectorConfig.tools.GET_FEATURE_FLAGS as MCPToolDefinition;
+          const tool = PostHogConnectorConfig.tools
+            .GET_FEATURE_FLAGS as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
             credentials: { apiKey: 'test-api-key' },
             setup: { host: 'https://us.posthog.com' },
@@ -326,12 +332,16 @@ describe('#PostHogConnector', () => {
           };
 
           server.use(
-            http.post('https://us.posthog.com/api/projects/@current/feature_flags/', () => {
-              return HttpResponse.json(mockFlag, { status: 201 });
-            })
+            http.post(
+              'https://us.posthog.com/api/projects/@current/feature_flags/',
+              () => {
+                return HttpResponse.json(mockFlag, { status: 201 });
+              }
+            )
           );
 
-          const tool = PostHogConnectorConfig.tools.CREATE_FEATURE_FLAG as MCPToolDefinition;
+          const tool = PostHogConnectorConfig.tools
+            .CREATE_FEATURE_FLAG as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
             credentials: { apiKey: 'test-api-key' },
             setup: { host: 'https://us.posthog.com' },
@@ -357,14 +367,12 @@ describe('#PostHogConnector', () => {
       it('returns error message', async () => {
         server.use(
           http.post('https://us.posthog.com/api/projects/@current/feature_flags/', () => {
-            return HttpResponse.json(
-              { error: 'Key already exists' },
-              { status: 400 }
-            );
+            return HttpResponse.json({ error: 'Key already exists' }, { status: 400 });
           })
         );
 
-        const tool = PostHogConnectorConfig.tools.CREATE_FEATURE_FLAG as MCPToolDefinition;
+        const tool = PostHogConnectorConfig.tools
+          .CREATE_FEATURE_FLAG as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiKey: 'test-api-key' },
           setup: { host: 'https://us.posthog.com' },
@@ -400,7 +408,8 @@ describe('#PostHogConnector', () => {
             })
           );
 
-          const tool = PostHogConnectorConfig.tools.EVALUATE_FEATURE_FLAG as MCPToolDefinition;
+          const tool = PostHogConnectorConfig.tools
+            .EVALUATE_FEATURE_FLAG as MCPToolDefinition;
           const mockContext = createMockConnectorContext({
             credentials: { apiKey: 'test-api-key' },
             setup: { host: 'https://us.posthog.com' },
@@ -428,7 +437,8 @@ describe('#PostHogConnector', () => {
           })
         );
 
-        const tool = PostHogConnectorConfig.tools.EVALUATE_FEATURE_FLAG as MCPToolDefinition;
+        const tool = PostHogConnectorConfig.tools
+          .EVALUATE_FEATURE_FLAG as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: { apiKey: 'test-api-key' },
           setup: { host: 'https://us.posthog.com' },
@@ -542,10 +552,7 @@ describe('#PostHogConnector', () => {
       it('returns error message', async () => {
         server.use(
           http.post('https://us.posthog.com/api/projects/@current/insights/', () => {
-            return HttpResponse.json(
-              { error: 'Invalid filters' },
-              { status: 400 }
-            );
+            return HttpResponse.json({ error: 'Invalid filters' }, { status: 400 });
           })
         );
 
@@ -635,7 +642,9 @@ describe('#PostHogConnector', () => {
             id: 2,
             name: 'Active Users',
             description: 'Users active in last 30 days',
-            groups: [{ properties: [{ key: 'last_seen', operator: 'gt', value: '30d' }] }],
+            groups: [
+              { properties: [{ key: 'last_seen', operator: 'gt', value: '30d' }] },
+            ],
             count: 0,
             is_calculating: true,
             created_at: '2023-10-27T10:00:00Z',
@@ -656,7 +665,9 @@ describe('#PostHogConnector', () => {
           const actual = await tool.handler(
             {
               name: 'Active Users',
-              groups: [{ properties: [{ key: 'last_seen', operator: 'gt', value: '30d' }] }],
+              groups: [
+                { properties: [{ key: 'last_seen', operator: 'gt', value: '30d' }] },
+              ],
               description: 'Users active in last 30 days',
             },
             mockContext
@@ -797,10 +808,7 @@ describe('#PostHogConnector', () => {
       it('returns error message', async () => {
         server.use(
           http.post('https://us.posthog.com/api/projects/@current/dashboards/', () => {
-            return HttpResponse.json(
-              { error: 'Name is required' },
-              { status: 400 }
-            );
+            return HttpResponse.json({ error: 'Name is required' }, { status: 400 });
           })
         );
 
