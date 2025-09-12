@@ -6,7 +6,7 @@ const GOOGLE_MAPS_API_BASE = 'https://maps.googleapis.com/maps/api';
 interface PlaceResult {
   place_id: string;
   name: string;
-  formatted_address: string;
+  formatted_address?: string;
   geometry: {
     location: {
       lat: number;
@@ -147,6 +147,32 @@ interface ElevationResult {
   }>;
 }
 
+// Google Maps API response interfaces for proper typing
+interface BaseGoogleMapsApiResponse {
+  status: string;
+  error_message?: string;
+}
+
+interface PlacesSearchResponse extends BaseGoogleMapsApiResponse {
+  results?: PlaceResult[];
+}
+
+interface PlaceDetailsResponse extends BaseGoogleMapsApiResponse {
+  result?: PlaceDetails;
+}
+
+interface GeocodeResponse extends BaseGoogleMapsApiResponse {
+  results?: GeocodeResult[];
+}
+
+interface DirectionsResponse extends BaseGoogleMapsApiResponse, DirectionsResult {}
+
+interface DistanceMatrixResponse
+  extends BaseGoogleMapsApiResponse,
+    DistanceMatrixResult {}
+
+interface ElevationResponse extends BaseGoogleMapsApiResponse, ElevationResult {}
+
 class GoogleMapsClient {
   private apiKey: string;
 
@@ -170,9 +196,9 @@ class GoogleMapsClient {
       throw new Error(`Google Maps API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json() as any;
+    const data = (await response.json()) as BaseGoogleMapsApiResponse;
 
-    if (data.status && data.status !== 'OK') {
+    if (data.status && data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       throw new Error(
         `Google Maps API error: ${data.status} - ${data.error_message || 'Unknown error'}`
       );
@@ -195,7 +221,10 @@ class GoogleMapsClient {
     if (type) params.type = type;
     if (keyword) params.keyword = keyword;
 
-    const data = await this.makeRequest('/place/nearbysearch/json', params);
+    const data = (await this.makeRequest(
+      '/place/nearbysearch/json',
+      params
+    )) as PlacesSearchResponse;
     return data.results || [];
   }
 
@@ -211,7 +240,13 @@ class GoogleMapsClient {
         'place_id,name,formatted_address,international_phone_number,website,url,geometry,rating,user_ratings_total,price_level,types,opening_hours,reviews';
     }
 
-    const data = await this.makeRequest('/place/details/json', params);
+    const data = (await this.makeRequest(
+      '/place/details/json',
+      params
+    )) as PlaceDetailsResponse;
+    if (!data.result) {
+      throw new Error('Place details not found');
+    }
     return data.result;
   }
 
@@ -220,7 +255,7 @@ class GoogleMapsClient {
       address,
     };
 
-    const data = await this.makeRequest('/geocode/json', params);
+    const data = (await this.makeRequest('/geocode/json', params)) as GeocodeResponse;
     return data.results || [];
   }
 
@@ -229,7 +264,7 @@ class GoogleMapsClient {
       latlng: `${lat},${lng}`,
     };
 
-    const data = await this.makeRequest('/geocode/json', params);
+    const data = (await this.makeRequest('/geocode/json', params)) as GeocodeResponse;
     return data.results || [];
   }
 
@@ -258,7 +293,7 @@ class GoogleMapsClient {
       params.avoid = avoid.join('|');
     }
 
-    return await this.makeRequest('/directions/json', params) as DirectionsResult;
+    return (await this.makeRequest('/directions/json', params)) as DirectionsResponse;
   }
 
   async getDistanceMatrix(
@@ -272,7 +307,10 @@ class GoogleMapsClient {
       mode,
     };
 
-    return await this.makeRequest('/distancematrix/json', params) as DistanceMatrixResult;
+    return (await this.makeRequest(
+      '/distancematrix/json',
+      params
+    )) as DistanceMatrixResponse;
   }
 
   async getElevation(
@@ -282,7 +320,7 @@ class GoogleMapsClient {
       locations: locations.map((loc) => `${loc.lat},${loc.lng}`).join('|'),
     };
 
-    return await this.makeRequest('/elevation/json', params) as ElevationResult;
+    return (await this.makeRequest('/elevation/json', params)) as ElevationResponse;
   }
 }
 
@@ -295,7 +333,7 @@ export const googleMapsConnector = mcpConnectorConfig({
     apiKey: z.string().min(1, 'Google Maps API key is required'),
   }),
   setup: z.object({}),
-  examplePrompt: 'Find restaurants near Times Square in New York City and get directions from Central Park to the top-rated restaurant.',
+  examplePrompt: 'Find restaurants near Times Square in New York City.',
   tools: (tool) => ({
     SEARCH_NEARBY: tool({
       name: 'search_nearby',
