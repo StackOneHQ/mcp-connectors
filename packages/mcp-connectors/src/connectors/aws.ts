@@ -738,7 +738,7 @@ class AwsClient {
 export const AwsConnectorConfig = mcpConnectorConfig({
   name: 'AWS',
   key: 'aws',
-  version: '1.0.0',
+  version: '2.0.0',
   logo: 'https://stackone-logos.com/api/amazon-redshift/filled/svg',
   credentials: z.object({
     accessKeyId: z.string().describe('AWS Access Key ID :: AKIAIOSFODNN7EXAMPLE'),
@@ -914,6 +914,12 @@ export const AwsConnectorConfig = mcpConnectorConfig({
           .record(z.any())
           .optional()
           .describe('JSON payload to send to the function'),
+        invocationType: z
+          .enum(['RequestResponse', 'Event', 'DryRun'])
+          .default('RequestResponse')
+          .describe(
+            'Invocation type: RequestResponse (sync), Event (async), or DryRun (validate)'
+          ),
       }),
       handler: async (args, context) => {
         try {
@@ -928,7 +934,8 @@ export const AwsConnectorConfig = mcpConnectorConfig({
           });
           const result = await client.invokeLambdaFunction(
             args.functionName,
-            args.payload
+            args.payload,
+            args.invocationType
           );
           return JSON.stringify(result, null, 2);
         } catch (error) {
@@ -936,25 +943,24 @@ export const AwsConnectorConfig = mcpConnectorConfig({
         }
       },
     }),
-    GET_CLOUDWATCH_METRICS: tool({
-      name: 'aws_get_cloudwatch_metrics',
-      description: 'Get CloudWatch metrics for monitoring',
+    GET_CLOUDWATCH_LOGS: tool({
+      name: 'aws_get_cloudwatch_logs',
+      description: 'Get CloudWatch logs from a log group',
       schema: z.object({
-        namespace: z
-          .string()
-          .describe('CloudWatch namespace (e.g., AWS/EC2, AWS/Lambda)'),
-        metricName: z.string().describe('Name of the metric to retrieve'),
-        dimensions: z
-          .array(
-            z.object({
-              Name: z.string(),
-              Value: z.string(),
-            })
-          )
+        logGroupName: z.string().describe('The CloudWatch log group name'),
+        startTime: z
+          .number()
           .optional()
-          .describe('Metric dimensions for filtering'),
-        startTime: z.string().optional().describe('Start time (ISO 8601 format)'),
-        endTime: z.string().optional().describe('End time (ISO 8601 format)'),
+          .describe('Start time (Unix timestamp in milliseconds)'),
+        endTime: z
+          .number()
+          .optional()
+          .describe('End time (Unix timestamp in milliseconds)'),
+        filterPattern: z
+          .string()
+          .optional()
+          .describe('Filter pattern to search for specific log events'),
+        limit: z.number().default(100).describe('Maximum number of log events to return'),
       }),
       handler: async (args, context) => {
         try {
@@ -967,16 +973,149 @@ export const AwsConnectorConfig = mcpConnectorConfig({
             region,
             sessionToken,
           });
-          const metrics = await client.getCloudWatchMetrics(
-            args.namespace,
-            args.metricName,
-            args.dimensions,
+          const logs = await client.getCloudWatchLogs(
+            args.logGroupName,
             args.startTime,
-            args.endTime
+            args.endTime,
+            args.filterPattern,
+            args.limit
           );
-          return JSON.stringify(metrics, null, 2);
+          return JSON.stringify(logs, null, 2);
         } catch (error) {
-          return `Failed to get CloudWatch metrics: ${error instanceof Error ? error.message : String(error)}`;
+          return `Failed to get CloudWatch logs: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_LOG_GROUPS: tool({
+      name: 'aws_list_log_groups',
+      description: 'List all CloudWatch log groups',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const logGroups = await client.listLogGroups();
+          return JSON.stringify(logGroups, null, 2);
+        } catch (error) {
+          return `Failed to list log groups: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_ECS_CLUSTERS: tool({
+      name: 'aws_list_ecs_clusters',
+      description: 'List all ECS clusters',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const clusters = await client.listECSClusters();
+          return JSON.stringify(clusters, null, 2);
+        } catch (error) {
+          return `Failed to list ECS clusters: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_ECS_SERVICES: tool({
+      name: 'aws_list_ecs_services',
+      description: 'List ECS services in a cluster',
+      schema: z.object({
+        clusterName: z
+          .string()
+          .optional()
+          .describe('The ECS cluster name or ARN (optional)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const services = await client.listECSServices(args.clusterName);
+          return JSON.stringify(services, null, 2);
+        } catch (error) {
+          return `Failed to list ECS services: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DESCRIBE_ECS_SERVICES: tool({
+      name: 'aws_describe_ecs_services',
+      description: 'Get detailed information about ECS services',
+      schema: z.object({
+        serviceArns: z.array(z.string()).describe('Array of ECS service ARNs'),
+        clusterName: z
+          .string()
+          .optional()
+          .describe('The ECS cluster name or ARN (optional)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const services = await client.describeECSServices(
+            args.serviceArns,
+            args.clusterName
+          );
+          return JSON.stringify(services, null, 2);
+        } catch (error) {
+          return `Failed to describe ECS services: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_ECS_TASKS: tool({
+      name: 'aws_list_ecs_tasks',
+      description: 'List ECS tasks in a cluster or service',
+      schema: z.object({
+        clusterName: z
+          .string()
+          .optional()
+          .describe('The ECS cluster name or ARN (optional)'),
+        serviceName: z
+          .string()
+          .optional()
+          .describe('The ECS service name or ARN (optional)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const tasks = await client.listECSTasks(args.clusterName, args.serviceName);
+          return JSON.stringify(tasks, null, 2);
+        } catch (error) {
+          return `Failed to list ECS tasks: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
