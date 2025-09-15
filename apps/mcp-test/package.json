@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "build": "tsdown ./src/index.ts",
+    "build": "tsdown --publint --unused ./src/index.ts",
     "prepack": "bun run build",
     "typecheck": "tsgo --noEmit"
   },
@@ -31,7 +31,9 @@
     "@types/bun": "latest",
     "@types/treeify": "^1.0.3",
     "@typescript/native-preview": "^7.0.0-dev.20250915.1",
-    "tsdown": "^0.15.1"
+    "publint": "^0.3.12",
+    "tsdown": "^0.15.1",
+    "unplugin-unused": "^0.5.3"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.109",
