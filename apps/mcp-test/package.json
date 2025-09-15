@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "build": "tsdown --publint --unused ./src/index.ts ./src/internal-server.ts",
+    "build": "tsdown",
     "prepack": "bun run build",
     "typecheck": "tsgo --noEmit"
   },
