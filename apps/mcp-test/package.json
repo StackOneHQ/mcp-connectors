@@ -2,9 +2,7 @@
   "name": "@stackone/mcp-test",
   "version": "0.0.6",
   "description": "automated testing for MCP servers",
-  "module": "index.ts",
   "type": "module",
-  "main": "./dist/index.js",
   "bin": {
     "mcp-test": "./dist/index.js"
   },
