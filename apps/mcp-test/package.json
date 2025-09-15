@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "build": "tsdown ./src/index.ts",
-    "prepublishOnly": "bun run build",
+    "prepack": "bun run build",
     "typecheck": "tsgo --noEmit"
   },
   "keywords": [
