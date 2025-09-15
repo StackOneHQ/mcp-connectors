@@ -30,8 +30,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/treeify": "^1.0.3",
-    "tsdown": "^0.15.1",
-    "typescript": "^5"
+    "@typescript/native-preview": "^7.0.0-dev.20250915.1",
+    "tsdown": "^0.15.1"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.109",
