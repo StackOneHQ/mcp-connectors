@@ -12,8 +12,8 @@
     "dist"
   ],
   "scripts": {
-    "start": "bun run src/index.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --minify",
+    "dev": "bun run --watch src/index.ts",
+    "build": "tsdown ./src/index.ts",
     "prepublishOnly": "bun run build",
     "typecheck": "tsgo --noEmit"
   },
@@ -30,6 +30,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/treeify": "^1.0.3",
+    "tsdown": "^0.15.1",
     "typescript": "^5"
   },
   "dependencies": {
