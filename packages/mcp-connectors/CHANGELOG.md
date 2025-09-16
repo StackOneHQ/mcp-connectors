@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.19](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.18...mcp-connectors-v0.0.19) (2025-09-16)
+
+
+### Features
+
+* add Google Maps MCP connector ([#92](https://github.com/StackOneHQ/mcp-connectors/issues/92)) ([55988d0](https://github.com/StackOneHQ/mcp-connectors/commit/55988d00d0e2f72f3a9999ff25ecf26d137cbde3))
+
 ## [0.0.18](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.17...mcp-connectors-v0.0.18) (2025-09-11)
 
 
