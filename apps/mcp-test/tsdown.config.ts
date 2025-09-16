@@ -10,6 +10,7 @@ export default defineConfig({
   sourcemap: false,
   minify: false,
   clean: true,
+  banner: '#!/usr/bin/env node',
   define: {
     'process.env.NODE_ENV': '"production"',
   },
