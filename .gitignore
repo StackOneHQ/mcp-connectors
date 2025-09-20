@@ -37,3 +37,6 @@ bun-debug.log*
 .npmrc
 
 logs/
+
+CLAUDE.md
+start.txt
