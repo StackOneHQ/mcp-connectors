@@ -38,6 +38,7 @@ import { RetoolConnectorConfig } from './connectors/retool';
 import { RideWithGPSConnectorConfig } from './connectors/ridewithgps';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
+import { SonarQubeConnectorConfig } from './connectors/sonarqube';
 import { StackOneConnectorConfig } from './connectors/stackone';
 import { StravaConnectorConfig } from './connectors/strava';
 import { SupabaseConnectorConfig } from './connectors/supabase';
@@ -91,6 +92,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   RideWithGPSConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
+  SonarQubeConnectorConfig,
   StravaConnectorConfig,
   SupabaseConnectorConfig,
   TFLConnectorConfig,
@@ -143,6 +145,7 @@ export {
   RideWithGPSConnectorConfig,
   SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
+  SonarQubeConnectorConfig,
   StravaConnectorConfig,
   SupabaseConnectorConfig,
   TFLConnectorConfig,
