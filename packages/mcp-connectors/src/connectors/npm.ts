@@ -1,6 +1,11 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
 
+// Helper function to pluralize package count
+const pluralize = (count: number, singular: string, plural = `${singular}s`) => {
+  return count === 1 ? `${count} ${singular}` : `${count} ${plural}`;
+};
+
 interface NpmSearchResult {
   package: {
     name: string;
@@ -288,13 +293,14 @@ const formatVersionInfo = (versionData: NpmVersionData): string => {
   }
 
   if (versionData.dependencies && Object.keys(versionData.dependencies).length > 0) {
-    output.push(`Dependencies: ${Object.keys(versionData.dependencies).length} packages`);
+    const depCount = Object.keys(versionData.dependencies).length;
+    output.push(`Dependencies: ${pluralize(depCount, 'package')}`);
     const depList = Object.entries(versionData.dependencies).slice(0, 5);
     for (const [dep, version] of depList) {
       output.push(`  ${dep}: ${version}`);
     }
-    if (Object.keys(versionData.dependencies).length > 5) {
-      output.push(`  ... and ${Object.keys(versionData.dependencies).length - 5} more`);
+    if (depCount > 5) {
+      output.push(`  ... and ${depCount - 5} more`);
     }
   }
 
@@ -302,18 +308,16 @@ const formatVersionInfo = (versionData: NpmVersionData): string => {
     versionData.devDependencies &&
     Object.keys(versionData.devDependencies).length > 0
   ) {
-    output.push(
-      `Dev Dependencies: ${Object.keys(versionData.devDependencies).length} packages`
-    );
+    const devDepCount = Object.keys(versionData.devDependencies).length;
+    output.push(`Dev Dependencies: ${pluralize(devDepCount, 'package')}`);
   }
 
   if (
     versionData.peerDependencies &&
     Object.keys(versionData.peerDependencies).length > 0
   ) {
-    output.push(
-      `Peer Dependencies: ${Object.keys(versionData.peerDependencies).length} packages`
-    );
+    const peerDepCount = Object.keys(versionData.peerDependencies).length;
+    output.push(`Peer Dependencies: ${pluralize(peerDepCount, 'package')}`);
   }
 
   if (versionData.keywords && versionData.keywords.length > 0) {

@@ -1,7 +1,7 @@
 import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
 import { NpmConnectorConfig } from './npm';
 
@@ -186,6 +186,14 @@ const mockVersionResponse = {
 const server = setupServer();
 
 describe('#NpmConnectorConfig', () => {
+  beforeEach(() => {
+    server.listen({ onUnhandledRequest: 'error' });
+  });
+
+  afterEach(() => {
+    server.resetHandlers();
+    server.close();
+  });
   describe('.SEARCH_PACKAGES', () => {
     describe('when search is successful', () => {
       describe('and packages are found', () => {
@@ -203,8 +211,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.SEARCH_PACKAGES as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -218,8 +224,6 @@ describe('#NpmConnectorConfig', () => {
           expect(actual).toContain('Score: 0.95');
           expect(actual).toContain('https://npmjs.com/package/test-package');
           expect(actual).toContain('2. another-package@2.1.0');
-
-          server.close();
         });
       });
 
@@ -236,14 +240,10 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.SEARCH_PACKAGES as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
           await tool.handler({ query: 'test', size: 5 }, mockContext);
-
-          server.close();
         });
       });
 
@@ -259,16 +259,12 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.SEARCH_PACKAGES as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
           const actual = await tool.handler({ query: 'nonexistent' }, mockContext);
 
           expect(actual).toBe('No packages found for your search query.');
-
-          server.close();
         });
       });
     });
@@ -285,8 +281,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.SEARCH_PACKAGES as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -294,8 +288,6 @@ describe('#NpmConnectorConfig', () => {
 
           expect(actual).toContain('An error occurred while searching packages');
           expect(actual).toContain('HTTP error! Status: 500');
-
-          server.close();
         });
       });
     });
@@ -310,8 +302,6 @@ describe('#NpmConnectorConfig', () => {
               return HttpResponse.json(mockPackageResponse);
             })
           );
-
-          server.listen();
 
           const tool = NpmConnectorConfig.tools.GET_PACKAGE_INFO as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
@@ -330,15 +320,13 @@ describe('#NpmConnectorConfig', () => {
           );
           expect(actual).toContain('Maintainers: testuser');
           expect(actual).toContain('https://npmjs.com/package/test-package');
-
-          server.close();
         });
       });
 
       describe('and package name contains special characters', () => {
         it('properly encodes the package name', async () => {
           server.use(
-            http.get('https://registry.npmjs.org/@types%2Fnode', () => {
+            http.get('https://registry.npmjs.org/%40types%2Fnode', () => {
               return HttpResponse.json({
                 ...mockPackageResponse,
                 name: '@types/node',
@@ -347,16 +335,12 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_PACKAGE_INFO as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
           const actual = await tool.handler({ packageName: '@types/node' }, mockContext);
 
           expect(actual).toContain('Package Information for @types/node:');
-
-          server.close();
         });
       });
     });
@@ -370,8 +354,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_PACKAGE_INFO as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -382,8 +364,6 @@ describe('#NpmConnectorConfig', () => {
 
           expect(actual).toContain('An error occurred while getting package info');
           expect(actual).toContain('Package "nonexistent-package" not found');
-
-          server.close();
         });
       });
     });
@@ -398,8 +378,6 @@ describe('#NpmConnectorConfig', () => {
               return HttpResponse.json(mockVersionResponse);
             })
           );
-
-          server.listen();
 
           const tool = NpmConnectorConfig.tools.GET_VERSION_INFO as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
@@ -419,10 +397,8 @@ describe('#NpmConnectorConfig', () => {
           expect(actual).toContain('lodash: ^4.17.21');
           expect(actual).toContain('axios: ^0.27.2');
           expect(actual).toContain('Dev Dependencies: 2 packages');
-          expect(actual).toContain('Peer Dependencies: 1 packages');
+          expect(actual).toContain('Peer Dependencies: 1 package');
           expect(actual).toContain('https://npmjs.com/package/test-package/v/1.2.3');
-
-          server.close();
         });
       });
 
@@ -434,16 +410,12 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_VERSION_INFO as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
           const actual = await tool.handler({ packageName: 'test-package' }, mockContext);
 
           expect(actual).toContain('Version Information for test-package@1.2.3:');
-
-          server.close();
         });
       });
     });
@@ -457,8 +429,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_VERSION_INFO as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -469,8 +439,6 @@ describe('#NpmConnectorConfig', () => {
 
           expect(actual).toContain('An error occurred while getting version info');
           expect(actual).toContain('Package "test-package" version "99.99.99" not found');
-
-          server.close();
         });
       });
     });
@@ -486,8 +454,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_README as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -497,8 +463,6 @@ describe('#NpmConnectorConfig', () => {
           expect(actual).toContain('# Test Package');
           expect(actual).toContain('This is a test package for testing purposes.');
           expect(actual).toContain('npm install test-package');
-
-          server.close();
         });
       });
 
@@ -509,8 +473,6 @@ describe('#NpmConnectorConfig', () => {
               return HttpResponse.json(mockVersionResponse);
             })
           );
-
-          server.listen();
 
           const tool = NpmConnectorConfig.tools.GET_README as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
@@ -523,8 +485,6 @@ describe('#NpmConnectorConfig', () => {
           expect(actual).toContain('README for test-package@1.2.3:');
           expect(actual).toContain('# Test Package v1.2.3');
           expect(actual).toContain('This is the specific version readme.');
-
-          server.close();
         });
       });
 
@@ -540,8 +500,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_README as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -549,8 +507,6 @@ describe('#NpmConnectorConfig', () => {
 
           expect(actual).toContain('[README truncated - content was too long]');
           expect(actual.length).toBeLessThan(15000);
-
-          server.close();
         });
       });
     });
@@ -567,16 +523,12 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_README as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
           const actual = await tool.handler({ packageName: 'test-package' }, mockContext);
 
           expect(actual).toBe('No README found for package "test-package"');
-
-          server.close();
         });
       });
     });
@@ -590,8 +542,6 @@ describe('#NpmConnectorConfig', () => {
             })
           );
 
-          server.listen();
-
           const tool = NpmConnectorConfig.tools.GET_README as MCPToolDefinition;
           const mockContext = createMockConnectorContext();
 
@@ -602,8 +552,6 @@ describe('#NpmConnectorConfig', () => {
 
           expect(actual).toContain('An error occurred while getting README');
           expect(actual).toContain('Package "nonexistent-package" not found');
-
-          server.close();
         });
       });
     });
