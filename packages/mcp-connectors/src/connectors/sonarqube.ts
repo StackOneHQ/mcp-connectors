@@ -85,11 +85,6 @@ class SonarQubeClient {
 
     // Default to SonarCloud if no server URL provided
     this.baseUrl = serverUrl || 'https://sonarcloud.io';
-
-    // Add organization parameter for SonarCloud if provided
-    if (organization && !serverUrl) {
-      this.baseUrl = 'https://sonarcloud.io';
-    }
   }
 
   private addOrgParam(url: string, organization?: string): string {
