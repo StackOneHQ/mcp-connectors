@@ -532,7 +532,7 @@ class CustomerIOClient {
         body: JSON.stringify({
           name: event.name,
           data: event.data,
-          timestamp: event.timestamp || Math.floor(Date.now() / 1000),
+          timestamp: event.timestamp ?? Math.floor(Date.now() / 1000),
         }),
       }
     );

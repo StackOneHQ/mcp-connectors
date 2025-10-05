@@ -20,7 +20,7 @@ describe('#CustomerIOConnector', () => {
       describe('and all required fields are provided', () => {
         it('returns delivery confirmation', async () => {
           server.use(
-            http.post('https://api.customer.io/v1/api/send-email', () => {
+            http.post('https://api.customer.io/v1/api/send/email', () => {
               return HttpResponse.json({
                 delivery_id: 'test-delivery-123',
                 queued_at: 1672531200,
@@ -53,7 +53,7 @@ describe('#CustomerIOConnector', () => {
       describe('and optional message data is provided', () => {
         it('includes personalization data in request', async () => {
           server.use(
-            http.post('https://api.customer.io/v1/api/send-email', () => {
+            http.post('https://api.customer.io/v1/api/send/email', () => {
               return HttpResponse.json({
                 delivery_id: 'test-delivery-123',
                 queued_at: 1672531200,
@@ -88,7 +88,7 @@ describe('#CustomerIOConnector', () => {
     describe('when API request fails', () => {
       it('returns error message', async () => {
         server.use(
-          http.post('https://api.customer.io/v1/api/send-email', () => {
+          http.post('https://api.customer.io/v1/api/send/email', () => {
             return new HttpResponse(null, { status: 500 });
           })
         );
@@ -686,7 +686,7 @@ describe('#CustomerIOConnector', () => {
 
     it('uses EU API endpoint', async () => {
       server.use(
-        http.post('https://api-eu.customer.io/v1/api/send-email', () => {
+        http.post('https://api-eu.customer.io/v1/api/send/email', () => {
           return HttpResponse.json({
             delivery_id: 'eu-delivery-123',
             queued_at: 1672531200,
