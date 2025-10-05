@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -72,12 +70,20 @@ const command = define({
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-testing-'));
     try {
       // Get the path to the test-data MCP server
-      const testDataServerPath = path.join(import.meta.dirname, 'internal-server.ts');
+      const testDataServerPath =
+        process.env.NODE_ENV === 'production'
+          ? path.join(import.meta.dirname, 'internal-server.js')
+          : path.join(import.meta.dirname, 'internal-server.ts');
+
+      if (!testDataServerPath) {
+        ui.error('Internal test data server not found');
+        process.exit(1);
+      }
 
       const mcpConfig: Record<string, McpServerConfig> = {
         'internal-helper': {
           type: 'stdio',
-          command: 'bun',
+          command: 'node',
           args: [testDataServerPath],
         },
         'server-to-test': {

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.12](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.11...mcp-config-types-v0.0.12) (2025-09-16)
+
+
+### Bug Fixes
+
+* build and deps ([#150](https://github.com/StackOneHQ/mcp-connectors/issues/150)) ([b523e21](https://github.com/StackOneHQ/mcp-connectors/commit/b523e21f89317d09b43d68d71f3475987c31c461))
+
 ## [0.0.11](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-config-types-v0.0.10...mcp-config-types-v0.0.11) (2025-09-10)
 
 

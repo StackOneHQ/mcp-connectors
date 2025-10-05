@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.7](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.6...mcp-test-v0.0.7) (2025-09-16)
+
+
+### Bug Fixes
+
+* banner ([#151](https://github.com/StackOneHQ/mcp-connectors/issues/151)) ([4b0fe4c](https://github.com/StackOneHQ/mcp-connectors/commit/4b0fe4c562edb8982f0c5dbfb5967d4705347da4))
+* build and deps ([#150](https://github.com/StackOneHQ/mcp-connectors/issues/150)) ([b523e21](https://github.com/StackOneHQ/mcp-connectors/commit/b523e21f89317d09b43d68d71f3475987c31c461))
+
 ## [0.0.6](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.5...mcp-test-v0.0.6) (2025-09-10)
 
 
