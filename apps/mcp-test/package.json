@@ -1,10 +1,8 @@
 {
   "name": "@stackone/mcp-test",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "description": "automated testing for MCP servers",
-  "module": "index.ts",
   "type": "module",
-  "main": "./dist/index.js",
   "bin": {
     "mcp-test": "./dist/index.js"
   },
@@ -12,9 +10,9 @@
     "dist"
   ],
   "scripts": {
-    "start": "bun run src/index.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --minify",
-    "prepublishOnly": "bun run build",
+    "dev": "bun run --watch src/index.ts",
+    "build": "tsdown",
+    "prepack": "bun run build",
     "typecheck": "tsgo --noEmit"
   },
   "keywords": [
@@ -28,14 +26,25 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/treeify": "^1.0.3",
+    "@typescript/native-preview": "^7.0.0-dev.20250915.1",
+    "publint": "^0.3.12",
+    "tsdown": "^0.15.1",
+    "unplugin-unused": "^0.5.3"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.109",
     "@faker-js/faker": "^10.0.0",
     "@modelcontextprotocol/sdk": "^1.17.5",
-    "commander": "^14.0.0",
+    "chalk": "^5.6.2",
+    "gunshi": "^0.26.3",
+    "ora": "^8.2.0",
+    "treeify": "^1.1.0",
     "zod": "^4.1.5"
+  },
+  "engines": {
+    "bun": ">=1.2.0",
+    "node": ">=22.14.0"
   }
 }

@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { ui } from './utils/ui';
 
 export async function discoverTools(
   url: string,
@@ -29,7 +30,7 @@ export async function discoverTools(
 
     return tools.tools.map((tool) => tool.name);
   } catch (error) {
-    console.error('Failed to discover tools:', error);
+    ui.error(`Failed to discover tools: ${error}`);
     return [];
   }
 }

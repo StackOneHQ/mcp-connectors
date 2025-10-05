@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.0.19](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.18...mcp-connectors-v0.0.19) (2025-09-16)
+
+
+### Features
+
+* add Google Maps MCP connector ([#92](https://github.com/StackOneHQ/mcp-connectors/issues/92)) ([55988d0](https://github.com/StackOneHQ/mcp-connectors/commit/55988d00d0e2f72f3a9999ff25ecf26d137cbde3))
+
+## [0.0.18](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.17...mcp-connectors-v0.0.18) (2025-09-11)
+
+
+### Features
+
+* improve LinkedIn connector credential setup instructions ([#145](https://github.com/StackOneHQ/mcp-connectors/issues/145)) ([b0bca2c](https://github.com/StackOneHQ/mcp-connectors/commit/b0bca2c9bff29c00ad6d87556c2c73f3540d71ae))
+* posthog mcp server ([#146](https://github.com/StackOneHQ/mcp-connectors/issues/146)) ([954700a](https://github.com/StackOneHQ/mcp-connectors/commit/954700a4ed8b255676fc613c5fabd6f74fcf6e97))
+
+## [0.0.17](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.16...mcp-connectors-v0.0.17) (2025-09-10)
+
+
+### Features
+
+* release please ([#142](https://github.com/StackOneHQ/mcp-connectors/issues/142)) ([33fd4f6](https://github.com/StackOneHQ/mcp-connectors/commit/33fd4f6b8b74c5216c1740f4cdb9854b48673609))
+
 ## [0.0.16](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.15...mcp-connectors-v0.0.16) (2025-09-09)
 
 

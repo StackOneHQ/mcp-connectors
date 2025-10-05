@@ -2,6 +2,8 @@
 
 > Can Claude accurately use your MCP server tools?
 
+![MCP Test UI](../../docs/assets/mcp-test-ui.png)
+
 Automated testing tool for remote model context protocol (MCP) servers.
 
 Claude Code tries to use all available tools exposed by an MCP server and generates test reports.
@@ -142,16 +144,6 @@ Test results are saved to `.agent/results_<server>_<timestamp>.json` with the fo
   ]
 }
 ```
-
-## Architecture
-
-The testing tool consists of:
-
-- **CLI interface** (`src/cli.ts`): Parses command-line arguments
-- **Tool discovery** (`src/discover-tools.ts`): Connects to MCP server and lists tools
-- **Test orchestrator** (`src/index.ts`): Main testing logic and Claude Code integration
-- **Prompt generator** (`src/prompt.ts`): Creates testing prompts for Claude
-- **Test data generator** (`src/test-data-mcp-server.ts`): Internal MCP server for generating test data
 
 ## Development
 

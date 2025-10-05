@@ -16,6 +16,7 @@ import { FigmaConnectorConfig } from './connectors/figma';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
+import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { GraphyConnectorConfig } from './connectors/graphy';
 import { HiBobConnectorConfig } from './connectors/hibob';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
@@ -29,6 +30,7 @@ import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
 import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
+import { PostHogConnectorConfig } from './connectors/posthog';
 import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
@@ -67,6 +69,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   FigmaConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
+  GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
@@ -82,6 +85,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PostHogConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
@@ -118,6 +122,7 @@ export {
   FigmaConnectorConfig,
   GitHubConnectorConfig,
   GoogleDriveConnectorConfig,
+  GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
@@ -133,6 +138,7 @@ export {
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PostHogConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
