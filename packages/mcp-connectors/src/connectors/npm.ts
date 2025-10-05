@@ -106,6 +106,7 @@ interface NpmPackageResponse {
 
 const REGISTRY_BASE_URL = 'https://registry.npmjs.org';
 const SEARCH_BASE_URL = 'https://registry.npmjs.org/-/v1/search';
+const MAX_README_LENGTH = 10000;
 
 const searchPackages = async (query: string, size = 20): Promise<NpmSearchResponse> => {
   console.info(`Searching npm packages for: ${query}`);
@@ -444,8 +445,8 @@ export const NpmConnectorConfig = mcpConnectorConfig({
           }
 
           // Truncate if too long for better readability
-          if (readmeContent.length > 10000) {
-            readmeContent = `${readmeContent.substring(0, 10000)}\n\n[README truncated - content was too long]`;
+          if (readmeContent.length > MAX_README_LENGTH) {
+            readmeContent = `${readmeContent.substring(0, MAX_README_LENGTH)}\n\n[README truncated - content was too long]`;
           }
 
           return `README for ${args.packageName}${args.version ? `@${args.version}` : ''}:\n\n${readmeContent}`;
