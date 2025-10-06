@@ -1,5 +1,12 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
+import { validateGPX, simplifyGPX, mergeGPX, geojsonLineToGPX } from '../utils/gpx.js';
+import {
+  routeWithOSRM,
+  routeWithMapbox,
+  extractTurnByTurnDirections,
+  type OSRMRouteResponse,
+} from '../utils/osrm.js';
 
 interface RideWithGPSSearchResult {
   type?: string;
@@ -263,8 +270,8 @@ class RideWithGPSClient {
 export const RideWithGPSConnectorConfig = mcpConnectorConfig({
   name: 'RideWithGPS',
   key: 'ridewithgps',
-  version: '1.0.0',
-  logo: 'https://ridewithgps.com/favicon-32x32.png?2000000008', // todo replace with real logos
+  version: '1.1.0',
+  logo: 'https://ridewithgps.com/favicon-32x32.png?2000000008',
   credentials: z.object({
     apiKey: z
       .string()
@@ -274,10 +281,36 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
       .describe(
         'RideWithGPS Authentication Token obtained through login :: your-auth-token :: Login to your account and retrieve from API documentation'
       ),
+    // Optional routing and web search capabilities
+    osrmBaseUrl: z
+      .string()
+      .url()
+      .optional()
+      .describe(
+        'OSRM/Valhalla base URL for routing :: https://router.project-osrm.org :: Self-hosted or public OSRM server'
+      ),
+    mapboxToken: z
+      .string()
+      .optional()
+      .describe(
+        'Mapbox Directions API token :: your-mapbox-token :: Alternative to OSRM for route generation'
+      ),
+    webSearchProvider: z
+      .enum(['bing', 'serpapi'])
+      .optional()
+      .describe(
+        'Web search provider for finding routes :: bing :: Choose between Bing or SerpAPI'
+      ),
+    webSearchApiKey: z
+      .string()
+      .optional()
+      .describe(
+        'Web search API key :: your-search-api-key :: Required for route discovery features'
+      ),
   }),
   setup: z.object({}),
   examplePrompt:
-    'Get my RideWithGPS cycling profile and show my recent rides with performance data. Find my favorite routes and analyze the most challenging climbs. Discover upcoming cycling events in my area.',
+    'Plan a 120km gravel loop starting/finishing in Bristol with <1500m climb. Use OSM paths, avoid A-roads, export as GPX, and prep it for Ride with GPS import. Get my current cycling profile and analyze my recent performance data.',
   tools: (tool) => ({
     GET_CURRENT_USER: tool({
       name: 'ridewithgps_get_current_user',
@@ -307,7 +340,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
         offset: z.number().default(0).describe('Offset for pagination'),
         limit: z.number().default(20).describe('Number of routes to retrieve (max 50)'),
       }),
-      handler: async (args, context) => {
+      handler: async (args, _context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
@@ -325,7 +358,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
       schema: z.object({
         routeId: z.number().describe('The ID of the route'),
       }),
-      handler: async (args, context) => {
+      handler: async (args, _context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
@@ -348,7 +381,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
         offset: z.number().default(0).describe('Offset for pagination'),
         limit: z.number().default(20).describe('Number of rides to retrieve (max 50)'),
       }),
-      handler: async (args, context) => {
+      handler: async (args, _context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
@@ -366,7 +399,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
       schema: z.object({
         rideId: z.number().describe('The ID of the ride'),
       }),
-      handler: async (args, context) => {
+      handler: async (args, _context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
@@ -433,7 +466,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
           .default(20)
           .describe('Number of routes to return (max 100, default 20)'),
       }),
-      handler: async (args, context) => {
+      handler: async (args, _context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
 
@@ -547,7 +580,7 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
           .optional()
           .describe('User ID (defaults to authenticated user)'),
       }),
-      handler: async (args, context) => {
+      handler: async (args, _context) => {
         try {
           const { apiKey, authToken } = await context.getCredentials();
           const client = new RideWithGPSClient(apiKey, authToken);
@@ -555,6 +588,370 @@ export const RideWithGPSConnectorConfig = mcpConnectorConfig({
           return JSON.stringify(events, null, 2);
         } catch (error) {
           return `Failed to get events: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    // === GPX Processing Tools ===
+    GPX_VALIDATE: tool({
+      name: 'gpx_validate',
+      description:
+        'Validate a GPX file (XSD if available, structural fallback). Returns validity, stats, warnings, and a normalized GPX. Essential for ensuring GPX files are properly formatted before import.',
+      schema: z.object({
+        gpxXml: z.string().describe('Raw GPX XML content or base64-encoded XML'),
+        strict: z
+          .boolean()
+          .default(false)
+          .describe('Use strict XSD validation if available'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          const xml = args.gpxXml.trim().startsWith('<')
+            ? args.gpxXml
+            : Buffer.from(args.gpxXml, 'base64').toString('utf8');
+          const result = await validateGPX(xml, { strict: args.strict });
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to validate GPX: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    GPX_SIMPLIFY: tool({
+      name: 'gpx_simplify',
+      description:
+        'Simplify a GPX track using Douglas-Peucker algorithm to reduce file size and point count. Useful before uploading to services with point limits.',
+      schema: z.object({
+        gpxXml: z.string().describe('Raw GPX XML content or base64-encoded XML'),
+        toleranceMeters: z
+          .number()
+          .default(10)
+          .describe('Simplification tolerance in meters (higher = more aggressive)'),
+        highQuality: z
+          .boolean()
+          .default(false)
+          .describe('Use high-quality algorithm (slower but better results)'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          const xml = args.gpxXml.trim().startsWith('<')
+            ? args.gpxXml
+            : Buffer.from(args.gpxXml, 'base64').toString('utf8');
+          const simplified = simplifyGPX(xml, args.toleranceMeters, args.highQuality);
+          return simplified;
+        } catch (error) {
+          return `Failed to simplify GPX: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    GPX_MERGE: tool({
+      name: 'gpx_merge',
+      description:
+        'Merge multiple GPX tracks into one continuous route. Perfect for combining route segments or creating multi-day tours.',
+      schema: z.object({
+        gpxXmls: z
+          .array(z.string())
+          .min(2)
+          .describe('Array of raw GPX XML strings or base64-encoded XML'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          const xmls = args.gpxXmls.map((x) =>
+            x.trim().startsWith('<') ? x : Buffer.from(x, 'base64').toString('utf8')
+          );
+          const merged = mergeGPX(xmls);
+          return merged;
+        } catch (error) {
+          return `Failed to merge GPX files: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    // === Route Generation Tools ===
+    ROUTE_FROM_WAYPOINTS: tool({
+      name: 'route_from_waypoints',
+      description:
+        'Generate a snapped cycling route from waypoints using OSRM or Mapbox. Creates turn-by-turn directions and exports as GPX ready for RideWithGPS import.',
+      schema: z.object({
+        waypoints: z
+          .array(
+            z.object({
+              lat: z.number().describe('Latitude'),
+              lon: z.number().describe('Longitude'),
+            })
+          )
+          .min(2)
+          .describe('Array of waypoints (minimum 2 required)'),
+        profile: z
+          .enum(['cycling', 'walking', 'driving'])
+          .default('cycling')
+          .describe('Routing profile'),
+        name: z.string().optional().describe('Route name for GPX metadata'),
+        description: z.string().optional().describe('Route description for GPX metadata'),
+        useMapbox: z
+          .boolean()
+          .default(false)
+          .describe('Use Mapbox instead of OSRM (requires Mapbox token)'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          const credentials = await context.getCredentials();
+
+          let route: OSRMRouteResponse;
+          if (args.useMapbox) {
+            if (!credentials.mapboxToken) {
+              return 'Mapbox token required for Mapbox routing. Set mapboxToken credential or use OSRM instead.';
+            }
+            route = await routeWithMapbox(args.waypoints, credentials.mapboxToken, {
+              profile: args.profile as 'cycling' | 'walking' | 'driving',
+            });
+          } else {
+            route = await routeWithOSRM(args.waypoints, {
+              baseUrl: credentials.osrmBaseUrl,
+              profile: args.profile as 'cycling' | 'walking' | 'driving',
+            });
+          }
+
+          const directions = extractTurnByTurnDirections(route);
+          const gpx = geojsonLineToGPX(route.geometry, {
+            name: args.name,
+            desc: args.description,
+          });
+
+          return JSON.stringify(
+            {
+              summary: {
+                distance_km: +(route.distance / 1000).toFixed(1),
+                duration_hours: +(route.duration / 3600).toFixed(2),
+                legs: route.legs?.length ?? 1,
+                total_waypoints: args.waypoints.length,
+              },
+              turn_by_turn_directions: directions.slice(0, 10), // First 10 for preview
+              total_directions: directions.length,
+              gpx_preview: `${gpx.substring(0, 500)}...`,
+              gpx_full: gpx,
+              import_instructions:
+                'Use PREPARE_RWGPS_IMPORT tool to prepare this GPX for RideWithGPS upload',
+            },
+            null,
+            2
+          );
+        } catch (error) {
+          return `Failed to generate route: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    // === Web Discovery Tools ===
+    WEB_SEARCH_ROUTES: tool({
+      name: 'web_search_routes',
+      description:
+        'Search the web for public cycling routes from RideWithGPS, AllTrails, Plotaroute, and other cycling sites. Returns URLs and metadata for route discovery.',
+      schema: z.object({
+        query: z
+          .string()
+          .describe(
+            'Search query: e.g., "gravel loop near Bristol 60km site:ridewithgps.com"'
+          ),
+        limit: z.number().default(10).describe('Maximum number of results'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          const { webSearchProvider, webSearchApiKey } = await context.getCredentials();
+
+          if (!webSearchProvider || !webSearchApiKey) {
+            return 'Web search not configured. Provide webSearchProvider and webSearchApiKey credentials to enable route discovery.';
+          }
+
+          // Enhanced query for cycling routes
+          const enhancedQuery = `${args.query} cycling route gpx bike bicycle`;
+
+          if (webSearchProvider === 'bing') {
+            const url = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(enhancedQuery)}&count=${Math.min(args.limit, 50)}`;
+            const res = await fetch(url, {
+              headers: { 'Ocp-Apim-Subscription-Key': webSearchApiKey },
+            });
+
+            if (!res.ok) {
+              return `Bing search error: ${res.status} ${res.statusText}`;
+            }
+
+            const data = (await res.json()) as {
+              webPages?: {
+                value: Array<{
+                  name: string;
+                  url: string;
+                  snippet: string;
+                  displayUrl: string;
+                }>;
+              };
+            };
+            const items = (data.webPages?.value || []).map((v) => ({
+              title: v.name,
+              url: v.url,
+              snippet: v.snippet,
+              display_url: v.displayUrl,
+            }));
+
+            return JSON.stringify(
+              {
+                query: enhancedQuery,
+                provider: 'bing',
+                total_results: items.length,
+                results: items,
+                next_steps:
+                  'Use FETCH_GPX tool to download GPX files from direct links found in results',
+              },
+              null,
+              2
+            );
+          }
+
+          // SerpAPI fallback
+          const serpUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(enhancedQuery)}&num=${Math.min(args.limit, 10)}&api_key=${webSearchApiKey}`;
+          const res = await fetch(serpUrl);
+
+          if (!res.ok) {
+            return `SerpAPI error: ${res.status} ${res.statusText}`;
+          }
+
+          const data = (await res.json()) as {
+            organic_results?: Array<{ title: string; link: string; snippet: string }>;
+          };
+          const items = (data.organic_results || []).map((v) => ({
+            title: v.title,
+            url: v.link,
+            snippet: v.snippet,
+          }));
+
+          return JSON.stringify(
+            {
+              query: enhancedQuery,
+              provider: 'serpapi',
+              total_results: items.length,
+              results: items,
+              next_steps:
+                'Use FETCH_GPX tool to download GPX files from direct links found in results',
+            },
+            null,
+            2
+          );
+        } catch (error) {
+          return `Failed to search routes: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    FETCH_GPX: tool({
+      name: 'fetch_gpx',
+      description:
+        "Download a public GPX file from a URL. Only works with direct GPX download links that don't require authentication.",
+      schema: z.object({
+        url: z.string().url().describe('Direct URL to a public GPX file'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          const response = await fetch(args.url, {
+            redirect: 'follow',
+            headers: {
+              'User-Agent': 'StackOne-GPX-Toolkit/1.0.0',
+            },
+          });
+
+          if (!response.ok) {
+            return `HTTP ${response.status}: ${response.statusText}`;
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          if (!/xml|gpx|application\/octet-stream/.test(contentType.toLowerCase())) {
+            return `Refusing non-GPX content-type: ${contentType}. Expected XML or GPX format.`;
+          }
+
+          const xml = await response.text();
+
+          // Quick validation that this looks like GPX
+          if (!xml.includes('<gpx') && !xml.includes('<?xml')) {
+            return 'Downloaded content does not appear to be a valid GPX file.';
+          }
+
+          return JSON.stringify(
+            {
+              url: args.url,
+              content_type: contentType,
+              size_bytes: xml.length,
+              gpx_content: xml,
+              next_steps:
+                'Use GPX_VALIDATE to verify the GPX file, then PREPARE_RWGPS_IMPORT to prepare for upload',
+            },
+            null,
+            2
+          );
+        } catch (error) {
+          return `Failed to fetch GPX: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    // === RideWithGPS Import Preparation ===
+    PREPARE_RWGPS_IMPORT: tool({
+      name: 'prepare_rwgps_import',
+      description:
+        "Prepare a GPX file for RideWithGPS import. Returns base64-encoded file and import instructions since RideWithGPS doesn't have a direct API upload endpoint.",
+      schema: z.object({
+        gpxXml: z.string().describe('Complete GPX XML content'),
+        filename: z.string().default('route.gpx').describe('Filename for the GPX file'),
+      }),
+      handler: async (args, _context) => {
+        try {
+          // Validate the GPX first
+          const validation = await validateGPX(args.gpxXml, { strict: false });
+
+          if (!validation.valid) {
+            return JSON.stringify(
+              {
+                error: 'GPX validation failed',
+                validation_errors: validation.errors,
+                suggestion:
+                  'Fix GPX errors before preparing for import, or use GPX_VALIDATE tool for detailed analysis',
+              },
+              null,
+              2
+            );
+          }
+
+          const base64Content = Buffer.from(args.gpxXml, 'utf8').toString('base64');
+          const stats = validation.stats;
+
+          return JSON.stringify(
+            {
+              filename: args.filename,
+              base64_content: base64Content,
+              file_size_bytes: args.gpxXml.length,
+              route_stats: stats
+                ? {
+                    points: stats.points,
+                    distance_km: (stats.distance_m / 1000).toFixed(1),
+                    elevation_gain_m: stats.elevation_gain_m,
+                    bounding_box: stats.bbox,
+                  }
+                : null,
+              import_methods: {
+                web_upload:
+                  'Go to ridewithgps.com/routes/new and click "Upload" to select your GPX file',
+                mobile_app:
+                  'Use "Share to RideWithGPS" from your file manager or email app',
+                email_import:
+                  'Email the GPX file as attachment to UPLOAD@RIDEWITHGPS.COM from your RideWithGPS account email',
+              },
+              ready_for_import: true,
+              validation_summary: `✅ Valid GPX with ${stats?.points || 0} points, ${stats ? (stats.distance_m / 1000).toFixed(1) : '?'}km distance`,
+            },
+            null,
+            2
+          );
+        } catch (error) {
+          return `Failed to prepare GPX for import: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),
