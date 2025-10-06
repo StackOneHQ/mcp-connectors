@@ -41,6 +41,13 @@ export interface MCPToolDefinition<I = any> {
   name: string;
   description: string;
   schema: z.ZodType<I>; // Keep Zod schema for parsing
+  annotations?: {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+  };
   handler: (
     args: I, // Typed args from schema inference
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>

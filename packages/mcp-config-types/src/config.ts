@@ -38,6 +38,13 @@ export function mcpConnectorConfig<
       name: string;
       description: string;
       schema: I;
+      annotations?: {
+        title?: string;
+        readOnlyHint?: boolean;
+        destructiveHint?: boolean;
+        idempotentHint?: boolean;
+        openWorldHint?: boolean;
+      };
       handler: (
         args: ZodInfer<I>,
         context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
@@ -64,6 +71,13 @@ export function mcpConnectorConfig<
     name: string;
     description: string;
     schema: I;
+    annotations?: {
+      title?: string;
+      readOnlyHint?: boolean;
+      destructiveHint?: boolean;
+      idempotentHint?: boolean;
+      openWorldHint?: boolean;
+    };
     handler: (
       args: ZodInfer<I>,
       context: ConnectorContext<ZodInfer<C>, ZodInfer<S>>
@@ -72,6 +86,7 @@ export function mcpConnectorConfig<
     name: toolConfig.name,
     description: toolConfig.description,
     schema: toolConfig.schema,
+    annotations: toolConfig.annotations,
     handler: toolConfig.handler as MCPToolDefinition<ZodInfer<I>>['handler'],
   });
 

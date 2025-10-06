@@ -18,24 +18,30 @@ export const buildServerFromConnector = async (
     // Check if schema has a shape property (ZodObject)
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     const inputSchema = (tool.schema as any).shape || {};
-    server.tool(tool.name, tool.description, inputSchema, async (args: unknown) => {
-      try {
-        const result = await tool.handler(args, context);
-        return {
-          content: [{ type: 'text' as const, text: result }],
-        } satisfies CallToolResult;
-      } catch (error) {
-        return {
-          content: [
-            {
-              isError: true,
-              type: 'text' as const,
-              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        } satisfies CallToolResult;
+    server.tool(
+      tool.name,
+      tool.description,
+      inputSchema,
+      tool.annotations,
+      async (args: unknown) => {
+        try {
+          const result = await tool.handler(args, context);
+          return {
+            content: [{ type: 'text' as const, text: result }],
+          } satisfies CallToolResult;
+        } catch (error) {
+          return {
+            content: [
+              {
+                isError: true,
+                type: 'text' as const,
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+          } satisfies CallToolResult;
+        }
       }
-    });
+    );
   }
 
   for (const resource of Object.values(connectorConfig.resources)) {
