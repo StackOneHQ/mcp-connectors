@@ -36,6 +36,11 @@ class HubSpotClient {
 
     if (!response.ok) {
       const error = await response.text();
+      if (response.status === 401) {
+        throw new Error(
+          `HubSpot API error: ${response.status} - Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key. ${error}`
+        );
+      }
       throw new Error(`HubSpot API error: ${response.status} - ${error}`);
     }
 
@@ -66,6 +71,11 @@ class HubSpotClient {
 
     if (!response.ok) {
       const error = await response.text();
+      if (response.status === 401) {
+        throw new Error(
+          `HubSpot API error: ${response.status} - Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key. ${error}`
+        );
+      }
       throw new Error(`HubSpot API error: ${response.status} - ${error}`);
     }
 
@@ -84,6 +94,11 @@ class HubSpotClient {
 
     if (!response.ok) {
       const error = await response.text();
+      if (response.status === 401) {
+        throw new Error(
+          `HubSpot API error: ${response.status} - Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key. ${error}`
+        );
+      }
       throw new Error(`HubSpot API error: ${response.status} - ${error}`);
     }
 
@@ -102,6 +117,11 @@ class HubSpotClient {
 
     if (!response.ok) {
       const error = await response.text();
+      if (response.status === 401) {
+        throw new Error(
+          `HubSpot API error: ${response.status} - Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key. ${error}`
+        );
+      }
       throw new Error(`HubSpot API error: ${response.status} - ${error}`);
     }
 
@@ -116,7 +136,9 @@ export const HubSpotConnectorConfig = mcpConnectorConfig({
   credentials: z.object({
     apiKey: z
       .string()
-      .describe('Your HubSpot API key from Settings > Integrations > API Key'),
+      .describe(
+        'Your HubSpot Private App access token from Settings > Integrations > Private Apps. Note: Personal Access Keys are only for local development tools and will not work with this connector.'
+      ),
   }),
   logo: 'https://stackone-logos.com/api/hubspot/filled/svg',
   setup: z.object({}),
