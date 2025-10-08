@@ -95,13 +95,13 @@ interface GitLabFile {
 }
 
 class GitLabClient {
-  private headers: { Authorization: string; Accept: string; 'User-Agent': string };
+  private headers: { 'Private-Token': string; Accept: string; 'User-Agent': string };
   private baseUrl: string;
 
   constructor(token: string, baseUrl = 'https://gitlab.com/api/v4') {
     this.baseUrl = baseUrl;
     this.headers = {
-      Authorization: `Bearer ${token}`,
+      'Private-Token': token,
       Accept: 'application/json',
       'User-Agent': 'MCP-GitLab-Connector/1.0.0',
     };
@@ -179,11 +179,11 @@ class GitLabClient {
   ): Promise<GitLabIssue> {
     const response = await fetch(`${this.baseUrl}/projects/${encodeURIComponent(projectId)}/issues`, {
       method: 'POST',
-      headers: this.headers,
+      headers: { ...this.headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
         description,
-        labels: labels?.join(','),
+        labels: labels,
         assignee_ids: assigneeIds,
       }),
     });
