@@ -8,7 +8,7 @@
     "spawn": "bun run src/spawn-server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "*",
+    "@modelcontextprotocol/sdk": "^1.18.0",
     "@stackone/mcp-config-types": "workspace:*",
     "@stackone/mcp-connectors": "workspace:*",
     "express": "^4.21.2",
