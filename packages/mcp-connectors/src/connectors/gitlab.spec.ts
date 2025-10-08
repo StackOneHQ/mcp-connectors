@@ -8,9 +8,27 @@ describe('GitLabConnectorConfig', () => {
     expect(GitLabConnectorConfig.version).toBe('1.0.0');
   });
 
-  it('should have the tools property defined', () => {
+  it('should have tools object with expected tools', () => {
+    expect(typeof GitLabConnectorConfig.tools).toBe('object');
     expect(GitLabConnectorConfig.tools).toBeDefined();
-    expect(typeof GitLabConnectorConfig.tools).toBe('function');
+
+    const expectedTools = [
+      'GET_PROJECT',
+      'LIST_PROJECTS', 
+      'LIST_ISSUES',
+      'GET_ISSUE',
+      'CREATE_ISSUE',
+      'LIST_MERGE_REQUESTS',
+      'GET_MERGE_REQUEST',
+      'GET_CURRENT_USER',
+      'GET_USER',
+      'LIST_FILES',
+      'GET_FILE_CONTENT',
+    ];
+
+    for (const toolName of expectedTools) {
+      expect(GitLabConnectorConfig.tools[toolName]).toBeDefined();
+    }
   });
 
   it('should have correct credential schema', () => {
