@@ -108,9 +108,12 @@ class GitLabClient {
   }
 
   async getProject(projectId: string): Promise<GitLabProject> {
-    const response = await fetch(`${this.baseUrl}/projects/${encodeURIComponent(projectId)}`, {
-      headers: this.headers,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/projects/${encodeURIComponent(projectId)}`,
+      {
+        headers: this.headers,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
@@ -177,16 +180,19 @@ class GitLabClient {
     labels?: string[],
     assigneeIds?: number[]
   ): Promise<GitLabIssue> {
-    const response = await fetch(`${this.baseUrl}/projects/${encodeURIComponent(projectId)}/issues`, {
-      method: 'POST',
-      headers: { ...this.headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title,
-        description,
-        labels: labels,
-        assignee_ids: assigneeIds,
-      }),
-    });
+    const response = await fetch(
+      `${this.baseUrl}/projects/${encodeURIComponent(projectId)}/issues`,
+      {
+        method: 'POST',
+        headers: { ...this.headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          labels: labels,
+          assignee_ids: assigneeIds,
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
@@ -214,7 +220,10 @@ class GitLabClient {
     return response.json() as Promise<GitLabMergeRequest[]>;
   }
 
-  async getMergeRequest(projectId: string, mergeRequestIid: number): Promise<GitLabMergeRequest> {
+  async getMergeRequest(
+    projectId: string,
+    mergeRequestIid: number
+  ): Promise<GitLabMergeRequest> {
     const response = await fetch(
       `${this.baseUrl}/projects/${encodeURIComponent(projectId)}/merge_requests/${mergeRequestIid}`,
       {
@@ -253,11 +262,7 @@ class GitLabClient {
     return response.json() as Promise<GitLabUser>;
   }
 
-  async listFiles(
-    projectId: string,
-    path = '',
-    ref?: string
-  ): Promise<GitLabFile[]> {
+  async listFiles(projectId: string, path = '', ref?: string): Promise<GitLabFile[]> {
     let url = `${this.baseUrl}/projects/${encodeURIComponent(projectId)}/repository/tree?path=${encodeURIComponent(path)}`;
     if (ref) {
       url += `&ref=${encodeURIComponent(ref)}`;
@@ -274,11 +279,7 @@ class GitLabClient {
     return response.json() as Promise<GitLabFile[]>;
   }
 
-  async getFileContent(
-    projectId: string,
-    path: string,
-    ref?: string
-  ): Promise<string> {
+  async getFileContent(projectId: string, path: string, ref?: string): Promise<string> {
     let url = `${this.baseUrl}/projects/${encodeURIComponent(projectId)}/repository/files/${encodeURIComponent(path)}/raw`;
     if (ref) {
       url += `?ref=${encodeURIComponent(ref)}`;
@@ -302,11 +303,7 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/gitlab/filled/svg',
   credentials: z.object({
-    token: z
-      .string()
-      .describe(
-        'GitLab Personal Access Token'
-      ),
+    token: z.string().describe('GitLab Personal Access Token'),
     baseUrl: z
       .string()
       .default('https://gitlab.com/api/v4')
@@ -320,7 +317,9 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
       name: 'gitlab_get_project',
       description: 'Get information about a specific GitLab project',
       schema: z.object({
-        projectId: z.string().describe('Project ID or path (e.g., "123" or "group/project")'),
+        projectId: z
+          .string()
+          .describe('Project ID or path (e.g., "123" or "group/project")'),
       }),
       handler: async (args, context) => {
         try {
@@ -338,10 +337,7 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
       description: 'List projects for the authenticated user',
       schema: z.object({
         owned: z.boolean().default(false).describe('Only show owned projects'),
-        limit: z
-          .number()
-          .default(30)
-          .describe('Maximum number of projects to return'),
+        limit: z.number().default(30).describe('Maximum number of projects to return'),
       }),
       handler: async (args, context) => {
         try {
@@ -369,11 +365,7 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
         try {
           const { token, baseUrl } = await context.getCredentials();
           const client = new GitLabClient(token, baseUrl);
-          const issues = await client.listIssues(
-            args.projectId,
-            args.state,
-            args.limit
-          );
+          const issues = await client.listIssues(args.projectId, args.state, args.limit);
           return JSON.stringify(issues, null, 2);
         } catch (error) {
           return `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`;
@@ -482,7 +474,7 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
       name: 'gitlab_get_current_user',
       description: 'Get information about the authenticated user',
       schema: z.object({}),
-      handler: async (args, context) => {
+      handler: async (_args, context) => {
         try {
           const { token, baseUrl } = await context.getCredentials();
           const client = new GitLabClient(token, baseUrl);
@@ -525,11 +517,7 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
         try {
           const { token, baseUrl } = await context.getCredentials();
           const client = new GitLabClient(token, baseUrl);
-          const files = await client.listFiles(
-            args.projectId,
-            args.path,
-            args.ref
-          );
+          const files = await client.listFiles(args.projectId, args.path, args.ref);
           return JSON.stringify(files, null, 2);
         } catch (error) {
           return `Failed to list files: ${error instanceof Error ? error.message : String(error)}`;
