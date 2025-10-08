@@ -37,12 +37,11 @@ class HubSpotClient {
     if (!response.ok) {
       const error = await response.text();
       if (response.status === 401) {
-        throw new Error(
-          error ||
-            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key."
-        );
+        const authMessage = error ||
+            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key.";
+        throw new Error(`${authMessage} (${response.status})`);
       }
-      throw new Error(error || `HubSpot API error: ${response.status}`);
+      throw new Error(error ? `${error} (${response.status})` : `HubSpot API error: ${response.status}`);
     }
 
     return response.json();
@@ -73,12 +72,11 @@ class HubSpotClient {
     if (!response.ok) {
       const error = await response.text();
       if (response.status === 401) {
-        throw new Error(
-          error ||
-            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key."
-        );
+        const authMessage = error ||
+            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key.";
+        throw new Error(`${authMessage} (${response.status})`);
       }
-      throw new Error(error || `HubSpot API error: ${response.status}`);
+      throw new Error(error ? `${error} (${response.status})` : `HubSpot API error: ${response.status}`);
     }
 
     return response.json();
@@ -97,12 +95,11 @@ class HubSpotClient {
     if (!response.ok) {
       const error = await response.text();
       if (response.status === 401) {
-        throw new Error(
-          error ||
-            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key."
-        );
+        const authMessage = error ||
+            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key.";
+        throw new Error(`${authMessage} (${response.status})`);
       }
-      throw new Error(error || `HubSpot API error: ${response.status}`);
+      throw new Error(error ? `${error} (${response.status})` : `HubSpot API error: ${response.status}`);
     }
 
     return response.json();
@@ -121,12 +118,11 @@ class HubSpotClient {
     if (!response.ok) {
       const error = await response.text();
       if (response.status === 401) {
-        throw new Error(
-          error ||
-            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key."
-        );
+        const authMessage = error ||
+            "Authentication failed. Please ensure you're using a Private App access token, not a Personal Access Key or deprecated API key.";
+        throw new Error(`${authMessage} (${response.status})`);
       }
-      throw new Error(error || `HubSpot API error: ${response.status}`);
+      throw new Error(error ? `${error} (${response.status})` : `HubSpot API error: ${response.status}`);
     }
 
     return response.json();
