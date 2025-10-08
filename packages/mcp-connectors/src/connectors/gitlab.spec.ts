@@ -14,7 +14,7 @@ describe('GitLabConnectorConfig', () => {
 
     const expectedTools = [
       'GET_PROJECT',
-      'LIST_PROJECTS', 
+      'LIST_PROJECTS',
       'LIST_ISSUES',
       'GET_ISSUE',
       'CREATE_ISSUE',
