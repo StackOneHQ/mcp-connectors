@@ -57,4 +57,36 @@ describe('GitLabConnectorConfig', () => {
     expect(GitLabConnectorConfig.examplePrompt).toContain('issues');
     expect(GitLabConnectorConfig.examplePrompt).toContain('merge requests');
   });
+
+  describe('URL Security Validation', () => {
+    it('should accept valid HTTPS URLs', () => {
+      const credentialsSchema = GitLabConnectorConfig.credentials;
+      const parsedCredentials = credentialsSchema.safeParse({
+        token: 'test-token',
+        baseUrl: 'https://gitlab.example.com/api/v4',
+      });
+
+      expect(parsedCredentials.success).toBe(true);
+    });
+
+    it('should reject invalid URLs', () => {
+      const credentialsSchema = GitLabConnectorConfig.credentials;
+      const parsedCredentials = credentialsSchema.safeParse({
+        token: 'test-token',
+        baseUrl: 'not-a-valid-url',
+      });
+
+      expect(parsedCredentials.success).toBe(false);
+    });
+
+    it('should reject malformed URLs', () => {
+      const credentialsSchema = GitLabConnectorConfig.credentials;
+      const parsedCredentials = credentialsSchema.safeParse({
+        token: 'test-token',
+        baseUrl: 'https://',
+      });
+
+      expect(parsedCredentials.success).toBe(false);
+    });
+  });
 });

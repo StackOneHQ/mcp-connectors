@@ -107,6 +107,13 @@ class GitLabClient {
     };
   }
 
+  private validatePath(path: string): void {
+    // Prevent path traversal attacks
+    if (path.includes('..') || path.includes('\0') || path.includes('\n')) {
+      throw new Error('Invalid path: potentially malicious path detected');
+    }
+  }
+
   async getProject(projectId: string): Promise<GitLabProject> {
     const response = await fetch(
       `${this.baseUrl}/projects/${encodeURIComponent(projectId)}`,
@@ -263,6 +270,8 @@ class GitLabClient {
   }
 
   async listFiles(projectId: string, path = '', ref?: string): Promise<GitLabFile[]> {
+    this.validatePath(path);
+
     let url = `${this.baseUrl}/projects/${encodeURIComponent(projectId)}/repository/tree?path=${encodeURIComponent(path)}`;
     if (ref) {
       url += `&ref=${encodeURIComponent(ref)}`;
@@ -280,6 +289,8 @@ class GitLabClient {
   }
 
   async getFileContent(projectId: string, path: string, ref?: string): Promise<string> {
+    this.validatePath(path);
+
     let url = `${this.baseUrl}/projects/${encodeURIComponent(projectId)}/repository/files/${encodeURIComponent(path)}/raw`;
     if (ref) {
       url += `?ref=${encodeURIComponent(ref)}`;
@@ -306,6 +317,7 @@ export const GitLabConnectorConfig = mcpConnectorConfig({
     token: z.string().describe('GitLab Personal Access Token'),
     baseUrl: z
       .string()
+      .url()
       .default('https://gitlab.com/api/v4')
       .describe('GitLab API base URL (for self-hosted instances)'),
   }),
