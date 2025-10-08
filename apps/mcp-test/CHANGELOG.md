@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.0.7](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.6...mcp-test-v0.0.7) (2025-09-16)
+
+
+### Bug Fixes
+
+* banner ([#151](https://github.com/StackOneHQ/mcp-connectors/issues/151)) ([4b0fe4c](https://github.com/StackOneHQ/mcp-connectors/commit/4b0fe4c562edb8982f0c5dbfb5967d4705347da4))
+* build and deps ([#150](https://github.com/StackOneHQ/mcp-connectors/issues/150)) ([b523e21](https://github.com/StackOneHQ/mcp-connectors/commit/b523e21f89317d09b43d68d71f3475987c31c461))
+
+## [0.0.6](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.5...mcp-test-v0.0.6) (2025-09-10)
+
+
+### Features
+
+* release please ([#142](https://github.com/StackOneHQ/mcp-connectors/issues/142)) ([33fd4f6](https://github.com/StackOneHQ/mcp-connectors/commit/33fd4f6b8b74c5216c1740f4cdb9854b48673609))
+
+## [0.0.5](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.4...mcp-test-v0.0.5) (2025-09-10)
+
+
+### Features
+
+* better ui ([#139](https://github.com/StackOneHQ/mcp-connectors/issues/139)) ([f92d894](https://github.com/StackOneHQ/mcp-connectors/commit/f92d894f64484b419f9ddaf0713fef51552929c1))
+* commander -&gt; gunshi ([#138](https://github.com/StackOneHQ/mcp-connectors/issues/138)) ([ff1643f](https://github.com/StackOneHQ/mcp-connectors/commit/ff1643f592a31a772f4d4dc989c3be3aa92949f8))
+
 ## [0.0.4](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.3...mcp-test-v0.0.4) (2025-09-09)
 
 
