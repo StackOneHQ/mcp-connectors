@@ -77,7 +77,7 @@ class SonarQubeClient {
   private headers: { Authorization: string; Accept: string };
   private baseUrl: string;
 
-  constructor(token: string, serverUrl?: string, organization?: string) {
+  constructor(token: string, serverUrl?: string, _organization?: string) {
     this.headers = {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
