@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.20](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.19...mcp-connectors-v0.0.20) (2025-10-08)
+
+
+### Features
+
+* add GitLab MCP connector ([#154](https://github.com/StackOneHQ/mcp-connectors/issues/154)) ([c853ed9](https://github.com/StackOneHQ/mcp-connectors/commit/c853ed936935d420f59fdf79437120afad8eb8e2))
+
 ## [0.0.19](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.18...mcp-connectors-v0.0.19) (2025-09-16)
 
 
