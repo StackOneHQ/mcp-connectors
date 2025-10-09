@@ -107,8 +107,8 @@ class SonarQubeClient {
       throw new Error(`SonarQube API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
-    return result.components as SonarQubeProject[];
+    const result = (await response.json()) as { components: SonarQubeProject[] };
+    return result.components;
   }
 
   async getProject(projectKey: string, organization?: string): Promise<SonarQubeProject> {
@@ -123,7 +123,7 @@ class SonarQubeClient {
       throw new Error(`SonarQube API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as { components: SonarQubeProject[] };
     if (result.components && result.components.length > 0) {
       return result.components[0] as SonarQubeProject;
     }
@@ -160,8 +160,8 @@ class SonarQubeClient {
       throw new Error(`SonarQube API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
-    return result.issues as SonarQubeIssue[];
+    const result = (await response.json()) as { issues: SonarQubeIssue[] };
+    return result.issues;
   }
 
   async getComponentMeasures(
@@ -180,8 +180,8 @@ class SonarQubeClient {
       throw new Error(`SonarQube API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
-    return result.component as SonarQubeComponent;
+    const result = (await response.json()) as { component: SonarQubeComponent };
+    return result.component;
   }
 
   async getQualityGateStatus(
@@ -214,8 +214,8 @@ class SonarQubeClient {
       throw new Error(`SonarQube API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
-    return result.qualitygates as SonarQubeQualityGate[];
+    const result = (await response.json()) as { qualitygates: SonarQubeQualityGate[] };
+    return result.qualitygates;
   }
 
   async getSystemHealth(): Promise<{ health: string; causes?: string[] }> {
@@ -229,7 +229,7 @@ class SonarQubeClient {
       throw new Error(`SonarQube API error: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    return (await response.json()) as { health: string; causes?: string[] };
   }
 }
 
