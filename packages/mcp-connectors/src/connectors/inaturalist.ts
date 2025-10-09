@@ -206,7 +206,10 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{
+      results: iNaturalistObservation[];
+      total_results: number;
+    }>;
   }
 
   async getObservation(id: number): Promise<{ results: iNaturalistObservation[] }> {
@@ -218,7 +221,7 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{ results: iNaturalistObservation[] }>;
   }
 
   async getSpeciesCounts(params: {
@@ -248,7 +251,10 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{
+      results: iNaturalistSpeciesCount[];
+      total_results: number;
+    }>;
   }
 
   async searchTaxa(params: {
@@ -274,7 +280,10 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{
+      results: iNaturalistTaxon[];
+      total_results: number;
+    }>;
   }
 
   async getTaxon(id: number): Promise<{ results: iNaturalistTaxon[] }> {
@@ -286,7 +295,7 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{ results: iNaturalistTaxon[] }>;
   }
 
   async getProjects(params: {
@@ -316,7 +325,10 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{
+      results: iNaturalistProject[];
+      total_results: number;
+    }>;
   }
 
   async getProject(id: number): Promise<{ results: iNaturalistProject[] }> {
@@ -328,7 +340,7 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{ results: iNaturalistProject[] }>;
   }
 
   async searchPlaces(params: {
@@ -355,7 +367,10 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{
+      results: iNaturalistPlace[];
+      total_results: number;
+    }>;
   }
 
   async getPlace(id: number): Promise<{ results: iNaturalistPlace[] }> {
@@ -367,7 +382,7 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{ results: iNaturalistPlace[] }>;
   }
 
   async getUser(id: string): Promise<{ results: iNaturalistUser[] }> {
@@ -379,10 +394,10 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<{ results: iNaturalistUser[] }>;
   }
 
-  async getCurrentUser(): Promise<{ results: iNaturalistUser[] }> {
+  async getCurrentUser(): Promise<iNaturalistUser> {
     const response = await fetch(`${this.baseUrl}/users/me`, {
       headers: this.headers,
     });
@@ -391,7 +406,7 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<iNaturalistUser>;
   }
 
   async createObservation(observation: {
@@ -416,7 +431,7 @@ class iNaturalistClient {
       throw new Error(`iNaturalist API error: ${response.status} ${response.statusText}`);
     }
 
-    return response.json() as Promise<any>;
+    return response.json() as Promise<iNaturalistObservation>;
   }
 }
 
