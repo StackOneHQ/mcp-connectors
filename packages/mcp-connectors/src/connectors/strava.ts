@@ -1,6 +1,13 @@
 import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
 
+interface StravaTokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+  token_type?: string;
+}
+
 interface StravaAthlete {
   id: number;
   firstname: string;
@@ -230,7 +237,7 @@ class StravaClient {
       );
     }
 
-    const tokenData = await response.json();
+    const tokenData = (await response.json()) as StravaTokenResponse;
 
     // Update credentials with new token data
     this.credentials.accessToken = tokenData.access_token;
