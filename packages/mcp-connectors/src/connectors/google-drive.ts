@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface GoogleDriveFile {
@@ -401,282 +401,396 @@ class GoogleDriveClient {
   }
 }
 
-export const GoogleDriveConnectorConfig = mcpConnectorConfig({
-  name: 'Google Drive',
-  key: 'google_drive',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/google-drive/filled/svg',
-  credentials: z.object({
-    accessToken: z
-      .string()
-      .describe(
-        'Google OAuth 2.0 Access Token with Drive API scope from OAuth 2.0 Playground (https://developers.google.com/oauthplayground/) :: ya29.a0AfH6SMBa1234567890abcdefghijklmnopqrstuvwxyz ::https://developers.google.com/identity/protocols/oauth2'
-      ),
-  }),
-  setup: z.object({}),
-  examplePrompt:
-    'List all files in my Drive, create a new document called "Meeting Notes", and share it with my team member at john@company.com with edit permissions.',
-  tools: (tool) => ({
-    GET_ABOUT: tool({
-      name: 'google_drive_get_about',
-      description: 'Get information about the user and their Drive storage',
-      schema: z.object({}),
-      handler: async (_args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const about = await client.getAbout();
-          return JSON.stringify(about, null, 2);
-        } catch (error) {
-          return `Failed to get Drive info: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_FILES: tool({
-      name: 'google_drive_list_files',
-      description: 'List files and folders in Google Drive',
-      schema: z.object({
-        query: z
-          .string()
-          .optional()
-          .describe(
-            'Search query (e.g., \'name contains "test"\', \'mimeType="image/jpeg"\')'
-          ),
-        pageSize: z.number().default(100).describe('Number of files to return per page'),
-        orderBy: z
-          .string()
-          .optional()
-          .describe('Sort order (e.g., "name", "modifiedTime desc", "createdTime")'),
-        pageToken: z.string().optional().describe('Token for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const result = await client.listFiles(
-            args.query,
-            args.pageSize,
-            args.orderBy,
-            args.pageToken
-          );
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to list files: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_FILE: tool({
-      name: 'google_drive_get_file',
-      description: 'Get metadata for a specific file or folder',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-        includePermissions: z
-          .boolean()
-          .default(false)
-          .describe('Include file sharing permissions'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const file = await client.getFile(args.fileId, args.includePermissions);
-          return JSON.stringify(file, null, 2);
-        } catch (error) {
-          return `Failed to get file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_FILE_CONTENT: tool({
-      name: 'google_drive_get_file_content',
-      description: 'Download and return the text content of a file',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const content = await client.getFileContent(args.fileId);
-          return content;
-        } catch (error) {
-          return `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_FILE: tool({
-      name: 'google_drive_create_file',
-      description: 'Create a new file in Google Drive',
-      schema: z.object({
-        name: z.string().describe('File name'),
-        content: z.string().optional().describe('File content (for text files)'),
-        mimeType: z.string().optional().describe('MIME type of the file'),
-        parentId: z.string().optional().describe('Parent folder ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const file = await client.createFile({
-            name: args.name,
-            content: args.content,
-            mimeType: args.mimeType,
-            parents: args.parentId ? [args.parentId] : undefined,
-          });
-          return JSON.stringify(file, null, 2);
-        } catch (error) {
-          return `Failed to create file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    UPDATE_FILE: tool({
-      name: 'google_drive_update_file',
-      description: 'Update a file in Google Drive',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-        name: z.string().optional().describe('New file name'),
-        content: z.string().optional().describe('New file content (for text files)'),
-        mimeType: z.string().optional().describe('MIME type of the file'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const file = await client.updateFile(args.fileId, {
-            name: args.name,
-            content: args.content,
-            mimeType: args.mimeType,
-          });
-          return JSON.stringify(file, null, 2);
-        } catch (error) {
-          return `Failed to update file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    DELETE_FILE: tool({
-      name: 'google_drive_delete_file',
-      description: 'Delete a file or folder from Google Drive',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const result = await client.deleteFile(args.fileId);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    COPY_FILE: tool({
-      name: 'google_drive_copy_file',
-      description: 'Copy a file to create a duplicate',
-      schema: z.object({
-        fileId: z.string().describe('Source file ID'),
-        name: z.string().describe('Name for the copied file'),
-        parentId: z.string().optional().describe('Parent folder ID for the copy'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const file = await client.copyFile(
-            args.fileId,
-            args.name,
-            args.parentId ? [args.parentId] : undefined
-          );
-          return JSON.stringify(file, null, 2);
-        } catch (error) {
-          return `Failed to copy file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_FOLDER: tool({
-      name: 'google_drive_create_folder',
-      description: 'Create a new folder in Google Drive',
-      schema: z.object({
-        name: z.string().describe('Folder name'),
-        parentId: z.string().optional().describe('Parent folder ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const folder = await client.createFolder(args.name, args.parentId);
-          return JSON.stringify(folder, null, 2);
-        } catch (error) {
-          return `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    SHARE_FILE: tool({
-      name: 'google_drive_share_file',
-      description: 'Share a file with a user, group, or make it public',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-        type: z
-          .enum(['user', 'group', 'domain', 'anyone'])
-          .describe('Type of permission'),
-        role: z
-          .enum(['owner', 'organizer', 'fileOrganizer', 'writer', 'commenter', 'reader'])
-          .describe('Role/permission level'),
-        emailAddress: z
-          .string()
-          .optional()
-          .describe('Email address (for user/group type)'),
-        domain: z.string().optional().describe('Domain name (for domain type)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const permission = await client.shareFile(args.fileId, {
-            type: args.type,
-            role: args.role,
-            emailAddress: args.emailAddress,
-            domain: args.domain,
-          });
-          return JSON.stringify(permission, null, 2);
-        } catch (error) {
-          return `Failed to share file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_PERMISSIONS: tool({
-      name: 'google_drive_list_permissions',
-      description: 'List sharing permissions for a file',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const permissions = await client.listPermissions(args.fileId);
-          return JSON.stringify(permissions, null, 2);
-        } catch (error) {
-          return `Failed to list permissions: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    REMOVE_PERMISSION: tool({
-      name: 'google_drive_remove_permission',
-      description: 'Remove a sharing permission from a file',
-      schema: z.object({
-        fileId: z.string().describe('File ID'),
-        permissionId: z.string().describe('Permission ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken } = await context.getCredentials();
-          const client = new GoogleDriveClient(accessToken);
-          const result = await client.removePermission(args.fileId, args.permissionId);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to remove permission: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+export interface GoogleDriveCredentials {
+  accessToken: string;
+}
+
+export function createGoogleDriveServer(credentials: GoogleDriveCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Google Drive',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'google_drive_get_about',
+    'Get information about the user and their Drive storage',
+    {},
+    async (_args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const about = await client.getAbout();
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(about, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get Drive info: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_list_files',
+    'List files and folders in Google Drive',
+    {
+      query: z
+        .string()
+        .optional()
+        .describe(
+          'Search query (e.g., \'name contains "test"\', \'mimeType="image/jpeg"\')'
+        ),
+      pageSize: z.number().default(100).describe('Number of files to return per page'),
+      orderBy: z
+        .string()
+        .optional()
+        .describe('Sort order (e.g., "name", "modifiedTime desc", "createdTime")'),
+      pageToken: z.string().optional().describe('Token for pagination'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const result = await client.listFiles(
+          args.query,
+          args.pageSize,
+          args.orderBy,
+          args.pageToken
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_get_file',
+    'Get metadata for a specific file or folder',
+    {
+      fileId: z.string().describe('File ID'),
+      includePermissions: z
+        .boolean()
+        .default(false)
+        .describe('Include file sharing permissions'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const file = await client.getFile(args.fileId, args.includePermissions);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(file, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_get_file_content',
+    'Download and return the text content of a file',
+    {
+      fileId: z.string().describe('File ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const content = await client.getFileContent(args.fileId);
+        return {
+          content: [{
+            type: 'text',
+            text: content,
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_create_file',
+    'Create a new file in Google Drive',
+    {
+      name: z.string().describe('File name'),
+      content: z.string().optional().describe('File content (for text files)'),
+      mimeType: z.string().optional().describe('MIME type of the file'),
+      parentId: z.string().optional().describe('Parent folder ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const file = await client.createFile({
+          name: args.name,
+          content: args.content,
+          mimeType: args.mimeType,
+          parents: args.parentId ? [args.parentId] : undefined,
+        });
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(file, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_update_file',
+    'Update a file in Google Drive',
+    {
+      fileId: z.string().describe('File ID'),
+      name: z.string().optional().describe('New file name'),
+      content: z.string().optional().describe('New file content (for text files)'),
+      mimeType: z.string().optional().describe('MIME type of the file'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const file = await client.updateFile(args.fileId, {
+          name: args.name,
+          content: args.content,
+          mimeType: args.mimeType,
+        });
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(file, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to update file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_delete_file',
+    'Delete a file or folder from Google Drive',
+    {
+      fileId: z.string().describe('File ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const result = await client.deleteFile(args.fileId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_copy_file',
+    'Copy a file to create a duplicate',
+    {
+      fileId: z.string().describe('Source file ID'),
+      name: z.string().describe('Name for the copied file'),
+      parentId: z.string().optional().describe('Parent folder ID for the copy'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const file = await client.copyFile(
+          args.fileId,
+          args.name,
+          args.parentId ? [args.parentId] : undefined
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(file, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to copy file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_create_folder',
+    'Create a new folder in Google Drive',
+    {
+      name: z.string().describe('Folder name'),
+      parentId: z.string().optional().describe('Parent folder ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const folder = await client.createFolder(args.name, args.parentId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(folder, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_share_file',
+    'Share a file with a user, group, or make it public',
+    {
+      fileId: z.string().describe('File ID'),
+      type: z
+        .enum(['user', 'group', 'domain', 'anyone'])
+        .describe('Type of permission'),
+      role: z
+        .enum(['owner', 'organizer', 'fileOrganizer', 'writer', 'commenter', 'reader'])
+        .describe('Role/permission level'),
+      emailAddress: z
+        .string()
+        .optional()
+        .describe('Email address (for user/group type)'),
+      domain: z.string().optional().describe('Domain name (for domain type)'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const permission = await client.shareFile(args.fileId, {
+          type: args.type,
+          role: args.role,
+          emailAddress: args.emailAddress,
+          domain: args.domain,
+        });
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(permission, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to share file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_list_permissions',
+    'List sharing permissions for a file',
+    {
+      fileId: z.string().describe('File ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const permissions = await client.listPermissions(args.fileId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(permissions, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list permissions: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'google_drive_remove_permission',
+    'Remove a sharing permission from a file',
+    {
+      fileId: z.string().describe('File ID'),
+      permissionId: z.string().describe('Permission ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GoogleDriveClient(credentials.accessToken);
+        const result = await client.removePermission(args.fileId, args.permissionId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to remove permission: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}

@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 // Xero API Base URLs
@@ -320,319 +320,445 @@ class XeroClient {
   }
 }
 
-export const XeroConnectorConfig = mcpConnectorConfig({
-  name: 'Xero',
-  key: 'xero',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/xero/filled/svg',
-  credentials: z.object({
-    accessToken: z
-      .string()
-      .describe(
-        'Xero OAuth2 access token :: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoieGVybyJ9.1234567890abcdef'
-      ),
-    tenantId: z
-      .string()
-      .describe('Xero tenant/organisation ID :: 12345678-1234-1234-1234-123456789012'),
-  }),
-  setup: z.object({}),
-  examplePrompt:
-    'List recent bank transactions for reconciliation, create a payment to supplier "ABC Ltd" for invoice INV-001, and email invoice INV-002 to the customer.',
-  tools: (tool) => ({
-    LIST_BANK_TRANSACTIONS: tool({
-      name: 'list_bank_transactions',
-      description:
-        'Retrieve bank transactions for reconciliation. Supports filtering by date, account, status, and contact.',
-      schema: z.object({
-        where: z
-          .string()
-          .optional()
-          .describe('Filter expression (e.g. "Date >= DateTime(2024,01,01)")'),
-        page: z.number().optional().describe('Page number for pagination'),
-        unitdp: z
-          .number()
-          .optional()
-          .describe('Unit decimal places (4 = 4 decimal places)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
-          const transactions = await client.getBankTransactions(args);
+export interface XeroCredentials {
+  accessToken: string;
+  tenantId: string;
+}
 
-          if (transactions.length === 0) {
-            return 'No bank transactions found';
-          }
+export function createXeroServer(credentials: XeroCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Xero',
+    version: '1.0.0',
+  });
 
-          return `Found ${transactions.length} bank transactions:\n${transactions
-            .map(
-              (tx) =>
-                `- ${tx.Type} | ${tx.Date} | ${tx.CurrencyCode} ${tx.Total} | ${tx.Reference || 'No reference'}\n  Bank: ${tx.BankAccount.Name} | Contact: ${tx.Contact?.Name || 'N/A'} | Status: ${tx.Status}`
-            )
-            .join('\n')}`;
-        } catch (error) {
-          return `Failed to retrieve bank transactions: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+  const client = new XeroClient(credentials.accessToken, credentials.tenantId);
 
-    CREATE_BANK_TRANSACTION: tool({
-      name: 'create_bank_transaction',
-      description:
-        'Create a new bank transaction. Use for manual entry of transactions for reconciliation.',
-      schema: z.object({
-        type: z.enum(['SPEND', 'RECEIVE']).describe('Transaction type'),
-        contactId: z.string().describe('Contact/supplier ID'),
-        bankAccountId: z.string().describe('Bank account ID'),
-        description: z.string().describe('Transaction description'),
-        amount: z.number().describe('Transaction amount'),
-        accountCode: z.string().describe('Account code for categorization'),
-        reference: z.string().optional().describe('Reference number'),
-        date: z.string().optional().describe('Transaction date (YYYY-MM-DD)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
+  server.tool(
+    'list_bank_transactions',
+    'Retrieve bank transactions for reconciliation. Supports filtering by date, account, status, and contact.',
+    {
+      where: z
+        .string()
+        .optional()
+        .describe('Filter expression (e.g. "Date >= DateTime(2024,01,01)")'),
+      page: z.number().optional().describe('Page number for pagination'),
+      unitdp: z
+        .number()
+        .optional()
+        .describe('Unit decimal places (4 = 4 decimal places)'),
+    },
+    async (args) => {
+      try {
+        const transactions = await client.getBankTransactions(args);
 
-          const transaction = await client.createBankTransaction({
-            type: args.type,
-            contact: { contactID: args.contactId },
-            bankAccount: { accountID: args.bankAccountId },
-            lineItems: [
+        if (transactions.length === 0) {
+          return {
+            content: [
               {
-                description: args.description,
-                unitAmount: args.amount,
-                accountCode: args.accountCode,
+                type: 'text',
+                text: 'No bank transactions found',
               },
             ],
-            reference: args.reference,
-            date: args.date,
-          });
-
-          return `Created ${args.type.toLowerCase()} transaction: ${transaction.BankTransactionID}\nAmount: ${transaction.CurrencyCode} ${transaction.Total}\nReference: ${transaction.Reference || 'None'}`;
-        } catch (error) {
-          return `Failed to create bank transaction: ${error instanceof Error ? error.message : String(error)}`;
+          };
         }
-      },
-    }),
 
-    LIST_PAYMENTS: tool({
-      name: 'list_payments',
-      description:
-        'Retrieve payments made to suppliers/vendors. Useful for tracking payment history and reconciliation.',
-      schema: z.object({
-        where: z
-          .string()
-          .optional()
-          .describe('Filter expression (e.g. "Date >= DateTime(2024,01,01)")'),
-        page: z.number().optional().describe('Page number for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
-          const payments = await client.getPayments(args);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Found ${transactions.length} bank transactions:\n${transactions
+                .map(
+                  (tx) =>
+                    `- ${tx.Type} | ${tx.Date} | ${tx.CurrencyCode} ${tx.Total} | ${tx.Reference || 'No reference'}\n  Bank: ${tx.BankAccount.Name} | Contact: ${tx.Contact?.Name || 'N/A'} | Status: ${tx.Status}`
+                )
+                .join('\n')}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to retrieve bank transactions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-          if (payments.length === 0) {
-            return 'No payments found';
-          }
+  server.tool(
+    'create_bank_transaction',
+    'Create a new bank transaction. Use for manual entry of transactions for reconciliation.',
+    {
+      type: z.enum(['SPEND', 'RECEIVE']).describe('Transaction type'),
+      contactId: z.string().describe('Contact/supplier ID'),
+      bankAccountId: z.string().describe('Bank account ID'),
+      description: z.string().describe('Transaction description'),
+      amount: z.number().describe('Transaction amount'),
+      accountCode: z.string().describe('Account code for categorization'),
+      reference: z.string().optional().describe('Reference number'),
+      date: z.string().optional().describe('Transaction date (YYYY-MM-DD)'),
+    },
+    async (args) => {
+      try {
+        const transaction = await client.createBankTransaction({
+          type: args.type,
+          contact: { contactID: args.contactId },
+          bankAccount: { accountID: args.bankAccountId },
+          lineItems: [
+            {
+              description: args.description,
+              unitAmount: args.amount,
+              accountCode: args.accountCode,
+            },
+          ],
+          reference: args.reference,
+          date: args.date,
+        });
 
-          return `Found ${payments.length} payments:\n${payments
-            .map(
-              (payment) =>
-                `- ${payment.Date} | ${payment.CurrencyCode} ${payment.Amount} | ${payment.Reference || 'No reference'}\n  Account: ${payment.Account.Name} | Invoice: ${payment.Invoice?.InvoiceNumber || 'N/A'}`
-            )
-            .join('\n')}`;
-        } catch (error) {
-          return `Failed to retrieve payments: ${error instanceof Error ? error.message : String(error)}`;
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Created ${args.type.toLowerCase()} transaction: ${transaction.BankTransactionID}\nAmount: ${transaction.CurrencyCode} ${transaction.Total}\nReference: ${transaction.Reference || 'None'}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create bank transaction: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'list_payments',
+    'Retrieve payments made to suppliers/vendors. Useful for tracking payment history and reconciliation.',
+    {
+      where: z
+        .string()
+        .optional()
+        .describe('Filter expression (e.g. "Date >= DateTime(2024,01,01)")'),
+      page: z.number().optional().describe('Page number for pagination'),
+    },
+    async (args) => {
+      try {
+        const payments = await client.getPayments(args);
+
+        if (payments.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No payments found',
+              },
+            ],
+          };
         }
-      },
-    }),
 
-    CREATE_PAYMENT: tool({
-      name: 'create_payment',
-      description:
-        'Create a payment to a supplier/vendor for a specific invoice. Used for paying bills and managing vendor payments.',
-      schema: z.object({
-        invoiceId: z.string().describe('Invoice ID to pay'),
-        bankAccountId: z.string().describe('Bank account ID to pay from'),
-        amount: z.number().describe('Payment amount'),
-        reference: z.string().optional().describe('Payment reference'),
-        date: z.string().optional().describe('Payment date (YYYY-MM-DD)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Found ${payments.length} payments:\n${payments
+                .map(
+                  (payment) =>
+                    `- ${payment.Date} | ${payment.CurrencyCode} ${payment.Amount} | ${payment.Reference || 'No reference'}\n  Account: ${payment.Account.Name} | Invoice: ${payment.Invoice?.InvoiceNumber || 'N/A'}`
+                )
+                .join('\n')}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to retrieve payments: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-          const payment = await client.createPayment({
-            invoice: { invoiceID: args.invoiceId },
-            account: { accountID: args.bankAccountId },
-            amount: args.amount,
-            reference: args.reference,
-            date: args.date,
-          });
+  server.tool(
+    'create_payment',
+    'Create a payment to a supplier/vendor for a specific invoice. Used for paying bills and managing vendor payments.',
+    {
+      invoiceId: z.string().describe('Invoice ID to pay'),
+      bankAccountId: z.string().describe('Bank account ID to pay from'),
+      amount: z.number().describe('Payment amount'),
+      reference: z.string().optional().describe('Payment reference'),
+      date: z.string().optional().describe('Payment date (YYYY-MM-DD)'),
+    },
+    async (args) => {
+      try {
+        const payment = await client.createPayment({
+          invoice: { invoiceID: args.invoiceId },
+          account: { accountID: args.bankAccountId },
+          amount: args.amount,
+          reference: args.reference,
+          date: args.date,
+        });
 
-          return `Created payment: ${payment.PaymentID}\nAmount: ${payment.CurrencyCode} ${payment.Amount}\nDate: ${payment.Date}\nReference: ${payment.Reference || 'None'}`;
-        } catch (error) {
-          return `Failed to create payment: ${error instanceof Error ? error.message : String(error)}`;
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Created payment: ${payment.PaymentID}\nAmount: ${payment.CurrencyCode} ${payment.Amount}\nDate: ${payment.Date}\nReference: ${payment.Reference || 'None'}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create payment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'list_invoices',
+    'Retrieve invoices for sending reminders or checking payment status. Supports filtering by status, contact, and date.',
+    {
+      where: z
+        .string()
+        .optional()
+        .describe('Filter expression (e.g. "Contact.Name == \\"ABC Ltd\\"")'),
+      statuses: z
+        .array(z.enum(['DRAFT', 'SUBMITTED', 'AUTHORISED', 'PAID', 'VOIDED']))
+        .optional()
+        .describe('Filter by invoice statuses'),
+      page: z.number().optional().describe('Page number for pagination'),
+    },
+    async (args) => {
+      try {
+        const invoices = await client.getInvoices(args);
+
+        if (invoices.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No invoices found',
+              },
+            ],
+          };
         }
-      },
-    }),
 
-    LIST_INVOICES: tool({
-      name: 'list_invoices',
-      description:
-        'Retrieve invoices for sending reminders or checking payment status. Supports filtering by status, contact, and date.',
-      schema: z.object({
-        where: z
-          .string()
-          .optional()
-          .describe('Filter expression (e.g. "Contact.Name == \\"ABC Ltd\\"")'),
-        statuses: z
-          .array(z.enum(['DRAFT', 'SUBMITTED', 'AUTHORISED', 'PAID', 'VOIDED']))
-          .optional()
-          .describe('Filter by invoice statuses'),
-        page: z.number().optional().describe('Page number for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
-          const invoices = await client.getInvoices(args);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Found ${invoices.length} invoices:\n${invoices
+                .map(
+                  (invoice) =>
+                    `- ${invoice.InvoiceNumber || invoice.InvoiceID} | ${invoice.Contact.Name} | ${invoice.Status}\n  Amount: ${invoice.CurrencyCode} ${invoice.Total} | Due: ${invoice.DueDate || 'N/A'} | Outstanding: ${invoice.CurrencyCode} ${invoice.AmountDue}`
+                )
+                .join('\n')}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to retrieve invoices: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-          if (invoices.length === 0) {
-            return 'No invoices found';
-          }
+  server.tool(
+    'email_invoice',
+    'Send an invoice via email to the customer. Use for payment reminders and invoice delivery.',
+    {
+      invoiceId: z.string().describe('Invoice ID to email'),
+      includeOnlineInvoice: z
+        .boolean()
+        .optional()
+        .describe('Include online invoice link (default: true)'),
+      includeAttachments: z
+        .boolean()
+        .optional()
+        .describe('Include attachments (default: true)'),
+    },
+    async (args) => {
+      try {
+        await client.emailInvoice(args.invoiceId, {
+          includeOnlineInvoice: args.includeOnlineInvoice ?? true,
+          includeAttachments: args.includeAttachments ?? true,
+        });
 
-          return `Found ${invoices.length} invoices:\n${invoices
-            .map(
-              (invoice) =>
-                `- ${invoice.InvoiceNumber || invoice.InvoiceID} | ${invoice.Contact.Name} | ${invoice.Status}\n  Amount: ${invoice.CurrencyCode} ${invoice.Total} | Due: ${invoice.DueDate || 'N/A'} | Outstanding: ${invoice.CurrencyCode} ${invoice.AmountDue}`
-            )
-            .join('\n')}`;
-        } catch (error) {
-          return `Failed to retrieve invoices: ${error instanceof Error ? error.message : String(error)}`;
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Successfully sent invoice ${args.invoiceId} via email`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to email invoice: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'list_contacts',
+    'List contacts/suppliers/customers. Use for finding contact IDs and managing vendor relationships.',
+    {
+      where: z
+        .string()
+        .optional()
+        .describe('Filter expression (e.g. "IsSupplier == true")'),
+      includeArchived: z.boolean().optional().describe('Include archived contacts'),
+      page: z.number().optional().describe('Page number for pagination'),
+    },
+    async (args) => {
+      try {
+        const contacts = await client.getContacts(args);
+
+        if (contacts.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No contacts found',
+              },
+            ],
+          };
         }
-      },
-    }),
 
-    EMAIL_INVOICE: tool({
-      name: 'email_invoice',
-      description:
-        'Send an invoice via email to the customer. Use for payment reminders and invoice delivery.',
-      schema: z.object({
-        invoiceId: z.string().describe('Invoice ID to email'),
-        includeOnlineInvoice: z
-          .boolean()
-          .optional()
-          .describe('Include online invoice link (default: true)'),
-        includeAttachments: z
-          .boolean()
-          .optional()
-          .describe('Include attachments (default: true)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Found ${contacts.length} contacts:\n${contacts
+                .map(
+                  (contact) =>
+                    `- ${contact.Name} (${contact.ContactID})\n  Email: ${contact.EmailAddress || 'N/A'} | Status: ${contact.ContactStatus} | Supplier: ${contact.IsSupplier ? 'Yes' : 'No'} | Customer: ${contact.IsCustomer ? 'Yes' : 'No'}`
+                )
+                .join('\n')}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to retrieve contacts: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-          await client.emailInvoice(args.invoiceId, {
-            includeOnlineInvoice: args.includeOnlineInvoice ?? true,
-            includeAttachments: args.includeAttachments ?? true,
-          });
+  server.tool(
+    'list_accounts',
+    'List chart of accounts including bank accounts. Use for getting account IDs for transactions and payments.',
+    {
+      where: z
+        .string()
+        .optional()
+        .describe('Filter expression (e.g. "Type == \\"BANK\\"")'),
+      page: z.number().optional().describe('Page number for pagination'),
+    },
+    async (args) => {
+      try {
+        const accounts = await client.getAccounts(args);
 
-          return `Successfully sent invoice ${args.invoiceId} via email`;
-        } catch (error) {
-          return `Failed to email invoice: ${error instanceof Error ? error.message : String(error)}`;
+        if (accounts.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No accounts found',
+              },
+            ],
+          };
         }
-      },
-    }),
 
-    LIST_CONTACTS: tool({
-      name: 'list_contacts',
-      description:
-        'List contacts/suppliers/customers. Use for finding contact IDs and managing vendor relationships.',
-      schema: z.object({
-        where: z
-          .string()
-          .optional()
-          .describe('Filter expression (e.g. "IsSupplier == true")'),
-        includeArchived: z.boolean().optional().describe('Include archived contacts'),
-        page: z.number().optional().describe('Page number for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
-          const contacts = await client.getContacts(args);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Found ${accounts.length} accounts:\n${accounts
+                .map(
+                  (account) =>
+                    `- ${account.Name} (${account.Code}) | ${account.AccountID}\n  Type: ${account.Type} | Bank Type: ${account.BankAccountType || 'N/A'} | Currency: ${account.CurrencyCode || 'N/A'}`
+                )
+                .join('\n')}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to retrieve accounts: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-          if (contacts.length === 0) {
-            return 'No contacts found';
-          }
+  server.tool(
+    'get_organisation',
+    'Get organization details and settings. Useful for understanding the Xero setup and configuration.',
+    {},
+    async () => {
+      try {
+        const organisation = await client.getOrganisation();
 
-          return `Found ${contacts.length} contacts:\n${contacts
-            .map(
-              (contact) =>
-                `- ${contact.Name} (${contact.ContactID})\n  Email: ${contact.EmailAddress || 'N/A'} | Status: ${contact.ContactStatus} | Supplier: ${contact.IsSupplier ? 'Yes' : 'No'} | Customer: ${contact.IsCustomer ? 'Yes' : 'No'}`
-            )
-            .join('\n')}`;
-        } catch (error) {
-          return `Failed to retrieve contacts: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(organisation, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get organisation details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-    LIST_ACCOUNTS: tool({
-      name: 'list_accounts',
-      description:
-        'List chart of accounts including bank accounts. Use for getting account IDs for transactions and payments.',
-      schema: z.object({
-        where: z
-          .string()
-          .optional()
-          .describe('Filter expression (e.g. "Type == \\"BANK\\"")'),
-        page: z.number().optional().describe('Page number for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
-          const accounts = await client.getAccounts(args);
-
-          if (accounts.length === 0) {
-            return 'No accounts found';
-          }
-
-          return `Found ${accounts.length} accounts:\n${accounts
-            .map(
-              (account) =>
-                `- ${account.Name} (${account.Code}) | ${account.AccountID}\n  Type: ${account.Type} | Bank Type: ${account.BankAccountType || 'N/A'} | Currency: ${account.CurrencyCode || 'N/A'}`
-            )
-            .join('\n')}`;
-        } catch (error) {
-          return `Failed to retrieve accounts: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    GET_ORGANISATION: tool({
-      name: 'get_organisation',
-      description:
-        'Get organization details and settings. Useful for understanding the Xero setup and configuration.',
-      schema: z.object({}),
-      handler: async (_args, context) => {
-        try {
-          const { accessToken, tenantId } = await context.getCredentials();
-          const client = new XeroClient(accessToken, tenantId);
-          const organisation = await client.getOrganisation();
-
-          return JSON.stringify(organisation, null, 2);
-        } catch (error) {
-          return `Failed to get organisation details: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+  return server;
+}
