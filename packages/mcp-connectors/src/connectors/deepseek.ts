@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import OpenAI from 'openai';
 import { z } from 'zod';
 
@@ -36,44 +36,47 @@ const callDeepseek = async (apiKey: string, messages: Message[]): Promise<string
   return fullResponse.slice(start, end).trim();
 };
 
-export const DeepseekConnectorConfig = mcpConnectorConfig({
-  name: 'Deepseek',
-  key: 'deepseek',
-  logo: 'https://stackone-logos.com/api/deepseek/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .describe(
-        'DeepSeek API Key from platform.deepseek.com :: sk-1234567890abcdef1234567890abcdef :: https://platform.deepseek.com/api-keys'
-      ),
-  }),
-  setup: z.object({}),
-  examplePrompt:
-    'I need to analyze a complex problem step by step. Walk me through the reasoning process for determining the optimal approach to implement a distributed caching system.',
-  tools: (tool) => ({
-    THINKING: tool({
-      name: 'chain-of-thought-reasoning',
-      description:
-        'Use this tool for all thinking and reasoning tasks. The tool accepts a question and returns a chain of thought reasoning. You must include all context and information relevant in the question.',
-      schema: z.object({
-        question: z.string(),
-      }),
-      handler: async (args, context) => {
-        console.log('Thinking Tool', { question: args.question });
+export interface DeepseekCredentials {
+  apiKey: string;
+}
 
-        try {
-          const { apiKey } = await context.getCredentials();
-          const text = await callDeepseek(apiKey, [
-            { role: 'user', content: args.question },
-          ]);
-          console.log('Thinking Tool Response', { text });
-          return text;
-        } catch (error) {
-          console.log('Thinking Tool Error', { error });
-          return 'Failed to invoke thinking tool, please try again later.';
-        }
-      },
-    }),
-  }),
-});
+export function createDeepseekServer(credentials: DeepseekCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Deepseek',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'chain-of-thought-reasoning',
+    'Use this tool for all thinking and reasoning tasks. The tool accepts a question and returns a chain of thought reasoning. You must include all context and information relevant in the question.',
+    {
+      question: z.string(),
+    },
+    async (args) => {
+      console.log('Thinking Tool', { question: args.question });
+
+      try {
+        const text = await callDeepseek(credentials.apiKey, [
+          { role: 'user', content: args.question },
+        ]);
+        console.log('Thinking Tool Response', { text });
+        return {
+          content: [{
+            type: 'text',
+            text: text,
+          }],
+        };
+      } catch (error) {
+        console.log('Thinking Tool Error', { error });
+        return {
+          content: [{
+            type: 'text',
+            text: 'Failed to invoke thinking tool, please try again later.',
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}

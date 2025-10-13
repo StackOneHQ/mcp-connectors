@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { parse as parseHTML } from 'node-html-parser';
 import { z } from 'zod';
 
@@ -148,51 +148,71 @@ const fetchAndParse = async (url: string): Promise<string> => {
   }
 };
 
-export const DuckDuckGoConnectorConfig = mcpConnectorConfig({
-  name: 'DuckDuckGo',
-  key: 'duckduckgo',
-  logo: 'https://stackone-logos.com/api/duckduckgo/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({}),
-  setup: z.object({}),
-  examplePrompt:
-    'Search for "TypeScript generics tutorial" and then fetch the content from the most relevant result to get detailed information.',
-  tools: (tool) => ({
-    SEARCH: tool({
-      name: 'search',
-      description: 'Search DuckDuckGo and return formatted results',
-      schema: z.object({
-        query: z.string().describe('The search query string'),
-        maxResults: z
-          .number()
-          .default(10)
-          .describe('Maximum number of results to return'),
-      }),
-      handler: async (args, _context) => {
-        try {
-          const results = await performSearch(args.query, args.maxResults);
-          return formatResultsForLLM(results);
-        } catch (error) {
-          console.error('Error during search:', error);
-          return `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    FETCH_CONTENT: tool({
-      name: 'fetch_content',
-      description: 'Fetch and parse content from a webpage URL',
-      schema: z.object({
-        url: z.string().url().describe('The webpage URL to fetch content from'),
-      }),
-      handler: async (args, _context) => {
-        try {
-          const content = await fetchAndParse(args.url);
-          return content;
-        } catch (error) {
-          console.error('Error fetching content:', error);
-          return `Error: Could not fetch the webpage (${error instanceof Error ? error.message : String(error)})`;
-        }
-      },
-    }),
-  }),
-});
+export interface DuckDuckGoCredentials {}
+
+export function createDuckDuckGoServer(_credentials: DuckDuckGoCredentials): McpServer {
+  const server = new McpServer({
+    name: 'DuckDuckGo',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'search',
+    'Search DuckDuckGo and return formatted results',
+    {
+      query: z.string().describe('The search query string'),
+      maxResults: z
+        .number()
+        .default(10)
+        .describe('Maximum number of results to return'),
+    },
+    async (args) => {
+      try {
+        const results = await performSearch(args.query, args.maxResults);
+        return {
+          content: [{
+            type: 'text',
+            text: formatResultsForLLM(results),
+          }],
+        };
+      } catch (error) {
+        console.error('Error during search:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'fetch_content',
+    'Fetch and parse content from a webpage URL',
+    {
+      url: z.string().url().describe('The webpage URL to fetch content from'),
+    },
+    async (args) => {
+      try {
+        const content = await fetchAndParse(args.url);
+        return {
+          content: [{
+            type: 'text',
+            text: content,
+          }],
+        };
+      } catch (error) {
+        console.error('Error fetching content:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `Error: Could not fetch the webpage (${error instanceof Error ? error.message : String(error)})`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}

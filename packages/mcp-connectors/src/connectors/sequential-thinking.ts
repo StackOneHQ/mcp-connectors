@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface ThoughtData {
@@ -125,20 +125,19 @@ const processThought = (input: Record<string, unknown>): string => {
   }
 };
 
-export const SequentialThinkingConnectorConfig = mcpConnectorConfig({
-  name: 'Sequential Thinking',
-  key: 'sequential-thinking',
-  logo: 'https://stackone-logos.com/api/disco/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({}),
-  setup: z.object({}),
-  description: 'Sequential Thinking is a tool for thinking through problems and ideas.',
-  examplePrompt:
-    'Help me think through implementing a concept car which is a hybrid of a car and a plane by breaking it down into steps, considering potential challenges.',
-  tools: (tool) => ({
-    THINKING: tool({
-      name: 'sequential_thinking',
-      description: `A detailed tool for dynamic and reflective problem-solving through thoughts.
+export interface SequentialThinkingCredentials {}
+
+export function createSequentialThinkingServer(
+  credentials: SequentialThinkingCredentials
+): McpServer {
+  const server = new McpServer({
+    name: 'Sequential Thinking',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'sequential_thinking',
+    `A detailed tool for dynamic and reflective problem-solving through thoughts.
 This tool helps analyze problems through a flexible thinking process that can adapt and evolve.
 Each thought can build on, question, or revise previous insights as understanding deepens.
 
@@ -179,37 +178,44 @@ Parameters explained:
 - branch_from_thought: If branching, which thought number is the branching point
 - branch_id: Identifier for the current branch (if any)
 - needs_more_thoughts: If reaching end but realizing more thoughts needed`,
-      schema: z.object({
-        thought: z.string().describe('Your current thinking step'),
-        nextThoughtNeeded: z.boolean().describe('Whether another thought step is needed'),
-        thoughtNumber: z.number().int().min(1).describe('Current thought number'),
-        totalThoughts: z
-          .number()
-          .int()
-          .min(1)
-          .describe('Estimated total thoughts needed'),
-        isRevision: z
-          .boolean()
-          .optional()
-          .describe('Whether this revises previous thinking'),
-        revisesThought: z
-          .number()
-          .int()
-          .min(1)
-          .optional()
-          .describe('Which thought is being reconsidered'),
-        branchFromThought: z
-          .number()
-          .int()
-          .min(1)
-          .optional()
-          .describe('Branching point thought number'),
-        branchId: z.string().optional().describe('Branch identifier'),
-        needsMoreThoughts: z.boolean().optional().describe('If more thoughts are needed'),
-      }),
-      handler: async (args, _context) => {
-        return processThought(args);
-      },
-    }),
-  }),
-});
+    {
+      thought: z.string().describe('Your current thinking step'),
+      nextThoughtNeeded: z.boolean().describe('Whether another thought step is needed'),
+      thoughtNumber: z.number().int().min(1).describe('Current thought number'),
+      totalThoughts: z
+        .number()
+        .int()
+        .min(1)
+        .describe('Estimated total thoughts needed'),
+      isRevision: z
+        .boolean()
+        .optional()
+        .describe('Whether this revises previous thinking'),
+      revisesThought: z
+        .number()
+        .int()
+        .min(1)
+        .optional()
+        .describe('Which thought is being reconsidered'),
+      branchFromThought: z
+        .number()
+        .int()
+        .min(1)
+        .optional()
+        .describe('Branching point thought number'),
+      branchId: z.string().optional().describe('Branch identifier'),
+      needsMoreThoughts: z.boolean().optional().describe('If more thoughts are needed'),
+    },
+    async (args) => {
+      const result = processThought(args as Record<string, unknown>);
+      return {
+        content: [{
+          type: 'text',
+          text: result,
+        }],
+      };
+    }
+  );
+
+  return server;
+}

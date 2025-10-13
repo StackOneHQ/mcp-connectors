@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface ParallelSearchResult {
@@ -90,70 +90,74 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
   return output.join('\n');
 };
 
-export const ParallelConnectorConfig = mcpConnectorConfig({
-  name: 'Parallel.ai',
-  key: 'parallel',
-  logo: 'https://stackone-logos.com/api/parallel/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .describe(
-        'Parallel.ai API key from platform.parallel.ai :: PARALLEL_API_KEY_1234567890abcdef'
-      ),
-  }),
-  setup: z.object({
-    processor: z
-      .enum(['base', 'pro'])
-      .default('base')
-      .describe(
-        'Search processor tier: base (2-5s, cost-effective) or pro (15-60s, best quality)'
-      ),
-  }),
-  examplePrompt:
-    'Search for "latest AI model developments 2024" or search with specific queries like ["machine learning", "transformer models"]',
-  tools: (tool) => ({
-    SEARCH: tool({
-      name: 'parallel_search',
-      description: 'Perform AI-native web search using Parallel Search API',
-      schema: z.object({
-        objective: z
-          .string()
-          .optional()
-          .describe('The search objective or question to answer'),
-        searchQueries: z
-          .array(z.string())
-          .optional()
-          .describe('Specific search queries to execute'),
-        maxResults: z
-          .number()
-          .default(5)
-          .describe('Maximum number of search results to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const { processor } = await context.getSetup();
-          const client = new ParallelClient(apiKey);
+export interface ParallelCredentials {
+  apiKey: string;
+  processor?: 'base' | 'pro';
+}
 
-          if (
-            !args.objective &&
-            (!args.searchQueries || args.searchQueries.length === 0)
-          ) {
-            return 'Error: Either objective or searchQueries must be provided.';
-          }
+export function createParallelServer(credentials: ParallelCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Parallel.ai',
+    version: '1.0.0',
+  });
 
-          const result = await client.search(
-            args.objective,
-            args.searchQueries,
-            processor,
-            args.maxResults
-          );
-          return formatSearchResults(result);
-        } catch (error) {
-          return `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`;
+  const processor = credentials.processor || 'base';
+
+  server.tool(
+    'parallel_search',
+    'Perform AI-native web search using Parallel Search API',
+    {
+      objective: z
+        .string()
+        .optional()
+        .describe('The search objective or question to answer'),
+      searchQueries: z
+        .array(z.string())
+        .optional()
+        .describe('Specific search queries to execute'),
+      maxResults: z
+        .number()
+        .default(5)
+        .describe('Maximum number of search results to return'),
+    },
+    async (args) => {
+      try {
+        const client = new ParallelClient(credentials.apiKey);
+
+        if (
+          !args.objective &&
+          (!args.searchQueries || args.searchQueries.length === 0)
+        ) {
+          return {
+            content: [{
+              type: 'text',
+              text: 'Error: Either objective or searchQueries must be provided.',
+            }],
+          };
         }
-      },
-    }),
-  }),
-});
+
+        const result = await client.search(
+          args.objective,
+          args.searchQueries,
+          processor,
+          args.maxResults
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: formatSearchResults(result),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}
