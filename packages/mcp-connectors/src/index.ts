@@ -6,9 +6,7 @@ import { AttioConnectorConfig } from './connectors/attio';
 import { AwsConnectorConfig } from './connectors/aws';
 import { DatadogConnectorConfig } from './connectors/datadog';
 import { DeelConnectorConfig } from './connectors/deel';
-import { DeepseekConnectorConfig } from './connectors/deepseek';
 import { DocumentationConnectorConfig } from './connectors/documentation';
-import { DuckDuckGoConnectorConfig } from './connectors/duckduckgo';
 import { ElevenLabsConnectorConfig } from './connectors/elevenlabs';
 import { ExaConnectorConfig } from './connectors/exa';
 import { FalConnectorConfig } from './connectors/fal';
@@ -28,7 +26,6 @@ import { LinkedInConnectorConfig } from './connectors/linkedin';
 import { ModalConnectorConfig } from './connectors/modal';
 import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
-import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
 import { PostHogConnectorConfig } from './connectors/posthog';
 import { ProducthuntConnectorConfig } from './connectors/producthunt';
@@ -37,12 +34,9 @@ import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
 import { RetoolConnectorConfig } from './connectors/retool';
 import { RideWithGPSConnectorConfig } from './connectors/ridewithgps';
-import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
 import { SlackConnectorConfig } from './connectors/slack';
-import { StackOneConnectorConfig } from './connectors/stackone';
 import { StravaConnectorConfig } from './connectors/strava';
 import { SupabaseConnectorConfig } from './connectors/supabase';
-import { TestConnectorConfig } from './connectors/test';
 import { TFLConnectorConfig } from './connectors/tfl';
 import { TinybirdConnectorConfig } from './connectors/tinybird';
 import { TodoistConnectorConfig } from './connectors/todoist';
@@ -53,16 +47,12 @@ import { XeroConnectorConfig } from './connectors/xero';
 import { ZapierConnectorConfig } from './connectors/zapier';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
-  TestConnectorConfig,
-  StackOneConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
   AwsConnectorConfig,
   DatadogConnectorConfig,
   DeelConnectorConfig,
-  DeepseekConnectorConfig,
   DocumentationConnectorConfig,
-  DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
@@ -83,7 +73,6 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ModalConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
-  ParallelConnectorConfig,
   PerplexityConnectorConfig,
   PostHogConnectorConfig,
   ProducthuntConnectorConfig,
@@ -91,7 +80,6 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ReplicateConnectorConfig,
   RetoolConnectorConfig,
   RideWithGPSConnectorConfig,
-  SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
   SupabaseConnectorConfig,
@@ -106,16 +94,12 @@ export const Connectors: readonly MCPConnectorConfig[] = [
 ] as const;
 
 export {
-  TestConnectorConfig,
-  StackOneConnectorConfig,
   AsanaConnectorConfig,
   AttioConnectorConfig,
   AwsConnectorConfig,
   DatadogConnectorConfig,
   DeelConnectorConfig,
-  DeepseekConnectorConfig,
   DocumentationConnectorConfig,
-  DuckDuckGoConnectorConfig,
   ElevenLabsConnectorConfig,
   ExaConnectorConfig,
   FalConnectorConfig,
@@ -136,7 +120,6 @@ export {
   ModalConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
-  ParallelConnectorConfig,
   PerplexityConnectorConfig,
   PostHogConnectorConfig,
   ProducthuntConnectorConfig,
@@ -144,7 +127,6 @@ export {
   ReplicateConnectorConfig,
   RetoolConnectorConfig,
   RideWithGPSConnectorConfig,
-  SequentialThinkingConnectorConfig,
   SlackConnectorConfig,
   StravaConnectorConfig,
   SupabaseConnectorConfig,
