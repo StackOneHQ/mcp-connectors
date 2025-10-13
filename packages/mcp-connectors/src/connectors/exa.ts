@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface ExaSearchResult {
@@ -190,195 +190,214 @@ const formatSearchResultsForLLM = (
   return output.join('\n');
 };
 
-export const ExaConnectorConfig = mcpConnectorConfig({
-  name: 'Exa',
-  key: 'exa',
-  logo: 'https://stackone-logos.com/api/exa/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .describe(
-        'Exa API Key :: sk-1234567890abcdef1234567890abcdef :: https://docs.exa.ai/websets/api/get-started'
-      ),
-  }),
-  setup: z.object({}),
-  examplePrompt:
-    'Search for "latest AI research papers on large language models" using Exa and get detailed content from the most relevant results.',
-  tools: (tool) => ({
-    SEARCH: tool({
-      name: 'search',
-      description:
-        "Search the web using Exa's AI-powered search engine. Exa uses neural embeddings to find semantically relevant results.",
-      schema: z.object({
-        query: z.string().describe('The search query string'),
-        numResults: z
-          .number()
-          .min(1)
-          .max(100)
-          .default(10)
-          .describe('Maximum number of results to return (1-100)'),
-        includeText: z
-          .boolean()
-          .default(false)
-          .describe('Whether to include full text content of the pages'),
-        type: z
-          .enum(['neural', 'keyword', 'auto'])
-          .default('auto')
-          .describe(
-            'Search type: neural (semantic), keyword (traditional), or auto (best of both)'
-          ),
-        category: z
-          .enum([
-            'company',
-            'research paper',
-            'news',
-            'github',
-            'tweet',
-            'movie',
-            'song',
-            'personal site',
-            'pdf',
-          ])
-          .optional()
-          .describe('Filter results by content category'),
-        includeDomains: z
-          .array(z.string())
-          .optional()
-          .describe(
-            'Only include results from these domains (e.g., ["reddit.com", "stackoverflow.com"])'
-          ),
-        excludeDomains: z
-          .array(z.string())
-          .optional()
-          .describe('Exclude results from these domains'),
-        startPublishedDate: z
-          .string()
-          .optional()
-          .describe('Only include results published after this date (YYYY-MM-DD)'),
-        endPublishedDate: z
-          .string()
-          .optional()
-          .describe('Only include results published before this date (YYYY-MM-DD)'),
-        useAutoprompt: z
-          .boolean()
-          .default(true)
-          .describe("Use Exa's autoprompt feature to improve search quality"),
-      }),
-      handler: async (args, context) => {
-        try {
-          const credentials = await context.getCredentials();
-          const response = await performSearch(args.query, credentials.apiKey, {
-            numResults: args.numResults,
-            includeTextInResult: args.includeText,
-            type: args.type,
-            category: args.category,
-            includeDomains: args.includeDomains,
-            excludeDomains: args.excludeDomains,
-            startPublishedDate: args.startPublishedDate,
-            endPublishedDate: args.endPublishedDate,
-            useAutoprompt: args.useAutoprompt,
-          });
+export interface ExaCredentials {
+  apiKey: string;
+}
 
-          return formatSearchResultsForLLM(response.results, args.includeText);
-        } catch (error) {
-          console.error('Error during Exa search:', error);
-          return `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+export function createExaServer(credentials: ExaCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Exa',
+    version: '1.0.0',
+  });
 
-    GET_CONTENTS: tool({
-      name: 'get_contents',
-      description:
-        'Get detailed content (text, highlights, summary) for specific Exa search results by their IDs',
-      schema: z.object({
-        ids: z
-          .array(z.string())
-          .min(1)
-          .max(100)
-          .describe('Array of Exa result IDs to get content for'),
-        text: z.boolean().default(true).describe('Include full text content'),
-        highlights: z
-          .boolean()
-          .default(false)
-          .describe('Include key highlights from the content'),
-        summary: z.boolean().default(false).describe('Include AI-generated summary'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const credentials = await context.getCredentials();
-          const results = await getContents(args.ids, credentials.apiKey, {
-            text: args.text,
-            highlights: args.highlights,
-            summary: args.summary,
-          });
+  server.tool(
+    'search',
+    "Search the web using Exa's AI-powered search engine. Exa uses neural embeddings to find semantically relevant results.",
+    {
+      query: z.string().describe('The search query string'),
+      numResults: z
+        .number()
+        .min(1)
+        .max(100)
+        .default(10)
+        .describe('Maximum number of results to return (1-100)'),
+      includeText: z
+        .boolean()
+        .default(false)
+        .describe('Whether to include full text content of the pages'),
+      type: z
+        .enum(['neural', 'keyword', 'auto'])
+        .default('auto')
+        .describe(
+          'Search type: neural (semantic), keyword (traditional), or auto (best of both)'
+        ),
+      category: z
+        .enum([
+          'company',
+          'research paper',
+          'news',
+          'github',
+          'tweet',
+          'movie',
+          'song',
+          'personal site',
+          'pdf',
+        ])
+        .optional()
+        .describe('Filter results by content category'),
+      includeDomains: z
+        .array(z.string())
+        .optional()
+        .describe(
+          'Only include results from these domains (e.g., ["reddit.com", "stackoverflow.com"])'
+        ),
+      excludeDomains: z
+        .array(z.string())
+        .optional()
+        .describe('Exclude results from these domains'),
+      startPublishedDate: z
+        .string()
+        .optional()
+        .describe('Only include results published after this date (YYYY-MM-DD)'),
+      endPublishedDate: z
+        .string()
+        .optional()
+        .describe('Only include results published before this date (YYYY-MM-DD)'),
+      useAutoprompt: z
+        .boolean()
+        .default(true)
+        .describe("Use Exa's autoprompt feature to improve search quality"),
+    },
+    async (args) => {
+      try {
+        const response = await performSearch(args.query, credentials.apiKey, {
+          numResults: args.numResults,
+          includeTextInResult: args.includeText,
+          type: args.type,
+          category: args.category,
+          includeDomains: args.includeDomains,
+          excludeDomains: args.excludeDomains,
+          startPublishedDate: args.startPublishedDate,
+          endPublishedDate: args.endPublishedDate,
+          useAutoprompt: args.useAutoprompt,
+        });
 
-          return formatSearchResultsForLLM(results, true);
-        } catch (error) {
-          console.error('Error getting Exa contents:', error);
-          return `An error occurred while getting contents: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+        return {
+          content: [{
+            type: 'text',
+            text: formatSearchResultsForLLM(response.results, args.includeText),
+          }],
+        };
+      } catch (error) {
+        console.error('Error during Exa search:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
 
-    NEURAL_SEARCH: tool({
-      name: 'neural_search',
-      description:
-        "Perform semantic search using Exa's neural embeddings. Best for finding content similar in meaning to your query.",
-      schema: z.object({
-        query: z.string().describe('The search query string'),
-        numResults: z
-          .number()
-          .min(1)
-          .max(100)
-          .default(10)
-          .describe('Maximum number of results to return (1-100)'),
-        includeText: z
-          .boolean()
-          .default(false)
-          .describe('Whether to include full text content of the pages'),
-        category: z
-          .enum([
-            'company',
-            'research paper',
-            'news',
-            'github',
-            'tweet',
-            'movie',
-            'song',
-            'personal site',
-            'pdf',
-          ])
-          .optional()
-          .describe('Filter results by content category'),
-        includeDomains: z
-          .array(z.string())
-          .optional()
-          .describe('Only include results from these domains'),
-        excludeDomains: z
-          .array(z.string())
-          .optional()
-          .describe('Exclude results from these domains'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const credentials = await context.getCredentials();
-          const response = await performSearch(args.query, credentials.apiKey, {
-            numResults: args.numResults,
-            includeTextInResult: args.includeText,
-            type: 'neural',
-            category: args.category,
-            includeDomains: args.includeDomains,
-            excludeDomains: args.excludeDomains,
-          });
+  server.tool(
+    'get_contents',
+    'Get detailed content (text, highlights, summary) for specific Exa search results by their IDs',
+    {
+      ids: z
+        .array(z.string())
+        .min(1)
+        .max(100)
+        .describe('Array of Exa result IDs to get content for'),
+      text: z.boolean().default(true).describe('Include full text content'),
+      highlights: z
+        .boolean()
+        .default(false)
+        .describe('Include key highlights from the content'),
+      summary: z.boolean().default(false).describe('Include AI-generated summary'),
+    },
+    async (args) => {
+      try {
+        const results = await getContents(args.ids, credentials.apiKey, {
+          text: args.text,
+          highlights: args.highlights,
+          summary: args.summary,
+        });
 
-          return formatSearchResultsForLLM(response.results, args.includeText);
-        } catch (error) {
-          console.error('Error during Exa neural search:', error);
-          return `An error occurred while performing neural search: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+        return {
+          content: [{
+            type: 'text',
+            text: formatSearchResultsForLLM(results, true),
+          }],
+        };
+      } catch (error) {
+        console.error('Error getting Exa contents:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `An error occurred while getting contents: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'neural_search',
+    "Perform semantic search using Exa's neural embeddings. Best for finding content similar in meaning to your query.",
+    {
+      query: z.string().describe('The search query string'),
+      numResults: z
+        .number()
+        .min(1)
+        .max(100)
+        .default(10)
+        .describe('Maximum number of results to return (1-100)'),
+      includeText: z
+        .boolean()
+        .default(false)
+        .describe('Whether to include full text content of the pages'),
+      category: z
+        .enum([
+          'company',
+          'research paper',
+          'news',
+          'github',
+          'tweet',
+          'movie',
+          'song',
+          'personal site',
+          'pdf',
+        ])
+        .optional()
+        .describe('Filter results by content category'),
+      includeDomains: z
+        .array(z.string())
+        .optional()
+        .describe('Only include results from these domains'),
+      excludeDomains: z
+        .array(z.string())
+        .optional()
+        .describe('Exclude results from these domains'),
+    },
+    async (args) => {
+      try {
+        const response = await performSearch(args.query, credentials.apiKey, {
+          numResults: args.numResults,
+          includeTextInResult: args.includeText,
+          type: 'neural',
+          category: args.category,
+          includeDomains: args.includeDomains,
+          excludeDomains: args.excludeDomains,
+        });
+
+        return {
+          content: [{
+            type: 'text',
+            text: formatSearchResultsForLLM(response.results, args.includeText),
+          }],
+        };
+      } catch (error) {
+        console.error('Error during Exa neural search:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `An error occurred while performing neural search: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}
