@@ -15,6 +15,7 @@
         "lint-staged": "^15.2.0",
         "msw": "^2.10.4",
         "tsdown": "^0.14.0",
+        "tsx": "^4.20.5",
         "turbo": "latest",
         "typescript": "^5.9.0",
         "unplugin-unused": "^0.5.1",
