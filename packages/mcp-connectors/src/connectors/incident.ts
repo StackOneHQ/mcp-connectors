@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface IncidentIoIncident {
@@ -384,250 +384,352 @@ class IncidentIoClient {
   }
 }
 
-export const IncidentConnectorConfig = mcpConnectorConfig({
-  name: 'Incident.io',
-  key: 'incident',
-  logo: 'https://stackone-logos.com/api/incident/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .describe(
-        'Incident.io API key :: inc_1234567890abcdefghijklmnopqrstuvwxyz :: https://api-docs.incident.io/#section/Making-requests/Authentication'
-      ),
-  }),
-  setup: z.object({}),
-  description:
-    'Incident.io is a platform for incident management. It allows you to create, update, and get incidents, users, services, teams, escalation paths, and schedules. It is a great tool for incident management and response.',
-  examplePrompt:
-    'Check all active incidents with high severity, create a new incident for API downtime, and see who is currently on-call for the backend team.',
-  tools: (tool) => ({
-    LIST_INCIDENTS: tool({
-      name: 'incident_list_incidents',
-      description: 'List incidents with optional filtering',
-      schema: z.object({
-        status: z
-          .string()
-          .optional()
-          .describe('Filter by incident status (triage, fixing, monitoring, closed)'),
-        severity: z.string().optional().describe('Filter by severity name'),
-        limit: z.number().default(25).describe('Maximum number of incidents to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const incidents = await client.listIncidents(
-            args.status,
-            args.severity,
-            args.limit
-          );
-          return JSON.stringify(incidents, null, 2);
-        } catch (error) {
-          return `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_INCIDENT: tool({
-      name: 'incident_get_incident',
-      description: 'Get detailed information about a specific incident',
-      schema: z.object({
-        incidentId: z.string().describe('The incident ID to retrieve'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const incident = await client.getIncident(args.incidentId);
-          return JSON.stringify(incident, null, 2);
-        } catch (error) {
-          return `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_INCIDENT: tool({
-      name: 'incident_create_incident',
-      description: 'Create a new incident',
-      schema: z.object({
-        name: z.string().describe('Name of the incident'),
-        summary: z.string().describe('Summary description of the incident'),
-        severityId: z.string().describe('Severity ID for the incident'),
-        incidentTypeId: z.string().optional().describe('Incident type ID'),
-        visibility: z
-          .enum(['private', 'public'])
-          .default('private')
-          .describe('Visibility of the incident'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const incident = await client.createIncident(
-            args.name,
-            args.summary,
-            args.severityId,
-            args.incidentTypeId,
-            args.visibility
-          );
-          return JSON.stringify(incident, null, 2);
-        } catch (error) {
-          return `Failed to create incident: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    UPDATE_INCIDENT: tool({
-      name: 'incident_update_incident',
-      description: 'Update an existing incident',
-      schema: z.object({
-        incidentId: z.string().describe('The incident ID to update'),
-        name: z.string().optional().describe('New name for the incident'),
-        summary: z.string().optional().describe('New summary for the incident'),
-        statusId: z.string().optional().describe('New status ID for the incident'),
-        severityId: z.string().optional().describe('New severity ID for the incident'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const updates: {
-            name?: string;
-            summary?: string;
-            status_id?: string;
-            severity_id?: string;
-          } = {};
-          if (args.name) updates.name = args.name;
-          if (args.summary) updates.summary = args.summary;
-          if (args.statusId) updates.status_id = args.statusId;
-          if (args.severityId) updates.severity_id = args.severityId;
+export interface IncidentCredentials {
+  apiKey: string;
+}
 
-          const incident = await client.updateIncident(args.incidentId, updates);
-          return JSON.stringify(incident, null, 2);
-        } catch (error) {
-          return `Failed to update incident: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_USERS: tool({
-      name: 'incident_list_users',
-      description: 'List users in the organization',
-      schema: z.object({
-        limit: z.number().default(25).describe('Maximum number of users to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const users = await client.listUsers(args.limit);
-          return JSON.stringify(users, null, 2);
-        } catch (error) {
-          return `Failed to list users: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_USER: tool({
-      name: 'incident_get_user',
-      description: 'Get details of a specific user',
-      schema: z.object({
-        userId: z.string().describe('The user ID to retrieve'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const user = await client.getUser(args.userId);
-          return JSON.stringify(user, null, 2);
-        } catch (error) {
-          return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_SERVICES: tool({
-      name: 'incident_list_services',
-      description: 'List services in the catalog',
-      schema: z.object({
-        limit: z.number().default(25).describe('Maximum number of services to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const services = await client.listServices(args.limit);
-          return JSON.stringify(services, null, 2);
-        } catch (error) {
-          return `Failed to list services: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_TEAMS: tool({
-      name: 'incident_list_teams',
-      description: 'List teams in the organization',
-      schema: z.object({
-        limit: z.number().default(25).describe('Maximum number of teams to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const teams = await client.listTeams(args.limit);
-          return JSON.stringify(teams, null, 2);
-        } catch (error) {
-          return `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_ESCALATION_PATHS: tool({
-      name: 'incident_list_escalation_paths',
-      description: 'List escalation paths configured in the system',
-      schema: z.object({
-        limit: z
-          .number()
-          .default(25)
-          .describe('Maximum number of escalation paths to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const escalationPaths = await client.listEscalationPaths(args.limit);
-          return JSON.stringify(escalationPaths, null, 2);
-        } catch (error) {
-          return `Failed to list escalation paths: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_SCHEDULES: tool({
-      name: 'incident_list_schedules',
-      description: 'List on-call schedules',
-      schema: z.object({
-        limit: z.number().default(25).describe('Maximum number of schedules to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const schedules = await client.listSchedules(args.limit);
-          return JSON.stringify(schedules, null, 2);
-        } catch (error) {
-          return `Failed to list schedules: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_ON_CALL_SCHEDULE: tool({
-      name: 'incident_get_on_call_schedule',
-      description: 'Get on-call schedule entries for a specific schedule',
-      schema: z.object({
-        scheduleId: z.string().describe('The schedule ID to retrieve entries for'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new IncidentIoClient(apiKey);
-          const scheduleEntries = await client.getOnCallSchedule(args.scheduleId);
-          return JSON.stringify(scheduleEntries, null, 2);
-        } catch (error) {
-          return `Failed to get on-call schedule: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+export function createIncidentServer(credentials: IncidentCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Incident.io',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'incident_list_incidents',
+    'List incidents with optional filtering',
+    {
+      status: z
+        .string()
+        .optional()
+        .describe('Filter by incident status (triage, fixing, monitoring, closed)'),
+      severity: z.string().optional().describe('Filter by severity name'),
+      limit: z.number().default(25).describe('Maximum number of incidents to return'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const incidents = await client.listIncidents(
+          args.status,
+          args.severity,
+          args.limit
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(incidents, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_get_incident',
+    'Get detailed information about a specific incident',
+    {
+      incidentId: z.string().describe('The incident ID to retrieve'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const incident = await client.getIncident(args.incidentId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(incident, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_create_incident',
+    'Create a new incident',
+    {
+      name: z.string().describe('Name of the incident'),
+      summary: z.string().describe('Summary description of the incident'),
+      severityId: z.string().describe('Severity ID for the incident'),
+      incidentTypeId: z.string().optional().describe('Incident type ID'),
+      visibility: z
+        .enum(['private', 'public'])
+        .default('private')
+        .describe('Visibility of the incident'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const incident = await client.createIncident(
+          args.name,
+          args.summary,
+          args.severityId,
+          args.incidentTypeId,
+          args.visibility
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(incident, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create incident: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_update_incident',
+    'Update an existing incident',
+    {
+      incidentId: z.string().describe('The incident ID to update'),
+      name: z.string().optional().describe('New name for the incident'),
+      summary: z.string().optional().describe('New summary for the incident'),
+      statusId: z.string().optional().describe('New status ID for the incident'),
+      severityId: z.string().optional().describe('New severity ID for the incident'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const updates: {
+          name?: string;
+          summary?: string;
+          status_id?: string;
+          severity_id?: string;
+        } = {};
+        if (args.name) updates.name = args.name;
+        if (args.summary) updates.summary = args.summary;
+        if (args.statusId) updates.status_id = args.statusId;
+        if (args.severityId) updates.severity_id = args.severityId;
+
+        const incident = await client.updateIncident(args.incidentId, updates);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(incident, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to update incident: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_list_users',
+    'List users in the organization',
+    {
+      limit: z.number().default(25).describe('Maximum number of users to return'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const users = await client.listUsers(args.limit);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(users, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list users: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_get_user',
+    'Get details of a specific user',
+    {
+      userId: z.string().describe('The user ID to retrieve'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const user = await client.getUser(args.userId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(user, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_list_services',
+    'List services in the catalog',
+    {
+      limit: z.number().default(25).describe('Maximum number of services to return'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const services = await client.listServices(args.limit);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(services, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list services: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_list_teams',
+    'List teams in the organization',
+    {
+      limit: z.number().default(25).describe('Maximum number of teams to return'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const teams = await client.listTeams(args.limit);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(teams, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_list_escalation_paths',
+    'List escalation paths configured in the system',
+    {
+      limit: z
+        .number()
+        .default(25)
+        .describe('Maximum number of escalation paths to return'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const escalationPaths = await client.listEscalationPaths(args.limit);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(escalationPaths, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list escalation paths: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_list_schedules',
+    'List on-call schedules',
+    {
+      limit: z.number().default(25).describe('Maximum number of schedules to return'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const schedules = await client.listSchedules(args.limit);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(schedules, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to list schedules: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'incident_get_on_call_schedule',
+    'Get on-call schedule entries for a specific schedule',
+    {
+      scheduleId: z.string().describe('The schedule ID to retrieve entries for'),
+    },
+    async (args) => {
+      try {
+        const client = new IncidentIoClient(credentials.apiKey);
+        const scheduleEntries = await client.getOnCallSchedule(args.scheduleId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(scheduleEntries, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get on-call schedule: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}
