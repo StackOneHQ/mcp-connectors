@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface LogfireException {
@@ -59,15 +59,15 @@ class LogfireClient {
 
   async findExceptions(timeRange = '24h', limit = 50): Promise<LogfireException[]> {
     const query = `
-      SELECT 
+      SELECT
         attributes['code.filepath'] as file_path,
         COUNT(*) as exception_count,
         MIN(timestamp) as first_occurrence,
         MAX(timestamp) as last_occurrence,
         groupArray(DISTINCT attributes['exception.type']) as exception_types,
         groupArray(DISTINCT body) as sample_messages
-      FROM records 
-      WHERE 
+      FROM records
+      WHERE
         timestamp >= now() - INTERVAL '${timeRange}'
         AND attributes['exception.type'] IS NOT NULL
       GROUP BY file_path
@@ -84,7 +84,7 @@ class LogfireClient {
     limit = 50
   ): Promise<LogfireTrace[]> {
     const query = `
-      SELECT 
+      SELECT
         trace_id,
         span_id,
         timestamp,
@@ -95,8 +95,8 @@ class LogfireClient {
         attributes['exception.type'] as exception_type,
         attributes['exception.message'] as exception_message,
         attributes['exception.stacktrace'] as stack_trace
-      FROM records 
-      WHERE 
+      FROM records
+      WHERE
         timestamp >= now() - INTERVAL '${timeRange}'
         AND attributes['code.filepath'] = '${filePath}'
         AND attributes['exception.type'] IS NOT NULL
@@ -142,7 +142,7 @@ class LogfireClient {
     severityLevel?: string
   ): Promise<LogfireRecord[]> {
     let query = `
-      SELECT 
+      SELECT
         trace_id,
         span_id,
         timestamp,
@@ -154,11 +154,11 @@ class LogfireClient {
         resource_attributes,
         scope_name,
         scope_version
-      FROM records 
-      WHERE 
+      FROM records
+      WHERE
         timestamp >= now() - INTERVAL '${timeRange}'
         AND (
-          body ILIKE '%${searchTerm}%' 
+          body ILIKE '%${searchTerm}%'
           OR toString(attributes) ILIKE '%${searchTerm}%'
           OR toString(resource_attributes) ILIKE '%${searchTerm}%'
         )
@@ -175,7 +175,7 @@ class LogfireClient {
 
   async getServiceMetrics(serviceName?: string, timeRange = '24h'): Promise<unknown> {
     let query = `
-      SELECT 
+      SELECT
         resource_attributes['service.name'] as service_name,
         COUNT(*) as total_records,
         COUNT(DISTINCT trace_id) as unique_traces,
@@ -183,7 +183,7 @@ class LogfireClient {
         countIf(severity_text = 'WARN') as warning_count,
         countIf(severity_text = 'INFO') as info_count,
         countIf(attributes['exception.type'] IS NOT NULL) as exception_count
-      FROM records 
+      FROM records
       WHERE timestamp >= now() - INTERVAL '${timeRange}'
     `;
 
@@ -198,7 +198,7 @@ class LogfireClient {
 
   async getTraceDetails(traceId: string): Promise<LogfireRecord[]> {
     const query = `
-      SELECT 
+      SELECT
         trace_id,
         span_id,
         timestamp,
@@ -210,7 +210,7 @@ class LogfireClient {
         resource_attributes,
         scope_name,
         scope_version
-      FROM records 
+      FROM records
       WHERE trace_id = '${traceId}'
       ORDER BY timestamp ASC
     `;
@@ -220,14 +220,14 @@ class LogfireClient {
 
   async getPerformanceMetrics(timeRange = '1h', serviceName?: string): Promise<unknown> {
     let query = `
-      SELECT 
+      SELECT
         toStartOfMinute(timestamp) as time_bucket,
         COUNT(*) as requests_per_minute,
         avg(toFloat64OrNull(attributes['duration'])) as avg_duration_ms,
         quantile(0.95)(toFloat64OrNull(attributes['duration'])) as p95_duration_ms,
         countIf(severity_text = 'ERROR') as error_rate
-      FROM records 
-      WHERE 
+      FROM records
+      WHERE
         timestamp >= now() - INTERVAL '${timeRange}'
         AND attributes['duration'] IS NOT NULL
     `;
@@ -242,200 +242,272 @@ class LogfireClient {
   }
 }
 
-export const LogfireConnectorConfig = mcpConnectorConfig({
-  name: 'Pydantic Logfire',
-  key: 'pydantic_logfire',
-  logo: 'https://stackone-logos.com/api/pydantic-logfire/filled/svg',
-  version: '1.0.0',
-  credentials: z.object({
-    readToken: z
-      .string()
-      .describe(
-        'Logfire read token from your project dashboard :: lgf_read_1234567890abcdefghijklmnopqrstuv :: https://logfire-pydantic.readthedocs.io/en/latest/getting-started/authentication.html :: https://logfire.pydantic.dev/docs/how-to-guides/query-api/#how-to-create-a-read-token'
-      ),
-  }),
-  setup: z.object({}),
-  description:
-    'Logfire is a platform for monitoring and observability based on OpenTelemetry data. Logfire is made by the Pydantic team.',
-  examplePrompt:
-    'Find all exceptions from the last 24 hours, show me detailed traces for errors in my main.py file, and get performance metrics for my authentication service.',
-  tools: (tool) => ({
-    FIND_EXCEPTIONS: tool({
-      name: 'pydantic_logfire_find_exceptions',
-      description: 'Get exception counts grouped by file over a time range',
-      schema: z.object({
-        timeRange: z
-          .string()
-          .default('24h')
-          .describe('Time range (e.g., "1h", "24h", "7d")'),
-        limit: z.number().default(50).describe('Maximum number of files to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const exceptions = await client.findExceptions(args.timeRange, args.limit);
-          return JSON.stringify(exceptions, null, 2);
-        } catch (error) {
-          return `Failed to find exceptions: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    FIND_EXCEPTIONS_IN_FILE: tool({
-      name: 'pydantic_logfire_find_exceptions_in_file',
-      description: 'Get detailed trace information for exceptions in a specific file',
-      schema: z.object({
-        filePath: z.string().describe('The file path to search for exceptions in'),
-        timeRange: z
-          .string()
-          .default('24h')
-          .describe('Time range (e.g., "1h", "24h", "7d")'),
-        limit: z.number().default(50).describe('Maximum number of traces to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const traces = await client.findExceptionsInFile(
-            args.filePath,
-            args.timeRange,
-            args.limit
-          );
-          return JSON.stringify(traces, null, 2);
-        } catch (error) {
-          return `Failed to find exceptions in file: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    ARBITRARY_QUERY: tool({
-      name: 'pydantic_logfire_arbitrary_query',
-      description: 'Execute a custom SQL query on OpenTelemetry data',
-      schema: z.object({
-        query: z.string().describe('SQL query to execute on the records table'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const result = await client.arbitraryQuery(args.query);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to execute query: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_SCHEMA: tool({
-      name: 'pydantic_logfire_get_schema',
-      description: 'Get the OpenTelemetry schema for the records table',
-      schema: z.object({}),
-      handler: async (_args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const schema = await client.getLogfireRecordsSchema();
-          return JSON.stringify(schema, null, 2);
-        } catch (error) {
-          return `Failed to get schema: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    SEARCH_RECORDS: tool({
-      name: 'pydantic_logfire_search_records',
-      description: 'Search log records by text content',
-      schema: z.object({
-        searchTerm: z
-          .string()
-          .describe('Text to search for in log messages and attributes'),
-        timeRange: z
-          .string()
-          .default('24h')
-          .describe('Time range (e.g., "1h", "24h", "7d")'),
-        limit: z.number().default(50).describe('Maximum number of records to return'),
-        severityLevel: z
-          .string()
-          .optional()
-          .describe('Filter by severity level (DEBUG, INFO, WARN, ERROR)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const records = await client.searchRecords(
-            args.searchTerm,
-            args.timeRange,
-            args.limit,
-            args.severityLevel
-          );
-          return JSON.stringify(records, null, 2);
-        } catch (error) {
-          return `Failed to search records: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_SERVICE_METRICS: tool({
-      name: 'pydantic_logfire_get_service_metrics',
-      description: 'Get aggregated metrics for services',
-      schema: z.object({
-        serviceName: z.string().optional().describe('Specific service name to filter by'),
-        timeRange: z
-          .string()
-          .default('24h')
-          .describe('Time range (e.g., "1h", "24h", "7d")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const metrics = await client.getServiceMetrics(
-            args.serviceName,
-            args.timeRange
-          );
-          return JSON.stringify(metrics, null, 2);
-        } catch (error) {
-          return `Failed to get service metrics: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_TRACE_DETAILS: tool({
-      name: 'pydantic_logfire_get_trace_details',
-      description: 'Get all records for a specific trace ID',
-      schema: z.object({
-        traceId: z.string().describe('The trace ID to get details for'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const trace = await client.getTraceDetails(args.traceId);
-          return JSON.stringify(trace, null, 2);
-        } catch (error) {
-          return `Failed to get trace details: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PERFORMANCE_METRICS: tool({
-      name: 'pydantic_logfire_get_performance_metrics',
-      description: 'Get performance metrics over time',
-      schema: z.object({
-        timeRange: z
-          .string()
-          .default('1h')
-          .describe('Time range (e.g., "1h", "6h", "24h")'),
-        serviceName: z.string().optional().describe('Specific service name to filter by'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { readToken } = await context.getCredentials();
-          const client = new LogfireClient(readToken);
-          const metrics = await client.getPerformanceMetrics(
-            args.timeRange,
-            args.serviceName
-          );
-          return JSON.stringify(metrics, null, 2);
-        } catch (error) {
-          return `Failed to get performance metrics: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+export interface PydanticLogfireCredentials {
+  readToken: string;
+}
+
+export function createPydanticLogfireServer(credentials: PydanticLogfireCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Pydantic Logfire',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'pydantic_logfire_find_exceptions',
+    'Get exception counts grouped by file over a time range',
+    {
+      timeRange: z
+        .string()
+        .default('24h')
+        .describe('Time range (e.g., "1h", "24h", "7d")'),
+      limit: z.number().default(50).describe('Maximum number of files to return'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const exceptions = await client.findExceptions(args.timeRange, args.limit);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(exceptions, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to find exceptions: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_find_exceptions_in_file',
+    'Get detailed trace information for exceptions in a specific file',
+    {
+      filePath: z.string().describe('The file path to search for exceptions in'),
+      timeRange: z
+        .string()
+        .default('24h')
+        .describe('Time range (e.g., "1h", "24h", "7d")'),
+      limit: z.number().default(50).describe('Maximum number of traces to return'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const traces = await client.findExceptionsInFile(
+          args.filePath,
+          args.timeRange,
+          args.limit
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(traces, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to find exceptions in file: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_arbitrary_query',
+    'Execute a custom SQL query on OpenTelemetry data',
+    {
+      query: z.string().describe('SQL query to execute on the records table'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const result = await client.arbitraryQuery(args.query);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to execute query: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_get_schema',
+    'Get the OpenTelemetry schema for the records table',
+    {},
+    async () => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const schema = await client.getLogfireRecordsSchema();
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(schema, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get schema: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_search_records',
+    'Search log records by text content',
+    {
+      searchTerm: z
+        .string()
+        .describe('Text to search for in log messages and attributes'),
+      timeRange: z
+        .string()
+        .default('24h')
+        .describe('Time range (e.g., "1h", "24h", "7d")'),
+      limit: z.number().default(50).describe('Maximum number of records to return'),
+      severityLevel: z
+        .string()
+        .optional()
+        .describe('Filter by severity level (DEBUG, INFO, WARN, ERROR)'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const records = await client.searchRecords(
+          args.searchTerm,
+          args.timeRange,
+          args.limit,
+          args.severityLevel
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(records, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to search records: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_get_service_metrics',
+    'Get aggregated metrics for services',
+    {
+      serviceName: z.string().optional().describe('Specific service name to filter by'),
+      timeRange: z
+        .string()
+        .default('24h')
+        .describe('Time range (e.g., "1h", "24h", "7d")'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const metrics = await client.getServiceMetrics(
+          args.serviceName,
+          args.timeRange
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(metrics, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get service metrics: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_get_trace_details',
+    'Get all records for a specific trace ID',
+    {
+      traceId: z.string().describe('The trace ID to get details for'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const trace = await client.getTraceDetails(args.traceId);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(trace, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get trace details: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'pydantic_logfire_get_performance_metrics',
+    'Get performance metrics over time',
+    {
+      timeRange: z
+        .string()
+        .default('1h')
+        .describe('Time range (e.g., "1h", "6h", "24h")'),
+      serviceName: z.string().optional().describe('Specific service name to filter by'),
+    },
+    async (args) => {
+      try {
+        const client = new LogfireClient(credentials.readToken);
+        const metrics = await client.getPerformanceMetrics(
+          args.timeRange,
+          args.serviceName
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(metrics, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get performance metrics: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}

@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface PostHogEvent {
@@ -483,381 +483,500 @@ class PostHogClient {
   }
 }
 
-export const PostHogConnectorConfig = mcpConnectorConfig({
-  name: 'PostHog',
-  key: 'posthog',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/posthog/filled/svg',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .optional()
-      .describe(
-        'PostHog Personal API Key (for admin operations) from Project Settings > API Keys :: phx_1234567890abcdef1234567890abcdef12345678901234567890abcdef123456789012 :: https://posthog.com/docs/api/overview#authentication'
-      ),
-    projectApiKey: z
-      .string()
-      .optional()
-      .describe(
-        'PostHog Project API Key (for event capture) from Project Settings :: phc_1234567890abcdef1234567890abcdef12345678 :: Required only for event capture/identification'
-      ),
-  }),
-  setup: z.object({
-    host: z
-      .string()
-      .default('https://eu.posthog.com')
-      .describe(
-        'PostHog host URL - Use https://us.posthog.com for US region, https://eu.posthog.com for EU region, or your self-hosted instance URL :: https://eu.posthog.com'
-      ),
-  }),
-  examplePrompt:
-    'Capture a user signup event, check feature flag status, get recent events, create a new dashboard for tracking user engagement, and analyze user cohorts.',
-  tools: (tool) => ({
-    CAPTURE_EVENT: tool({
-      name: 'posthog_capture_event',
-      description: 'Capture a single event in PostHog',
-      schema: z.object({
-        event: z.string().describe('The name of the event to capture'),
-        distinctId: z.string().describe('Unique identifier for the user or device'),
-        properties: z
-          .record(z.unknown())
-          .default({})
-          .describe('Additional properties for the event'),
-        timestamp: z
-          .string()
-          .optional()
-          .describe('ISO 8601 timestamp (defaults to current time)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.captureEvent(
-            args.event,
-            args.distinctId,
-            args.properties,
-            args.timestamp
-          );
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to capture event: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CAPTURE_BATCH_EVENTS: tool({
-      name: 'posthog_capture_batch_events',
-      description: 'Capture multiple events in a single request for better performance',
-      schema: z.object({
-        events: z
-          .array(
-            z.object({
-              event: z.string().describe('The name of the event'),
-              distinctId: z.string().describe('Unique identifier for the user or device'),
-              properties: z
-                .record(z.unknown())
-                .default({})
-                .describe('Additional properties for the event'),
-              timestamp: z
-                .string()
-                .optional()
-                .describe('ISO 8601 timestamp (defaults to current time)'),
-            })
-          )
-          .describe('Array of events to capture'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
+export interface PostHogCredentials {
+  apiKey?: string;
+  projectApiKey?: string;
+  host?: string;
+}
 
-          const events = args.events.map((event) => ({
-            event: event.event,
-            distinct_id: event.distinctId,
-            properties: event.properties,
-            timestamp: event.timestamp,
-          }));
+export function createPostHogServer(credentials: PostHogCredentials): McpServer {
+  const server = new McpServer({
+    name: 'PostHog',
+    version: '1.0.0',
+  });
 
-          const response = await client.captureBatchEvents(events);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to capture batch events: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_EVENTS: tool({
-      name: 'posthog_get_events',
-      description: 'Retrieve events from PostHog',
-      schema: z.object({
-        limit: z.number().default(50).describe('Maximum number of events to return'),
-        offset: z.number().default(0).describe('Number of events to skip for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getEvents(args.limit, args.offset);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get events: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    IDENTIFY_USER: tool({
-      name: 'posthog_identify_user',
-      description: 'Identify a user and set their properties',
-      schema: z.object({
-        distinctId: z.string().describe('Unique identifier for the user'),
-        properties: z
-          .record(z.unknown())
-          .default({})
-          .describe('Properties to set for the user (e.g., email, name, plan)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.identifyUser(args.distinctId, args.properties);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to identify user: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_FEATURE_FLAGS: tool({
-      name: 'posthog_get_feature_flags',
-      description: 'Get all feature flags for the project',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getFeatureFlags();
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get feature flags: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_FEATURE_FLAG: tool({
-      name: 'posthog_create_feature_flag',
-      description: 'Create a new feature flag',
-      schema: z.object({
-        name: z.string().describe('Display name for the feature flag'),
-        key: z.string().describe('Unique key for the feature flag'),
-        active: z.boolean().default(false).describe('Whether the flag is active'),
-        filters: z
-          .record(z.unknown())
-          .default({})
-          .describe('Filters to control who sees the feature'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.createFeatureFlag(
-            args.name,
-            args.key,
-            args.active,
-            args.filters
-          );
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to create feature flag: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    EVALUATE_FEATURE_FLAG: tool({
-      name: 'posthog_evaluate_feature_flag',
-      description: 'Evaluate a feature flag for a specific user',
-      schema: z.object({
-        key: z.string().describe('The key of the feature flag to evaluate'),
-        distinctId: z.string().describe('Unique identifier for the user'),
-        groups: z
-          .record(z.unknown())
-          .default({})
-          .describe('Group properties for group-based feature flags'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.evaluateFeatureFlag(
-            args.key,
-            args.distinctId,
-            args.groups
-          );
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to evaluate feature flag: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_INSIGHTS: tool({
-      name: 'posthog_get_insights',
-      description: 'Get insights and analytics from PostHog',
-      schema: z.object({
-        limit: z.number().default(25).describe('Maximum number of insights to return'),
-        offset: z
-          .number()
-          .default(0)
-          .describe('Number of insights to skip for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getInsights(args.limit, args.offset);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get insights: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_INSIGHT: tool({
-      name: 'posthog_create_insight',
-      description: 'Create a new insight or analytics query',
-      schema: z.object({
-        name: z.string().describe('Name for the insight'),
-        filters: z.record(z.unknown()).describe('Filter configuration for the insight'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.createInsight(args.name, args.filters);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to create insight: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_COHORTS: tool({
-      name: 'posthog_get_cohorts',
-      description: 'Get user cohorts for the project',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getCohorts();
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get cohorts: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_COHORT: tool({
-      name: 'posthog_create_cohort',
-      description: 'Create a new user cohort',
-      schema: z.object({
-        name: z.string().describe('Name for the cohort'),
-        groups: z.array(z.unknown()).describe('Group definitions for the cohort'),
-        description: z
-          .string()
-          .optional()
-          .describe('Optional description for the cohort'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.createCohort(
-            args.name,
-            args.groups,
-            args.description
-          );
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to create cohort: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_DASHBOARDS: tool({
-      name: 'posthog_get_dashboards',
-      description: 'Get all dashboards for the project',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getDashboards();
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get dashboards: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_DASHBOARD: tool({
-      name: 'posthog_create_dashboard',
-      description: 'Create a new dashboard',
-      schema: z.object({
-        name: z.string().describe('Name for the dashboard'),
-        description: z
-          .string()
-          .optional()
-          .describe('Optional description for the dashboard'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.createDashboard(args.name, args.description);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to create dashboard: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PERSONS: tool({
-      name: 'posthog_get_persons',
-      description: 'Get persons (users) from PostHog',
-      schema: z.object({
-        limit: z.number().default(100).describe('Maximum number of persons to return'),
-        offset: z
-          .number()
-          .default(0)
-          .describe('Number of persons to skip for pagination'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getPersons(args.limit, args.offset);
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get persons: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PROJECT_INFO: tool({
-      name: 'posthog_get_project_info',
-      description: 'Get information about the current PostHog project',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { apiKey, projectApiKey } = await context.getCredentials();
-          const { host } = await context.getSetup();
-          const client = new PostHogClient(apiKey, host, projectApiKey);
-          const response = await client.getProjectInfo();
-          return JSON.stringify(response, null, 2);
-        } catch (error) {
-          return `Failed to get project info: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+  const host = credentials.host || 'https://eu.posthog.com';
+
+  server.tool(
+    'posthog_capture_event',
+    'Capture a single event in PostHog',
+    {
+      event: z.string().describe('The name of the event to capture'),
+      distinctId: z.string().describe('Unique identifier for the user or device'),
+      properties: z
+        .record(z.unknown())
+        .default({})
+        .describe('Additional properties for the event'),
+      timestamp: z
+        .string()
+        .optional()
+        .describe('ISO 8601 timestamp (defaults to current time)'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.captureEvent(
+          args.event,
+          args.distinctId,
+          args.properties,
+          args.timestamp
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to capture event: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_capture_batch_events',
+    'Capture multiple events in a single request for better performance',
+    {
+      events: z
+        .array(
+          z.object({
+            event: z.string().describe('The name of the event'),
+            distinctId: z.string().describe('Unique identifier for the user or device'),
+            properties: z
+              .record(z.unknown())
+              .default({})
+              .describe('Additional properties for the event'),
+            timestamp: z
+              .string()
+              .optional()
+              .describe('ISO 8601 timestamp (defaults to current time)'),
+          })
+        )
+        .describe('Array of events to capture'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+
+        const events = args.events.map((event) => ({
+          event: event.event,
+          distinct_id: event.distinctId,
+          properties: event.properties,
+          timestamp: event.timestamp,
+        }));
+
+        const response = await client.captureBatchEvents(events);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to capture batch events: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_events',
+    'Retrieve events from PostHog',
+    {
+      limit: z.number().default(50).describe('Maximum number of events to return'),
+      offset: z.number().default(0).describe('Number of events to skip for pagination'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getEvents(args.limit, args.offset);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get events: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_identify_user',
+    'Identify a user and set their properties',
+    {
+      distinctId: z.string().describe('Unique identifier for the user'),
+      properties: z
+        .record(z.unknown())
+        .default({})
+        .describe('Properties to set for the user (e.g., email, name, plan)'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.identifyUser(args.distinctId, args.properties);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to identify user: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_feature_flags',
+    'Get all feature flags for the project',
+    {},
+    async () => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getFeatureFlags();
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get feature flags: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_create_feature_flag',
+    'Create a new feature flag',
+    {
+      name: z.string().describe('Display name for the feature flag'),
+      key: z.string().describe('Unique key for the feature flag'),
+      active: z.boolean().default(false).describe('Whether the flag is active'),
+      filters: z
+        .record(z.unknown())
+        .default({})
+        .describe('Filters to control who sees the feature'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.createFeatureFlag(
+          args.name,
+          args.key,
+          args.active,
+          args.filters
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create feature flag: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_evaluate_feature_flag',
+    'Evaluate a feature flag for a specific user',
+    {
+      key: z.string().describe('The key of the feature flag to evaluate'),
+      distinctId: z.string().describe('Unique identifier for the user'),
+      groups: z
+        .record(z.unknown())
+        .default({})
+        .describe('Group properties for group-based feature flags'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.evaluateFeatureFlag(
+          args.key,
+          args.distinctId,
+          args.groups
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to evaluate feature flag: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_insights',
+    'Get insights and analytics from PostHog',
+    {
+      limit: z.number().default(25).describe('Maximum number of insights to return'),
+      offset: z
+        .number()
+        .default(0)
+        .describe('Number of insights to skip for pagination'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getInsights(args.limit, args.offset);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get insights: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_create_insight',
+    'Create a new insight or analytics query',
+    {
+      name: z.string().describe('Name for the insight'),
+      filters: z.record(z.unknown()).describe('Filter configuration for the insight'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.createInsight(args.name, args.filters);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create insight: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_cohorts',
+    'Get user cohorts for the project',
+    {},
+    async () => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getCohorts();
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get cohorts: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_create_cohort',
+    'Create a new user cohort',
+    {
+      name: z.string().describe('Name for the cohort'),
+      groups: z.array(z.unknown()).describe('Group definitions for the cohort'),
+      description: z
+        .string()
+        .optional()
+        .describe('Optional description for the cohort'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.createCohort(
+          args.name,
+          args.groups,
+          args.description
+        );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create cohort: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_dashboards',
+    'Get all dashboards for the project',
+    {},
+    async () => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getDashboards();
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get dashboards: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_create_dashboard',
+    'Create a new dashboard',
+    {
+      name: z.string().describe('Name for the dashboard'),
+      description: z
+        .string()
+        .optional()
+        .describe('Optional description for the dashboard'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.createDashboard(args.name, args.description);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to create dashboard: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_persons',
+    'Get persons (users) from PostHog',
+    {
+      limit: z.number().default(100).describe('Maximum number of persons to return'),
+      offset: z
+        .number()
+        .default(0)
+        .describe('Number of persons to skip for pagination'),
+    },
+    async (args) => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getPersons(args.limit, args.offset);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get persons: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'posthog_get_project_info',
+    'Get information about the current PostHog project',
+    {},
+    async () => {
+      try {
+        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const response = await client.getProjectInfo();
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Failed to get project info: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+        };
+      }
+    }
+  );
+
+  return server;
+}

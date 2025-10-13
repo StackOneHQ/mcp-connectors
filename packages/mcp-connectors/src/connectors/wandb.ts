@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface WandbProject {
@@ -307,387 +307,533 @@ class WandbClient {
   }
 }
 
-export const WandbConnectorConfig = mcpConnectorConfig({
-  name: 'Weights and Biases',
-  key: 'wandb',
-  version: '1.0.0',
-  logo: 'https://avatars.githubusercontent.com/u/26401354?s=200&v=4',
-  credentials: z.object({
-    api_key: z
-      .string()
-      .describe(
-        'W&B API Key from wandb.ai/authorize or Settings > API keys :: local-1234567890abcdefghijklmnopqrstuv'
-      ),
-    base_url: z
-      .string()
-      .optional()
-      .describe('W&B API Base URL (defaults to https://api.wandb.ai)'),
-  }),
-  setup: z.object({}),
-  examplePrompt:
-    'List my W&B projects, create a new run for training a model, log some metrics during training, and retrieve the best performing runs from my project.',
-  tools: (tool) => ({
-    GET_ME: tool({
-      name: 'wandb_get_me',
-      description: 'Get information about the authenticated user',
-      schema: z.object({}),
-      handler: async (_args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const user = await client.getMe();
-          return JSON.stringify(user, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+export interface WandbCredentials {
+  api_key: string;
+  base_url?: string;
+}
 
-    LIST_PROJECTS: tool({
-      name: 'wandb_list_projects',
-      description: 'List W&B projects for an entity',
-      schema: z.object({
-        entity: z
-          .string()
-          .optional()
-          .describe(
-            'Entity name (username or team). If not provided, lists all accessible projects'
-          ),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const projects = await client.getProjects(args.entity);
-          return JSON.stringify(projects, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+export function createWandbServer(credentials: WandbCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Weights and Biases',
+    version: '1.0.0',
+  });
 
-    GET_PROJECT: tool({
-      name: 'wandb_get_project',
-      description: 'Get details of a specific W&B project',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const project = await client.getProject(args.entity, args.project);
-          return JSON.stringify(project, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+  const client = new WandbClient(
+    credentials.api_key,
+    credentials.base_url || 'https://api.wandb.ai'
+  );
 
-    CREATE_PROJECT: tool({
-      name: 'wandb_create_project',
-      description: 'Create a new W&B project',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        name: z.string().describe('Project name'),
-        description: z.string().optional().describe('Project description'),
-        visibility: z
-          .enum(['public', 'private'])
-          .optional()
-          .default('private')
-          .describe('Project visibility'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const project = await client.createProject(
-            args.entity,
-            args.name,
-            args.description,
-            args.visibility
-          );
-          return JSON.stringify(project, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    LIST_RUNS: tool({
-      name: 'wandb_list_runs',
-      description: 'List runs in a W&B project',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        limit: z
-          .number()
-          .min(1)
-          .max(1000)
-          .optional()
-          .describe('Number of runs to return (max 1000)'),
-        offset: z.number().min(0).optional().describe('Number of runs to skip'),
-        state: z
-          .enum(['running', 'finished', 'failed', 'crashed'])
-          .optional()
-          .describe('Filter by run state'),
-        tags: z.array(z.string()).optional().describe('Filter by tags'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const result = await client.getRuns(args.entity, args.project, {
-            limit: args.limit,
-            offset: args.offset,
-            state: args.state,
-            tags: args.tags,
-          });
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    GET_RUN: tool({
-      name: 'wandb_get_run',
-      description: 'Get details of a specific W&B run',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        run_id: z.string().describe('Run ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const run = await client.getRun(args.entity, args.project, args.run_id);
-          return JSON.stringify(run, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    CREATE_RUN: tool({
-      name: 'wandb_create_run',
-      description: 'Create a new W&B run',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        name: z.string().optional().describe('Run name (auto-generated if not provided)'),
-        display_name: z.string().optional().describe('Display name for the run'),
-        notes: z.string().optional().describe('Run notes/description'),
-        tags: z.array(z.string()).optional().describe('Tags for the run'),
-        config: z
-          .record(z.unknown())
-          .optional()
-          .describe('Configuration parameters for the run'),
-        group: z.string().optional().describe('Group name for organizing related runs'),
-        job_type: z
-          .string()
-          .optional()
-          .describe('Job type (e.g., train, eval, preprocess)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const run = await client.createRun(args.entity, args.project, {
-            name: args.name,
-            display_name: args.display_name,
-            notes: args.notes,
-            tags: args.tags,
-            config: args.config,
-            group: args.group,
-            job_type: args.job_type,
-          });
-          return JSON.stringify(run, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    UPDATE_RUN: tool({
-      name: 'wandb_update_run',
-      description: 'Update an existing W&B run',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        run_id: z.string().describe('Run ID'),
-        display_name: z.string().optional().describe('Display name for the run'),
-        notes: z.string().optional().describe('Run notes/description'),
-        tags: z.array(z.string()).optional().describe('Tags for the run'),
-        summary: z.record(z.unknown()).optional().describe('Summary metrics for the run'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const run = await client.updateRun(args.entity, args.project, args.run_id, {
-            display_name: args.display_name,
-            notes: args.notes,
-            tags: args.tags,
-            summary: args.summary,
-          });
-          return JSON.stringify(run, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    DELETE_RUN: tool({
-      name: 'wandb_delete_run',
-      description: 'Delete a W&B run',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        run_id: z.string().describe('Run ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          await client.deleteRun(args.entity, args.project, args.run_id);
-          return 'Run deleted successfully';
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    LOG_METRICS: tool({
-      name: 'wandb_log_metrics',
-      description: 'Log metrics to a W&B run',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        run_id: z.string().describe('Run ID'),
-        metrics: z.record(z.union([z.number(), z.string()])).describe('Metrics to log'),
-        step: z.number().optional().describe('Step number for the metrics'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          await client.logMetrics(
-            args.entity,
-            args.project,
-            args.run_id,
-            args.metrics,
-            args.step
-          );
-          return 'Metrics logged successfully';
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    GET_RUN_HISTORY: tool({
-      name: 'wandb_get_run_history',
-      description: 'Get logged metrics history for a W&B run',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        run_id: z.string().describe('Run ID'),
-        keys: z
-          .array(z.string())
-          .optional()
-          .describe('Specific metric keys to retrieve (all if not specified)'),
-        samples: z.number().optional().describe('Number of samples to return'),
-        min_step: z.number().optional().describe('Minimum step to include'),
-        max_step: z.number().optional().describe('Maximum step to include'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const history = await client.getRunHistory(
-            args.entity,
-            args.project,
-            args.run_id,
+  server.tool(
+    'wandb_get_me',
+    'Get information about the authenticated user',
+    {},
+    async () => {
+      try {
+        const user = await client.getMe();
+        return {
+          content: [
             {
-              keys: args.keys,
-              samples: args.samples,
-              minStep: args.min_step,
-              maxStep: args.max_step,
-            }
-          );
-          return JSON.stringify(history, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-    LIST_ARTIFACTS: tool({
-      name: 'wandb_list_artifacts',
-      description: 'List artifacts in a W&B project',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        type: z
-          .string()
-          .optional()
-          .describe('Filter by artifact type (e.g., dataset, model)'),
-        limit: z
-          .number()
-          .min(1)
-          .max(1000)
-          .optional()
-          .describe('Number of artifacts to return'),
-        offset: z.number().min(0).optional().describe('Number of artifacts to skip'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const result = await client.getArtifacts(args.entity, args.project, {
-            type: args.type,
-            limit: args.limit,
-            offset: args.offset,
-          });
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
+  server.tool(
+    'wandb_list_projects',
+    'List W&B projects for an entity',
+    {
+      entity: z
+        .string()
+        .optional()
+        .describe(
+          'Entity name (username or team). If not provided, lists all accessible projects'
+        ),
+    },
+    async (args) => {
+      try {
+        const projects = await client.getProjects(args.entity);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(projects, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-    GET_ARTIFACT: tool({
-      name: 'wandb_get_artifact',
-      description: 'Get details of a specific W&B artifact',
-      schema: z.object({
-        entity: z.string().describe('Entity name (username or team)'),
-        project: z.string().describe('Project name'),
-        artifact_name: z.string().describe('Artifact name'),
-        version: z
-          .string()
-          .optional()
-          .describe('Artifact version (defaults to "latest")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { api_key, base_url } = await context.getCredentials();
-          const client = new WandbClient(api_key, base_url);
-          const artifact = await client.getArtifact(
-            args.entity,
-            args.project,
-            args.artifact_name,
-            args.version
-          );
-          return JSON.stringify(artifact, null, 2);
-        } catch (error) {
-          return `Error: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+  server.tool(
+    'wandb_get_project',
+    'Get details of a specific W&B project',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+    },
+    async (args) => {
+      try {
+        const project = await client.getProject(args.entity, args.project);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
 
-export default WandbConnectorConfig;
+  server.tool(
+    'wandb_create_project',
+    'Create a new W&B project',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      name: z.string().describe('Project name'),
+      description: z.string().optional().describe('Project description'),
+      visibility: z
+        .enum(['public', 'private'])
+        .optional()
+        .default('private')
+        .describe('Project visibility'),
+    },
+    async (args) => {
+      try {
+        const project = await client.createProject(
+          args.entity,
+          args.name,
+          args.description,
+          args.visibility
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_list_runs',
+    'List runs in a W&B project',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      limit: z
+        .number()
+        .min(1)
+        .max(1000)
+        .optional()
+        .describe('Number of runs to return (max 1000)'),
+      offset: z.number().min(0).optional().describe('Number of runs to skip'),
+      state: z
+        .enum(['running', 'finished', 'failed', 'crashed'])
+        .optional()
+        .describe('Filter by run state'),
+      tags: z.array(z.string()).optional().describe('Filter by tags'),
+    },
+    async (args) => {
+      try {
+        const result = await client.getRuns(args.entity, args.project, {
+          limit: args.limit,
+          offset: args.offset,
+          state: args.state,
+          tags: args.tags,
+        });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_get_run',
+    'Get details of a specific W&B run',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      run_id: z.string().describe('Run ID'),
+    },
+    async (args) => {
+      try {
+        const run = await client.getRun(args.entity, args.project, args.run_id);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(run, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_create_run',
+    'Create a new W&B run',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      name: z.string().optional().describe('Run name (auto-generated if not provided)'),
+      display_name: z.string().optional().describe('Display name for the run'),
+      notes: z.string().optional().describe('Run notes/description'),
+      tags: z.array(z.string()).optional().describe('Tags for the run'),
+      config: z
+        .record(z.unknown())
+        .optional()
+        .describe('Configuration parameters for the run'),
+      group: z.string().optional().describe('Group name for organizing related runs'),
+      job_type: z
+        .string()
+        .optional()
+        .describe('Job type (e.g., train, eval, preprocess)'),
+    },
+    async (args) => {
+      try {
+        const run = await client.createRun(args.entity, args.project, {
+          name: args.name,
+          display_name: args.display_name,
+          notes: args.notes,
+          tags: args.tags,
+          config: args.config,
+          group: args.group,
+          job_type: args.job_type,
+        });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(run, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_update_run',
+    'Update an existing W&B run',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      run_id: z.string().describe('Run ID'),
+      display_name: z.string().optional().describe('Display name for the run'),
+      notes: z.string().optional().describe('Run notes/description'),
+      tags: z.array(z.string()).optional().describe('Tags for the run'),
+      summary: z.record(z.unknown()).optional().describe('Summary metrics for the run'),
+    },
+    async (args) => {
+      try {
+        const run = await client.updateRun(args.entity, args.project, args.run_id, {
+          display_name: args.display_name,
+          notes: args.notes,
+          tags: args.tags,
+          summary: args.summary,
+        });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(run, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_delete_run',
+    'Delete a W&B run',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      run_id: z.string().describe('Run ID'),
+    },
+    async (args) => {
+      try {
+        await client.deleteRun(args.entity, args.project, args.run_id);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: 'Run deleted successfully',
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_log_metrics',
+    'Log metrics to a W&B run',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      run_id: z.string().describe('Run ID'),
+      metrics: z.record(z.union([z.number(), z.string()])).describe('Metrics to log'),
+      step: z.number().optional().describe('Step number for the metrics'),
+    },
+    async (args) => {
+      try {
+        await client.logMetrics(
+          args.entity,
+          args.project,
+          args.run_id,
+          args.metrics,
+          args.step
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: 'Metrics logged successfully',
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_get_run_history',
+    'Get logged metrics history for a W&B run',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      run_id: z.string().describe('Run ID'),
+      keys: z
+        .array(z.string())
+        .optional()
+        .describe('Specific metric keys to retrieve (all if not specified)'),
+      samples: z.number().optional().describe('Number of samples to return'),
+      min_step: z.number().optional().describe('Minimum step to include'),
+      max_step: z.number().optional().describe('Maximum step to include'),
+    },
+    async (args) => {
+      try {
+        const history = await client.getRunHistory(args.entity, args.project, args.run_id, {
+          keys: args.keys,
+          samples: args.samples,
+          minStep: args.min_step,
+          maxStep: args.max_step,
+        });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(history, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_list_artifacts',
+    'List artifacts in a W&B project',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      type: z
+        .string()
+        .optional()
+        .describe('Filter by artifact type (e.g., dataset, model)'),
+      limit: z
+        .number()
+        .min(1)
+        .max(1000)
+        .optional()
+        .describe('Number of artifacts to return'),
+      offset: z.number().min(0).optional().describe('Number of artifacts to skip'),
+    },
+    async (args) => {
+      try {
+        const result = await client.getArtifacts(args.entity, args.project, {
+          type: args.type,
+          limit: args.limit,
+          offset: args.offset,
+        });
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'wandb_get_artifact',
+    'Get details of a specific W&B artifact',
+    {
+      entity: z.string().describe('Entity name (username or team)'),
+      project: z.string().describe('Project name'),
+      artifact_name: z.string().describe('Artifact name'),
+      version: z
+        .string()
+        .optional()
+        .describe('Artifact version (defaults to "latest")'),
+    },
+    async (args) => {
+      try {
+        const artifact = await client.getArtifact(
+          args.entity,
+          args.project,
+          args.artifact_name,
+          args.version
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(artifact, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}
