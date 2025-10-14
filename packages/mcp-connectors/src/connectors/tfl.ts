@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { type AnySearchableObject, createIndex, search } from '../utils/lexical-search';
 
@@ -889,418 +889,676 @@ class TFLClient {
   }
 }
 
-export const TFLConnectorConfig = mcpConnectorConfig({
-  name: 'TFL (Transport for London)',
-  key: 'tfl',
-  version: '1.0.0',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/4/41/TfL_Roundel.svg',
-  credentials: z.object({
-    appKey: z
-      .string()
-      .optional()
-      .describe(
-        'TFL API Application Key (optional but recommended) :: your-app-key :: https://api-portal.tfl.gov.uk/'
-      ),
-  }),
-  setup: z.object({}),
-  description:
-    'Transport for London (TfL) provides comprehensive public transport data for London including tube, bus, DLR, overground, and more. This connector allows you to access journey planning, live arrivals, line status, stop information, and service disruptions.',
-  examplePrompt:
-    "Plan a journey from King's Cross to Heathrow Airport, check the current status of the Piccadilly line, find the nearest tube stations to my location, and get live arrival times for bus stops near me.",
-  tools: (tool) => ({
-    GET_LINES: tool({
-      name: 'tfl_get_lines',
-      description: 'Get all lines for tube, bus, DLR, overground, and TfL Rail',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const lines = await client.getLines();
-          const filtered = await filterLineStatus(lines);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get lines: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_LINE_STATUS: tool({
-      name: 'tfl_get_line_status',
-      description: 'Get the current service status for specific transport lines',
-      schema: z.object({
-        lineIds: z
-          .array(z.string())
-          .describe('Array of line IDs (e.g., ["piccadilly", "central", "northern"])'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const status = await client.getLineStatus(args.lineIds);
-          const filtered = await filterLineStatus(status);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get line status: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_STOP_POINTS_BY_MODE: tool({
-      name: 'tfl_get_stop_points_by_mode',
-      description: 'Get all stop points for a specific transport mode',
-      schema: z.object({
-        mode: z
-          .string()
-          .describe(
-            'Transport mode (e.g., "tube", "bus", "dlr", "overground", "tflrail")'
-          ),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const stopPoints = await client.getStopPointsByMode(args.mode);
-          const filtered = await filterStopPoints(stopPoints);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get stop points: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_STOP_POINT: tool({
-      name: 'tfl_get_stop_point',
-      description: 'Get detailed information about a specific stop point',
-      schema: z.object({
-        id: z.string().describe('Stop point ID or NaPTAN ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const stopPoint = await client.getStopPoint(args.id);
-          return JSON.stringify(stopPoint, null, 2);
-        } catch (error) {
-          return `Failed to get stop point: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    SEARCH_STOP_POINTS: tool({
-      name: 'tfl_search_stop_points',
-      description: 'Search for stop points by name or location',
-      schema: z.object({
-        query: z.string().describe('Search query (station/stop name or area)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const results = await client.searchStopPoints(args.query);
-          const filtered = await filterStopPoints(results, args.query);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to search stop points: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    PLAN_JOURNEY: tool({
-      name: 'tfl_plan_journey',
-      description: 'Plan a journey between two locations using TfL transport network',
-      schema: z.object({
-        from: z
-          .string()
-          .describe('Starting location (postcode, station name, or coordinates)'),
-        to: z
-          .string()
-          .describe('Destination location (postcode, station name, or coordinates)'),
-        date: z
-          .string()
-          .optional()
-          .describe('Journey date in YYYYMMDD format (defaults to today)'),
-        time: z
-          .string()
-          .optional()
-          .describe('Journey time in HHMM format (defaults to now)'),
-        timeIs: z
-          .enum(['Departing', 'Arriving'])
-          .optional()
-          .describe('Whether time is departure or arrival time'),
-        journeyPreference: z
-          .enum(['LeastInterchange', 'LeastTime', 'LeastWalking'])
-          .optional()
-          .describe('Journey optimization preference'),
-        mode: z
-          .array(z.string())
-          .optional()
-          .describe('Transport modes to include (e.g., ["tube", "bus", "walking"])'),
-        accessibilityPreference: z
-          .array(z.string())
-          .optional()
-          .describe('Accessibility requirements'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const { from, to, ...options } = args;
-          const journey = await client.planJourney(from, to, options);
-          const filtered = await filterJourneyPlan(journey);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to plan journey: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_MODES: tool({
-      name: 'tfl_get_modes',
-      description: 'Get all available transport modes',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const modes = await client.getModes();
-          return JSON.stringify(modes, null, 2);
-        } catch (error) {
-          return `Failed to get modes: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_ARRIVALS: tool({
-      name: 'tfl_get_arrivals',
-      description: 'Get live arrival predictions for a specific stop point',
-      schema: z.object({
-        stopPointId: z.string().describe('Stop point ID to get arrivals for'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const arrivals = await client.getArrivals(args.stopPointId);
-          const filtered = await filterArrivals(arrivals);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get arrivals: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_LINE_ARRIVALS: tool({
-      name: 'tfl_get_line_arrivals',
-      description: 'Get live arrival predictions for a specific line at a stop point',
-      schema: z.object({
-        lineId: z.string().describe('Line ID (e.g., "piccadilly", "central")'),
-        stopPointId: z.string().describe('Stop point ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const arrivals = await client.getLineArrivals(args.lineId, args.stopPointId);
-          const filtered = await filterArrivals(arrivals);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get line arrivals: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_AIR_QUALITY: tool({
-      name: 'tfl_get_air_quality',
-      description: 'Get current air quality forecast and information for London',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const airQuality = await client.getAirQuality();
-          return JSON.stringify(airQuality, null, 2);
-        } catch (error) {
-          return `Failed to get air quality: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_ACCIDENT_STATS: tool({
-      name: 'tfl_get_accident_stats',
-      description: 'Get accident statistics for a specific year in London',
-      schema: z.object({
-        year: z.number().describe('Year to get accident statistics for (e.g., 2023)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const accidents = await client.getAccidentStats(args.year);
-          const filtered = await filterAccidentStats(accidents);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get accident stats: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_BIKE_POINTS: tool({
-      name: 'tfl_get_bike_points',
-      description: 'Get all bike point locations (cycle hire stations) in London',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const bikePoints = await client.getBikePoints();
-          const filtered = await filterBikePoints(bikePoints);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get bike points: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_BIKE_POINT: tool({
-      name: 'tfl_get_bike_point',
-      description:
-        'Get detailed information about a specific bike point (cycle hire station)',
-      schema: z.object({
-        id: z.string().describe('Bike point ID (e.g., "BikePoints_1")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const bikePoint = await client.getBikePoint(args.id);
-          return JSON.stringify(bikePoint, null, 2);
-        } catch (error) {
-          return `Failed to get bike point: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    SEARCH_BIKE_POINTS: tool({
-      name: 'tfl_search_bike_points',
-      description: 'Search for bike points (cycle hire stations) by name or location',
-      schema: z.object({
-        query: z
-          .string()
-          .describe('Search query (station name or area, e.g., "Hyde Park")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const results = await client.searchBikePoints(args.query);
-          const filtered = await filterBikePoints(results, args.query);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to search bike points: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PLACE_CATEGORIES: tool({
-      name: 'tfl_get_place_categories',
-      description: 'Get all available place property categories and keys',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const categories = await client.getPlaceCategories();
-          return JSON.stringify(categories, null, 2);
-        } catch (error) {
-          return `Failed to get place categories: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PLACE_TYPES: tool({
-      name: 'tfl_get_place_types',
-      description: 'Get all available place types',
-      schema: z.object({}),
-      handler: async (_, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const types = await client.getPlaceTypes();
-          return JSON.stringify(types, null, 2);
-        } catch (error) {
-          return `Failed to get place types: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PLACE: tool({
-      name: 'tfl_get_place',
-      description: 'Get detailed information about a specific place',
-      schema: z.object({
-        id: z.string().describe('Place ID'),
-        includeChildren: z
-          .boolean()
-          .optional()
-          .describe('Include child places in response'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const place = await client.getPlace(args.id, args.includeChildren);
-          return JSON.stringify(place, null, 2);
-        } catch (error) {
-          return `Failed to get place: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    SEARCH_PLACES: tool({
-      name: 'tfl_search_places',
-      description: 'Search for places by name, optionally filtered by place types',
-      schema: z.object({
-        name: z.string().describe('Place name to search for'),
-        types: z
-          .array(z.string())
-          .optional()
-          .describe('Place types to filter by (e.g., ["StopPoint", "BikePoint"])'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const results = await client.searchPlaces(args.name, args.types);
-          const filtered = await filterPlaces(results, args.name);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to search places: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PLACES_BY_TYPE: tool({
-      name: 'tfl_get_places_by_type',
-      description: 'Get places of specific type(s)',
-      schema: z.object({
-        types: z
-          .array(z.string())
-          .describe('Place types to retrieve (e.g., ["StopPoint", "BikePoint"])'),
-        activeOnly: z.boolean().optional().describe('Only return active places'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const places = await client.getPlacesByType(args.types, args.activeOnly);
-          const filtered = await filterPlaces(places);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get places by type: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_PLACES_AT_LOCATION: tool({
-      name: 'tfl_get_places_at_location',
-      description: 'Find places of a specific type at geographic coordinates',
-      schema: z.object({
-        type: z.string().describe('Place type to search for'),
-        lat: z.number().describe('Latitude coordinate'),
-        lon: z.number().describe('Longitude coordinate'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { appKey } = await context.getCredentials();
-          const client = new TFLClient(appKey);
-          const places = await client.getPlacesAt(args.type, args.lat, args.lon);
-          const filtered = await filterPlaces(places);
-          return JSON.stringify(filtered, null, 2);
-        } catch (error) {
-          return `Failed to get places at location: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+export interface TFLCredentials {
+  appKey?: string;
+}
+
+export function createTFLServer(credentials: TFLCredentials): McpServer {
+  const server = new McpServer({
+    name: 'TFL (Transport for London)',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'tfl_get_lines',
+    'Get all lines for tube, bus, DLR, overground, and TfL Rail',
+    {},
+    async () => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const lines = await client.getLines();
+        const filtered = await filterLineStatus(lines);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get lines: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_line_status',
+    'Get the current service status for specific transport lines',
+    {
+      lineIds: z
+        .array(z.string())
+        .describe('Array of line IDs (e.g., ["piccadilly", "central", "northern"])'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const status = await client.getLineStatus(args.lineIds);
+        const filtered = await filterLineStatus(status);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get line status: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_stop_points_by_mode',
+    'Get all stop points for a specific transport mode',
+    {
+      mode: z
+        .string()
+        .describe('Transport mode (e.g., "tube", "bus", "dlr", "overground", "tflrail")'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const stopPoints = await client.getStopPointsByMode(args.mode);
+        const filtered = await filterStopPoints(stopPoints);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get stop points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_stop_point',
+    'Get detailed information about a specific stop point',
+    {
+      id: z.string().describe('Stop point ID or NaPTAN ID'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const stopPoint = await client.getStopPoint(args.id);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(stopPoint, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get stop point: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_search_stop_points',
+    'Search for stop points by name or location',
+    {
+      query: z.string().describe('Search query (station/stop name or area)'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const results = await client.searchStopPoints(args.query);
+        const filtered = await filterStopPoints(results, args.query);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search stop points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_plan_journey',
+    'Plan a journey between two locations using TfL transport network',
+    {
+      from: z
+        .string()
+        .describe('Starting location (postcode, station name, or coordinates)'),
+      to: z
+        .string()
+        .describe('Destination location (postcode, station name, or coordinates)'),
+      date: z
+        .string()
+        .optional()
+        .describe('Journey date in YYYYMMDD format (defaults to today)'),
+      time: z
+        .string()
+        .optional()
+        .describe('Journey time in HHMM format (defaults to now)'),
+      timeIs: z
+        .enum(['Departing', 'Arriving'])
+        .optional()
+        .describe('Whether time is departure or arrival time'),
+      journeyPreference: z
+        .enum(['LeastInterchange', 'LeastTime', 'LeastWalking'])
+        .optional()
+        .describe('Journey optimization preference'),
+      mode: z
+        .array(z.string())
+        .optional()
+        .describe('Transport modes to include (e.g., ["tube", "bus", "walking"])'),
+      accessibilityPreference: z
+        .array(z.string())
+        .optional()
+        .describe('Accessibility requirements'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const { from, to, ...options } = args;
+        const journey = await client.planJourney(from, to, options);
+        const filtered = await filterJourneyPlan(journey);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to plan journey: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool('tfl_get_modes', 'Get all available transport modes', {}, async () => {
+    try {
+      const client = new TFLClient(credentials.appKey);
+      const modes = await client.getModes();
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(modes, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to get modes: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+      };
+    }
+  });
+
+  server.tool(
+    'tfl_get_arrivals',
+    'Get live arrival predictions for a specific stop point',
+    {
+      stopPointId: z.string().describe('Stop point ID to get arrivals for'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const arrivals = await client.getArrivals(args.stopPointId);
+        const filtered = await filterArrivals(arrivals);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get arrivals: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_line_arrivals',
+    'Get live arrival predictions for a specific line at a stop point',
+    {
+      lineId: z.string().describe('Line ID (e.g., "piccadilly", "central")'),
+      stopPointId: z.string().describe('Stop point ID'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const arrivals = await client.getLineArrivals(args.lineId, args.stopPointId);
+        const filtered = await filterArrivals(arrivals);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get line arrivals: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_air_quality',
+    'Get current air quality forecast and information for London',
+    {},
+    async () => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const airQuality = await client.getAirQuality();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(airQuality, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get air quality: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_accident_stats',
+    'Get accident statistics for a specific year in London',
+    {
+      year: z.number().describe('Year to get accident statistics for (e.g., 2023)'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const accidents = await client.getAccidentStats(args.year);
+        const filtered = await filterAccidentStats(accidents);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get accident stats: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_bike_points',
+    'Get all bike point locations (cycle hire stations) in London',
+    {},
+    async () => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const bikePoints = await client.getBikePoints();
+        const filtered = await filterBikePoints(bikePoints);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get bike points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_bike_point',
+    'Get detailed information about a specific bike point (cycle hire station)',
+    {
+      id: z.string().describe('Bike point ID (e.g., "BikePoints_1")'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const bikePoint = await client.getBikePoint(args.id);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(bikePoint, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get bike point: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_search_bike_points',
+    'Search for bike points (cycle hire stations) by name or location',
+    {
+      query: z
+        .string()
+        .describe('Search query (station name or area, e.g., "Hyde Park")'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const results = await client.searchBikePoints(args.query);
+        const filtered = await filterBikePoints(results, args.query);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search bike points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_place_categories',
+    'Get all available place property categories and keys',
+    {},
+    async () => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const categories = await client.getPlaceCategories();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(categories, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get place categories: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool('tfl_get_place_types', 'Get all available place types', {}, async () => {
+    try {
+      const client = new TFLClient(credentials.appKey);
+      const types = await client.getPlaceTypes();
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(types, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to get place types: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+      };
+    }
+  });
+
+  server.tool(
+    'tfl_get_place',
+    'Get detailed information about a specific place',
+    {
+      id: z.string().describe('Place ID'),
+      includeChildren: z
+        .boolean()
+        .optional()
+        .describe('Include child places in response'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const place = await client.getPlace(args.id, args.includeChildren);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(place, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get place: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_search_places',
+    'Search for places by name, optionally filtered by place types',
+    {
+      name: z.string().describe('Place name to search for'),
+      types: z
+        .array(z.string())
+        .optional()
+        .describe('Place types to filter by (e.g., ["StopPoint", "BikePoint"])'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const results = await client.searchPlaces(args.name, args.types);
+        const filtered = await filterPlaces(results, args.name);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search places: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_places_by_type',
+    'Get places of specific type(s)',
+    {
+      types: z
+        .array(z.string())
+        .describe('Place types to retrieve (e.g., ["StopPoint", "BikePoint"])'),
+      activeOnly: z.boolean().optional().describe('Only return active places'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const places = await client.getPlacesByType(args.types, args.activeOnly);
+        const filtered = await filterPlaces(places);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get places by type: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'tfl_get_places_at_location',
+    'Find places of a specific type at geographic coordinates',
+    {
+      type: z.string().describe('Place type to search for'),
+      lat: z.number().describe('Latitude coordinate'),
+      lon: z.number().describe('Longitude coordinate'),
+    },
+    async (args) => {
+      try {
+        const client = new TFLClient(credentials.appKey);
+        const places = await client.getPlacesAt(args.type, args.lat, args.lon);
+        const filtered = await filterPlaces(places);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get places at location: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}
