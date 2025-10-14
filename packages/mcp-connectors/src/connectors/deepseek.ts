@@ -61,18 +61,22 @@ export function createDeepseekServer(credentials: DeepseekCredentials): McpServe
         ]);
         console.log('Thinking Tool Response', { text });
         return {
-          content: [{
-            type: 'text',
-            text: text,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: text,
+            },
+          ],
         };
       } catch (error) {
         console.log('Thinking Tool Error', { error });
         return {
-          content: [{
-            type: 'text',
-            text: 'Failed to invoke thinking tool, please try again later.',
-          }],
+          content: [
+            {
+              type: 'text',
+              text: 'Failed to invoke thinking tool, please try again later.',
+            },
+          ],
         };
       }
     }

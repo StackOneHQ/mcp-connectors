@@ -98,7 +98,7 @@ const scoreChunk = (chunk: string, searchTerms: string[]): number => {
   return score;
 };
 
-export interface StackOneCredentials {}
+export type StackOneCredentials = Record<string, never>;
 
 export function createStackOneServer(_credentials: StackOneCredentials): McpServer {
   const server = new McpServer({
@@ -118,19 +118,23 @@ export function createStackOneServer(_credentials: StackOneCredentials): McpServ
       try {
         const result = await searchDocumentation(args.keywords);
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error searching StackOne documentation: ${
-              error instanceof Error ? error.message : 'Unknown error'
-            }`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error searching StackOne documentation: ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`,
+            },
+          ],
         };
       }
     }

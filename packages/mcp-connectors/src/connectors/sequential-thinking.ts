@@ -125,10 +125,10 @@ const processThought = (input: Record<string, unknown>): string => {
   }
 };
 
-export interface SequentialThinkingCredentials {}
+export type SequentialThinkingCredentials = Record<string, never>;
 
 export function createSequentialThinkingServer(
-  credentials: SequentialThinkingCredentials
+  _credentials: SequentialThinkingCredentials
 ): McpServer {
   const server = new McpServer({
     name: 'Sequential Thinking',
@@ -182,11 +182,7 @@ Parameters explained:
       thought: z.string().describe('Your current thinking step'),
       nextThoughtNeeded: z.boolean().describe('Whether another thought step is needed'),
       thoughtNumber: z.number().int().min(1).describe('Current thought number'),
-      totalThoughts: z
-        .number()
-        .int()
-        .min(1)
-        .describe('Estimated total thoughts needed'),
+      totalThoughts: z.number().int().min(1).describe('Estimated total thoughts needed'),
       isRevision: z
         .boolean()
         .optional()
@@ -209,10 +205,12 @@ Parameters explained:
     async (args) => {
       const result = processThought(args as Record<string, unknown>);
       return {
-        content: [{
-          type: 'text',
-          text: result,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: result,
+          },
+        ],
       };
     }
   );

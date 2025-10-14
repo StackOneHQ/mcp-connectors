@@ -12,20 +12,17 @@ export function createTestServer(credentials: TestCredentials): McpServer {
     version: '1.0.0',
   });
 
-  server.tool(
-    'test-tool',
-    'Test tool',
-    {},
-    async (_args) => {
-      console.log('CREDENTIALS', credentials);
-      return {
-        content: [{
+  server.tool('test-tool', 'Test tool', {}, async (_args) => {
+    console.log('CREDENTIALS', credentials);
+    return {
+      content: [
+        {
           type: 'text',
           text: 'this is a test',
-        }],
-      };
-    }
-  );
+        },
+      ],
+    };
+  });
 
   server.tool(
     'test-tool-with-args',
@@ -36,10 +33,12 @@ export function createTestServer(credentials: TestCredentials): McpServer {
     async (args) => {
       console.log('ARGS', args);
       return {
-        content: [{
-          type: 'text',
-          text: `this is a test with args: ${JSON.stringify(args)}`,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: `this is a test with args: ${JSON.stringify(args)}`,
+          },
+        ],
       };
     }
   );

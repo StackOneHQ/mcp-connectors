@@ -124,15 +124,14 @@ export function createParallelServer(credentials: ParallelCredentials): McpServe
       try {
         const client = new ParallelClient(credentials.apiKey);
 
-        if (
-          !args.objective &&
-          (!args.searchQueries || args.searchQueries.length === 0)
-        ) {
+        if (!args.objective && (!args.searchQueries || args.searchQueries.length === 0)) {
           return {
-            content: [{
-              type: 'text',
-              text: 'Error: Either objective or searchQueries must be provided.',
-            }],
+            content: [
+              {
+                type: 'text',
+                text: 'Error: Either objective or searchQueries must be provided.',
+              },
+            ],
           };
         }
 
@@ -143,17 +142,21 @@ export function createParallelServer(credentials: ParallelCredentials): McpServe
           args.maxResults
         );
         return {
-          content: [{
-            type: 'text',
-            text: formatSearchResults(result),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: formatSearchResults(result),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
