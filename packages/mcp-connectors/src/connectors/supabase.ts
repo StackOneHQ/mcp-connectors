@@ -390,17 +390,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const projects = await client.getProjects();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(projects, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(projects, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -416,17 +420,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const project = await client.getProject(args.projectRef);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -455,17 +463,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
           db_pass: args.dbPass,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -486,17 +498,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
           db_pass: args.dbPass,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -512,17 +528,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const result = await client.deleteProject(args.projectRef);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -536,17 +556,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const organizations = await client.getOrganizations();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(organizations, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(organizations, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list organizations: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list organizations: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -562,17 +586,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const functions = await client.getFunctions(args.projectRef);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(functions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(functions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list functions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list functions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -589,17 +617,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const func = await client.getFunction(args.projectRef, args.functionSlug);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(func, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(func, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get function: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get function: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -624,17 +656,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
           args: args.args,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(func, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(func, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create function: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create function: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -647,10 +683,7 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       projectRef: z.string().describe('Project reference ID'),
       functionSlug: z.string().describe('Function slug'),
       name: z.string().optional().describe('Function name'),
-      body: z
-        .string()
-        .optional()
-        .describe('Function body (TypeScript/JavaScript code)'),
+      body: z.string().optional().describe('Function body (TypeScript/JavaScript code)'),
       args: z.array(z.string()).optional().describe('Function arguments'),
     },
     async (args) => {
@@ -661,17 +694,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
           args: args.args,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(func, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(func, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update function: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update function: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -688,17 +725,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const result = await client.deleteFunction(args.projectRef, args.functionSlug);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete function: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete function: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -714,17 +755,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const secrets = await client.getSecrets(args.projectRef);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(secrets, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(secrets, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list secrets: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list secrets: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -745,17 +790,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
           value: args.value,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(secret, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(secret, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create secret: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create secret: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -772,17 +821,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
       try {
         const result = await client.deleteSecret(args.projectRef, args.secretName);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete secret: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete secret: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -798,23 +851,23 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
     },
     async (args) => {
       try {
-        const result = await client.executeSQL(
-          args.projectRef,
-          args.query,
-          args.apiKey
-        );
+        const result = await client.executeSQL(args.projectRef, args.query, args.apiKey);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to execute SQL: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to execute SQL: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -847,17 +900,21 @@ export function createSupabaseServer(credentials: SupabaseCredentials): McpServe
           args.body
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to make PostgREST request: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to make PostgREST request: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

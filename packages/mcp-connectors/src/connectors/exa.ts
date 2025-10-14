@@ -273,18 +273,22 @@ export function createExaServer(credentials: ExaCredentials): McpServer {
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: formatSearchResultsForLLM(response.results, args.includeText),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: formatSearchResultsForLLM(response.results, args.includeText),
+            },
+          ],
         };
       } catch (error) {
         console.error('Error during Exa search:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -315,18 +319,22 @@ export function createExaServer(credentials: ExaCredentials): McpServer {
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: formatSearchResultsForLLM(results, true),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: formatSearchResultsForLLM(results, true),
+            },
+          ],
         };
       } catch (error) {
         console.error('Error getting Exa contents:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `An error occurred while getting contents: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `An error occurred while getting contents: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -382,18 +390,22 @@ export function createExaServer(credentials: ExaCredentials): McpServer {
         });
 
         return {
-          content: [{
-            type: 'text',
-            text: formatSearchResultsForLLM(response.results, args.includeText),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: formatSearchResultsForLLM(response.results, args.includeText),
+            },
+          ],
         };
       } catch (error) {
         console.error('Error during Exa neural search:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `An error occurred while performing neural search: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `An error occurred while performing neural search: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

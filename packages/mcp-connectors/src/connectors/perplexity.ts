@@ -161,17 +161,21 @@ export function createPerplexityServer(credentials: PerplexityCredentials): McpS
         const client = new PerplexityClient(credentials.apiKey);
         const result = await client.search(args.query, args.maxTokens);
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -189,17 +193,21 @@ export function createPerplexityServer(credentials: PerplexityCredentials): McpS
         const client = new PerplexityClient(credentials.apiKey);
         const result = await client.reason(args.query, args.maxTokens);
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to perform reasoning: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to perform reasoning: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -219,17 +227,21 @@ export function createPerplexityServer(credentials: PerplexityCredentials): McpS
         const client = new PerplexityClient(credentials.apiKey);
         const result = await client.deepResearch(args.query, args.maxTokens);
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to perform deep research: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to perform deep research: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -259,17 +271,21 @@ export function createPerplexityServer(credentials: PerplexityCredentials): McpS
           args.maxTokens
         );
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to use custom model: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to use custom model: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

@@ -213,10 +213,12 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
     async (args) => {
       const prompt = PROMPT_TEMPLATE.replace(/\{topic\}/g, args.topic);
       return {
-        content: [{
-          type: 'text',
-          text: prompt.trim(),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: prompt.trim(),
+          },
+        ],
       };
     }
   );
@@ -230,17 +232,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.listDataSources();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error listing data sources: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error listing data sources: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -255,17 +261,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.listPipes();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error listing pipes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error listing pipes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -282,17 +292,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.getDataSource(args.datasource_id);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error getting data source ${args.datasource_id}: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error getting data source ${args.datasource_id}: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -309,17 +323,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.getPipe(args.pipe_id);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error getting pipe ${args.pipe_id}: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error getting pipe ${args.pipe_id}: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -337,17 +355,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.requestPipeData(args.pipe_id, args.params || {});
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error requesting pipe data for ${args.pipe_id}: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error requesting pipe data for ${args.pipe_id}: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -364,17 +386,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.runSelectQuery(args.select_query);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error running select query: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error running select query: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -392,17 +418,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         }
         const text = await response.text();
         return {
-          content: [{
-            type: 'text',
-            text: text,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: text,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error fetching Tinybird docs: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error fetching Tinybird docs: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -424,17 +454,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.saveEvent(args.datasource_name, args.data);
         return {
-          content: [{
-            type: 'text',
-            text: response,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: response,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error saving event: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error saving event: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -451,17 +485,21 @@ export function createTinybirdServer(credentials: TinybirdCredentials): McpServe
         const client = new TinybirdClient(credentials.apiUrl, credentials.adminToken);
         const response = await client.analyzePipe(args.pipe_name);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error analyzing pipe ${args.pipe_name}: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error analyzing pipe ${args.pipe_name}: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

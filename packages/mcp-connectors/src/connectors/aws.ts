@@ -750,17 +750,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
         const client = new AwsClient(credentials);
         const instances = await client.listEC2Instances();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(instances, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(instances, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list EC2 instances: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list EC2 instances: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -777,17 +781,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
         const client = new AwsClient(credentials);
         const instance = await client.getEC2Instance(args.instanceId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(instance, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(instance, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get EC2 instance: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get EC2 instance: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -802,17 +810,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
         const client = new AwsClient(credentials);
         const buckets = await client.listS3Buckets();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(buckets, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(buckets, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list S3 buckets: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list S3 buckets: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -835,17 +847,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
           args.maxKeys
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(objects, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(objects, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list S3 objects: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list S3 objects: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -860,17 +876,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
         const client = new AwsClient(credentials);
         const functions = await client.listLambdaFunctions();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(functions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(functions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list Lambda functions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list Lambda functions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -887,17 +907,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
         const client = new AwsClient(credentials);
         const func = await client.getLambdaFunction(args.functionName);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(func, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(func, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get Lambda function: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get Lambda function: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -916,22 +940,23 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
     async (args) => {
       try {
         const client = new AwsClient(credentials);
-        const result = await client.invokeLambdaFunction(
-          args.functionName,
-          args.payload
-        );
+        const result = await client.invokeLambdaFunction(args.functionName, args.payload);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to invoke Lambda function: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to invoke Lambda function: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -941,9 +966,7 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
     'aws_get_cloudwatch_metrics',
     'Get CloudWatch metrics for monitoring',
     {
-      namespace: z
-        .string()
-        .describe('CloudWatch namespace (e.g., AWS/EC2, AWS/Lambda)'),
+      namespace: z.string().describe('CloudWatch namespace (e.g., AWS/EC2, AWS/Lambda)'),
       metricName: z.string().describe('Name of the metric to retrieve'),
       dimensions: z
         .array(
@@ -968,17 +991,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
           args.endTime
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(metrics, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(metrics, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get CloudWatch metrics: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get CloudWatch metrics: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1004,17 +1031,21 @@ export function createAwsServer(credentials: AwsCredentials): McpServer {
           args.granularity
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(costData, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(costData, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get cost and usage: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get cost and usage: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
