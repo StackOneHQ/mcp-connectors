@@ -33,7 +33,9 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_provider_key.handler({ provider_name: 'anthropic' });
+        const actual = await tools.get_provider_key.handler({
+          provider_name: 'anthropic',
+        });
 
         expect(actual).toContain('anthropic');
       });
@@ -44,7 +46,9 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_provider_key.handler({ provider_name: 'nonexistent' });
+        const actual = await tools.get_provider_key.handler({
+          provider_name: 'nonexistent',
+        });
 
         expect(actual).toContain('No providers found matching "nonexistent"');
       });

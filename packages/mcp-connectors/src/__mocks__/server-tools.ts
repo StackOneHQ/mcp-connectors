@@ -12,7 +12,18 @@ export function extractToolsFromServer(server: McpServer): Record<string, ToolHa
   const tools: Record<string, ToolHandler> = {};
 
   // Access the internal tools from the server
-  const registeredTools = (server as unknown as { _registeredTools?: Record<string, { callback: (args: unknown) => Promise<{ content: Array<{ type: string; text: string }> }> }> })._registeredTools;
+  const registeredTools = (
+    server as unknown as {
+      _registeredTools?: Record<
+        string,
+        {
+          callback: (
+            args: unknown
+          ) => Promise<{ content: Array<{ type: string; text: string }> }>;
+        }
+      >;
+    }
+  )._registeredTools;
 
   if (!registeredTools) {
     throw new Error('Unable to access registered tools from McpServer');
@@ -33,7 +44,11 @@ export function extractToolsFromServer(server: McpServer): Record<string, ToolHa
         // Extract the text content from the result
         if (result && typeof result === 'object' && 'content' in result) {
           const content = result.content;
-          if (Array.isArray(content) && content.length > 0 && content[0].type === 'text') {
+          if (
+            Array.isArray(content) &&
+            content.length > 0 &&
+            content[0].type === 'text'
+          ) {
             return content[0].text;
           }
         }

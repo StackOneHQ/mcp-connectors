@@ -311,7 +311,10 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_me', () => {
     describe('when credentials are valid', () => {
       it('returns user information', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
         const result = await tools.wandb_get_me.handler({});
 
@@ -329,7 +332,10 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const mcpServer = createWandbServer({ api_key: 'invalid-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'invalid-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
         const result = await tools.wandb_get_me.handler({});
 
@@ -342,7 +348,10 @@ describe('#WandbConnector', () => {
   describe('.wandb_list_projects', () => {
     describe('when projects exist', () => {
       it('returns list of projects', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
         const result = await tools.wandb_list_projects.handler({});
 
@@ -360,7 +369,10 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
         const result = await tools.wandb_list_projects.handler({});
 
@@ -372,9 +384,15 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_project', () => {
     describe('when project exists', () => {
       it('returns project details', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_project.handler({ entity: 'testuser', project: 'test-project' });
+        const result = await tools.wandb_get_project.handler({
+          entity: 'testuser',
+          project: 'test-project',
+        });
 
         expect(result).toContain('test-project');
         expect(result).toContain('proj_123');
@@ -390,9 +408,15 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_project.handler({ entity: 'testuser', project: 'nonexistent' });
+        const result = await tools.wandb_get_project.handler({
+          entity: 'testuser',
+          project: 'nonexistent',
+        });
 
         expect(result).toContain('Error:');
         expect(result).toContain('404');
@@ -403,16 +427,17 @@ describe('#WandbConnector', () => {
   describe('.wandb_create_project', () => {
     describe('when creating a new project', () => {
       it('creates project successfully', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_create_project.handler(
-          {
-            entity: 'testuser',
-            name: 'new-project',
-            description: 'A new project',
-            visibility: 'private',
-          }
-        );
+        const result = await tools.wandb_create_project.handler({
+          entity: 'testuser',
+          name: 'new-project',
+          description: 'A new project',
+          visibility: 'private',
+        });
 
         expect(result).toContain('new-project');
         expect(result).toContain('A new project');
@@ -428,14 +453,15 @@ describe('#WandbConnector', () => {
           })
         );
 
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_create_project.handler(
-          {
-            entity: 'testuser',
-            name: 'existing-project',
-          }
-        );
+        const result = await tools.wandb_create_project.handler({
+          entity: 'testuser',
+          name: 'existing-project',
+        });
 
         expect(result).toContain('Error:');
         expect(result).toContain('409');
@@ -446,9 +472,15 @@ describe('#WandbConnector', () => {
   describe('.wandb_list_runs', () => {
     describe('when runs exist', () => {
       it('returns list of runs', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_runs.handler({ entity: 'testuser', project: 'test-project' });
+        const result = await tools.wandb_list_runs.handler({
+          entity: 'testuser',
+          project: 'test-project',
+        });
 
         expect(result).toContain('test-run-1');
         expect(result).toContain('finished');
@@ -458,11 +490,16 @@ describe('#WandbConnector', () => {
 
     describe('when filtering by state', () => {
       it('returns only runs with specified state', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_runs.handler(
-          { entity: 'testuser', project: 'test-project', state: 'finished' }
-        );
+        const result = await tools.wandb_list_runs.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          state: 'finished',
+        });
 
         expect(result).toContain('test-run-1');
         expect(result).toContain('finished');
@@ -472,9 +509,16 @@ describe('#WandbConnector', () => {
 
     describe('when limiting results', () => {
       it('respects limit parameter', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_runs.handler({ entity: 'testuser', project: 'test-project', limit: 1 });
+        const result = await tools.wandb_list_runs.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          limit: 1,
+        });
 
         const parsed = JSON.parse(result);
         expect(parsed.runs).toHaveLength(1);
@@ -485,19 +529,20 @@ describe('#WandbConnector', () => {
   describe('.wandb_create_run', () => {
     describe('when creating a new run', () => {
       it('creates run successfully', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_create_run.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            display_name: 'New Test Run',
-            notes: 'This is a test run',
-            tags: ['test'],
-            config: { batch_size: 32 },
-            job_type: 'train',
-          }
-        );
+        const result = await tools.wandb_create_run.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          display_name: 'New Test Run',
+          notes: 'This is a test run',
+          tags: ['test'],
+          config: { batch_size: 32 },
+          job_type: 'train',
+        });
 
         expect(result).toContain('New Test Run');
         expect(result).toContain('This is a test run');
@@ -510,17 +555,18 @@ describe('#WandbConnector', () => {
   describe('.wandb_log_metrics', () => {
     describe('when logging metrics', () => {
       it('logs metrics successfully', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_log_metrics.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            run_id: 'run_123',
-            metrics: { loss: 0.1, accuracy: 0.99 },
-            step: 5,
-          }
-        );
+        const result = await tools.wandb_log_metrics.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          run_id: 'run_123',
+          metrics: { loss: 0.1, accuracy: 0.99 },
+          step: 5,
+        });
 
         expect(result).toBe('Metrics logged successfully');
       });
@@ -537,16 +583,17 @@ describe('#WandbConnector', () => {
           )
         );
 
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_log_metrics.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            run_id: 'nonexistent',
-            metrics: { loss: 0.1 },
-          }
-        );
+        const result = await tools.wandb_log_metrics.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          run_id: 'nonexistent',
+          metrics: { loss: 0.1 },
+        });
 
         expect(result).toContain('Error:');
         expect(result).toContain('404');
@@ -557,15 +604,16 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_run_history', () => {
     describe('when run has history', () => {
       it('returns metrics history', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_run_history.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            run_id: 'run_123',
-          }
-        );
+        const result = await tools.wandb_get_run_history.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          run_id: 'run_123',
+        });
 
         expect(result).toContain('loss');
         expect(result).toContain('accuracy');
@@ -576,16 +624,17 @@ describe('#WandbConnector', () => {
 
     describe('when filtering by keys', () => {
       it('respects keys parameter', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_run_history.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            run_id: 'run_123',
-            keys: ['loss'],
-          }
-        );
+        const result = await tools.wandb_get_run_history.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          run_id: 'run_123',
+          keys: ['loss'],
+        });
 
         expect(result).toContain('loss');
       });
@@ -595,9 +644,15 @@ describe('#WandbConnector', () => {
   describe('.wandb_list_artifacts', () => {
     describe('when artifacts exist', () => {
       it('returns list of artifacts', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_artifacts.handler({ entity: 'testuser', project: 'test-project' });
+        const result = await tools.wandb_list_artifacts.handler({
+          entity: 'testuser',
+          project: 'test-project',
+        });
 
         expect(result).toContain('model');
         expect(result).toContain('dataset');
@@ -607,11 +662,16 @@ describe('#WandbConnector', () => {
 
     describe('when filtering by type', () => {
       it('returns only artifacts of specified type', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_artifacts.handler(
-          { entity: 'testuser', project: 'test-project', type: 'model' }
-        );
+        const result = await tools.wandb_list_artifacts.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          type: 'model',
+        });
 
         expect(result).toContain('model');
         expect(result).not.toContain('dataset');
@@ -622,16 +682,17 @@ describe('#WandbConnector', () => {
   describe('.wandb_get_artifact', () => {
     describe('when artifact exists', () => {
       it('returns artifact details', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_artifact.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            artifact_name: 'model',
-            version: 'latest',
-          }
-        );
+        const result = await tools.wandb_get_artifact.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          artifact_name: 'model',
+          version: 'latest',
+        });
 
         expect(result).toContain('model');
         expect(result).toContain('artifact_123');
@@ -650,15 +711,16 @@ describe('#WandbConnector', () => {
           )
         );
 
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_artifact.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            artifact_name: 'nonexistent',
-          }
-        );
+        const result = await tools.wandb_get_artifact.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          artifact_name: 'nonexistent',
+        });
 
         expect(result).toContain('Error:');
         expect(result).toContain('404');
@@ -669,15 +731,16 @@ describe('#WandbConnector', () => {
   describe('.wandb_delete_run', () => {
     describe('when run exists', () => {
       it('deletes run successfully', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_delete_run.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            run_id: 'run_123',
-          }
-        );
+        const result = await tools.wandb_delete_run.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          run_id: 'run_123',
+        });
 
         expect(result).toBe('Run deleted successfully');
       });
@@ -685,15 +748,16 @@ describe('#WandbConnector', () => {
 
     describe('when run does not exist', () => {
       it('handles not found error', async () => {
-        const mcpServer = createWandbServer({ api_key: 'test-api-key', base_url: mockApiUrl });
+        const mcpServer = createWandbServer({
+          api_key: 'test-api-key',
+          base_url: mockApiUrl,
+        });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_delete_run.handler(
-          {
-            entity: 'testuser',
-            project: 'test-project',
-            run_id: 'nonexistent',
-          }
-        );
+        const result = await tools.wandb_delete_run.handler({
+          entity: 'testuser',
+          project: 'test-project',
+          run_id: 'nonexistent',
+        });
 
         expect(result).toContain('Error:');
         expect(result).toContain('404');

@@ -164,7 +164,9 @@ describe('#StravaConnector', () => {
         const mcpServer = createStravaServer(mockOAuth2Credentials);
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.strava_get_athlete_stats.handler({ athleteId: 123456 });
+        const actual = await tools.strava_get_athlete_stats.handler({
+          athleteId: 123456,
+        });
 
         expect(actual).toBe(JSON.stringify(mockStats, null, 2));
       });

@@ -220,7 +220,10 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_create_board.handler({ title: '', type: 'line' });
+        const actual = await tools.graphy_create_board.handler({
+          title: '',
+          type: 'line',
+        });
 
         server.close();
         expect(actual).toBe('Title is required');

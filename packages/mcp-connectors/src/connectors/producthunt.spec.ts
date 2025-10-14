@@ -53,7 +53,9 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_product.handler({ slug: 'test-product' });
+          const actual = await tools.producthunt_get_product.handler({
+            slug: 'test-product',
+          });
 
           const productData = JSON.parse(actual as string);
           expect(productData.name).toBe('Test Product');
@@ -75,7 +77,9 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'invalid-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_product.handler({ slug: 'test-product' });
+          const actual = await tools.producthunt_get_product.handler({
+            slug: 'test-product',
+          });
 
           expect(actual).toContain('Failed to get product:');
           expect(actual).toContain('Product Hunt API error: 401 Unauthorized');
@@ -95,7 +99,9 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_product.handler({ slug: 'nonexistent' });
+          const actual = await tools.producthunt_get_product.handler({
+            slug: 'nonexistent',
+          });
 
           expect(actual).toContain('Failed to get product:');
           expect(actual).toContain('GraphQL error: Post not found');
@@ -142,7 +148,10 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_search_products.handler({ query: 'AI', limit: 10 });
+          const actual = await tools.producthunt_search_products.handler({
+            query: 'AI',
+            limit: 10,
+          });
 
           const products = JSON.parse(actual as string);
           expect(products).toHaveLength(1);
@@ -279,7 +288,9 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_user.handler({ username: 'johndoe' });
+          const actual = await tools.producthunt_get_user.handler({
+            username: 'johndoe',
+          });
 
           const userData = JSON.parse(actual as string);
           expect(userData.username).toBe('johndoe');
@@ -381,5 +392,4 @@ describe('#ProductHuntConnector', () => {
       });
     });
   });
-
 });

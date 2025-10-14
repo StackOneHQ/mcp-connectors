@@ -19,7 +19,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.list_todos.handler({});
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -52,7 +54,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.list_todos.handler({});
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -64,7 +68,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.list_todos.handler({});
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });
@@ -88,16 +94,16 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.create_todo.handler(
-          {
-            title: 'New Todo',
-            description: 'New Description',
-            dueDate: '2025-01-01',
-            priority: 5,
-          }
-        );
+        const actual = await tools.create_todo.handler({
+          title: 'New Todo',
+          description: 'New Description',
+          dueDate: '2025-01-01',
+          priority: 5,
+        });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -108,13 +114,13 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.create_todo.handler(
-          {
-            title: 'Simple Todo',
-          }
-        );
+        const actual = await tools.create_todo.handler({
+          title: 'Simple Todo',
+        });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -127,7 +133,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.create_todo.handler({ title: 'Test' });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });
@@ -151,15 +159,15 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.update_todo.handler(
-          {
-            id: 1,
-            title: 'Updated Title',
-            priority: 5,
-          }
-        );
+        const actual = await tools.update_todo.handler({
+          id: 1,
+          title: 'Updated Title',
+          priority: 5,
+        });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -171,7 +179,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.update_todo.handler({ id: 999 });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -195,7 +205,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.update_todo.handler({ id: 1, title: 'Updated' });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });
@@ -230,7 +242,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.delete_todo.handler({ id: 1 });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -242,7 +256,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.delete_todo.handler({ id: 999 });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -266,7 +282,9 @@ describe('#TodoListConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
         const actual = await tools.delete_todo.handler({ id: 1 });
 
-        expect(actual).toContain('Error: This connector requires external storage implementation');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });

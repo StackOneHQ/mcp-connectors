@@ -583,5 +583,4 @@ describe('#NotionConnector', () => {
       });
     });
   });
-
 });

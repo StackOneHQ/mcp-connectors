@@ -84,9 +84,9 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_get_contacts.handler(
-            { properties: ['email', 'firstname', 'company'] }
-          );
+          await tools.hubspot_get_contacts.handler({
+            properties: ['email', 'firstname', 'company'],
+          });
 
           const properties = capturedUrl?.searchParams.getAll('properties');
           expect(properties).toEqual(['email', 'firstname', 'company']);
@@ -204,13 +204,11 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.hubspot_create_contact.handler(
-          {
-            email: 'new@example.com',
-            firstname: 'Jane',
-            lastname: 'Smith',
-          }
-        );
+        const actual = await tools.hubspot_create_contact.handler({
+          email: 'new@example.com',
+          firstname: 'Jane',
+          lastname: 'Smith',
+        });
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('123');
@@ -232,17 +230,15 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_create_contact.handler(
-            {
-              email: 'test@example.com',
-              company: 'Test Corp',
-              phone: '555-1234',
-              website: 'https://example.com',
-              additionalProperties: {
-                custom_field: 'value',
-              },
-            }
-          );
+          await tools.hubspot_create_contact.handler({
+            email: 'test@example.com',
+            company: 'Test Corp',
+            phone: '555-1234',
+            website: 'https://example.com',
+            additionalProperties: {
+              custom_field: 'value',
+            },
+          });
 
           const properties = capturedBody.properties as Record<string, unknown>;
           expect(properties.email).toBe('test@example.com');
@@ -264,9 +260,9 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.hubspot_create_contact.handler(
-          { email: 'duplicate@example.com' }
-        );
+        const result = await tools.hubspot_create_contact.handler({
+          email: 'duplicate@example.com',
+        });
 
         expect(result).toContain('Failed to create contact');
         expect(result).toContain('409');
@@ -294,13 +290,11 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.hubspot_create_deal.handler(
-          {
-            dealname: 'New Deal',
-            amount: '50000',
-            dealstage: 'presentationscheduled',
-          }
-        );
+        const actual = await tools.hubspot_create_deal.handler({
+          dealname: 'New Deal',
+          amount: '50000',
+          dealstage: 'presentationscheduled',
+        });
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('456');
@@ -319,19 +313,17 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_create_deal.handler(
-            {
-              dealname: 'Big Deal',
-              amount: '100000',
-              dealstage: 'qualifiedtobuy',
-              pipeline: 'default',
-              closedate: '2024-12-31',
-              hubspot_owner_id: 'owner123',
-              additionalProperties: {
-                custom_property: 'custom_value',
-              },
-            }
-          );
+          await tools.hubspot_create_deal.handler({
+            dealname: 'Big Deal',
+            amount: '100000',
+            dealstage: 'qualifiedtobuy',
+            pipeline: 'default',
+            closedate: '2024-12-31',
+            hubspot_owner_id: 'owner123',
+            additionalProperties: {
+              custom_property: 'custom_value',
+            },
+          });
 
           const properties = capturedBody.properties as Record<string, unknown>;
           expect(properties.dealname).toBe('Big Deal');

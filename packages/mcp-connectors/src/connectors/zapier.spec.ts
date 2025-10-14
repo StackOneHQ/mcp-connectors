@@ -118,7 +118,9 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.zapier_search_actions.handler({ query: 'nonexistent' });
+        const actual = await tools.zapier_search_actions.handler({
+          query: 'nonexistent',
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(0);
@@ -149,16 +151,14 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.zapier_execute_action.handler(
-          {
-            action_id: 'gmail-send',
-            parameters: {
-              to: 'test@example.com',
-              subject: 'Test Email',
-              body: 'This is a test email',
-            },
-          }
-        );
+        const actual = await tools.zapier_execute_action.handler({
+          action_id: 'gmail-send',
+          parameters: {
+            to: 'test@example.com',
+            subject: 'Test Email',
+            body: 'This is a test email',
+          },
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.status).toBe('success');
@@ -180,12 +180,10 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.zapier_execute_action.handler(
-          {
-            action_id: 'invalid-action',
-            parameters: {},
-          }
-        );
+        const actual = await tools.zapier_execute_action.handler({
+          action_id: 'invalid-action',
+          parameters: {},
+        });
 
         expect(actual).toContain('Failed to execute action');
         expect(actual).toContain('Not Found');
@@ -208,12 +206,10 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.zapier_execute_action.handler(
-          {
-            action_id: 'gmail-send',
-            parameters: { subject: 'Test' },
-          }
-        );
+        const actual = await tools.zapier_execute_action.handler({
+          action_id: 'gmail-send',
+          parameters: { subject: 'Test' },
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.status).toBe('error');
@@ -264,7 +260,9 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.zapier_get_action_details.handler({ action_id: 'gmail-send' });
+        const actual = await tools.zapier_get_action_details.handler({
+          action_id: 'gmail-send',
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('gmail-send');
@@ -285,7 +283,9 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.zapier_get_action_details.handler({ action_id: 'nonexistent' });
+        const actual = await tools.zapier_get_action_details.handler({
+          action_id: 'nonexistent',
+        });
 
         expect(actual).toContain('Failed to get action details');
         expect(actual).toContain('Not Found');
