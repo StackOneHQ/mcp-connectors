@@ -163,9 +163,7 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
       filters: z
         .array(
           z.object({
-            fieldPath: z
-              .string()
-              .describe('Field path (e.g., "root.id", "root.email")'),
+            fieldPath: z.string().describe('Field path (e.g., "root.id", "root.email")'),
             operator: z.string().describe('Operator (e.g., "equals")'),
             values: z.array(z.string()).describe('Values to filter by'),
           })
@@ -175,20 +173,27 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.searchPeople(args.fields, args.filters);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search people: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search people: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -200,20 +205,27 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
     {},
     async (_args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.getEmployeeFields();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee fields: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee fields: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -232,20 +244,27 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.updateEmployee(args.employeeId, args.fields);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update employee: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update employee: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -257,20 +276,27 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
     {},
     async (_args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.getTimeoffPolicyTypes();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get timeoff policy types: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get timeoff policy types: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -294,32 +320,36 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
           comment: z.string().optional().describe('Additional comments'),
           halfDay: z.boolean().optional().describe('If the request is for a half day'),
           policyType: z.string().optional().describe('Policy type name'),
-          reasonCode: z
-            .string()
-            .optional()
-            .describe('Reason code if required by policy'),
+          reasonCode: z.string().optional().describe('Reason code if required by policy'),
         })
         .describe('The request details'),
     },
     async (args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.submitTimeoffRequest(
           args.employeeId,
           args.requestDetails
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to submit timeoff request: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to submit timeoff request: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -337,20 +367,27 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.createEmployee(args.fields);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create employee: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create employee: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -364,20 +401,27 @@ export function createHiBobServer(credentials: HiBobCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new HiBobClient(credentials.serviceUserId, credentials.serviceUserToken);
+        const client = new HiBobClient(
+          credentials.serviceUserId,
+          credentials.serviceUserToken
+        );
         const result = await client.getEmployeeTasks(args.employeeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee tasks: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee tasks: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

@@ -353,17 +353,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
           args.offset
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search employees: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search employees: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -380,17 +384,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.getEmployee(args.employeeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -417,31 +425,37 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
     async (args) => {
       try {
         const client = new DeelClient(credentials.apiKey);
-        const result = await client.createEmployee(args as {
-          first_name: string;
-          last_name: string;
-          email: string;
-          job_title: string;
-          employment_type: string;
-          country: string;
-          currency: string;
-          start_date: string;
-          department?: string;
-          phone?: string;
-          timezone?: string;
-        });
+        const result = await client.createEmployee(
+          args as {
+            first_name: string;
+            last_name: string;
+            email: string;
+            job_title: string;
+            employment_type: string;
+            country: string;
+            currency: string;
+            start_date: string;
+            department?: string;
+            phone?: string;
+            timezone?: string;
+          }
+        );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create employee: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create employee: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -473,17 +487,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.updateEmployee(args.employeeId, args.updateData);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update employee: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update employee: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -502,25 +520,31 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
     async (args) => {
       try {
         const client = new DeelClient(credentials.apiKey);
-        const result = await client.addTimeOff(args as {
-          employee_id: string;
-          type: string;
-          start_date: string;
-          end_date: string;
-          reason?: string;
-        });
+        const result = await client.addTimeOff(
+          args as {
+            employee_id: string;
+            type: string;
+            start_date: string;
+            end_date: string;
+            reason?: string;
+          }
+        );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add time off: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add time off: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -541,17 +565,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.getEmployeeTimeOff(args.employeeId, args.status);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee time off: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee time off: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -569,17 +597,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.getScheduledTimeOff(args.start_date, args.end_date);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get scheduled time off: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get scheduled time off: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -597,17 +629,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.addEmployeeNote(args.employeeId, args.content);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add employee note: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add employee note: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -624,17 +660,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.getEmployeeNotes(args.employeeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee notes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee notes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -651,17 +691,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.getEmployeeDocuments(args.employeeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee documents: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee documents: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -673,9 +717,7 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
     {
       employeeId: z.string().describe('Employee ID'),
       name: z.string().describe('Document name'),
-      type: z
-        .string()
-        .describe('Document type (e.g., contract, id_document, tax_form)'),
+      type: z.string().describe('Document type (e.g., contract, id_document, tax_form)'),
       file_data: z.string().describe('Base64 encoded file data'),
     },
     async (args) => {
@@ -687,17 +729,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
           file_data: args.file_data,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to upload employee document: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to upload employee document: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -720,17 +766,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
           args.end_date
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee payslips: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee payslips: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -747,17 +797,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
         const client = new DeelClient(credentials.apiKey);
         const result = await client.getEmployeeContract(args.employeeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get employee contract: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get employee contract: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -792,17 +846,21 @@ export function createDeelServer(credentials: DeelCredentials): McpServer {
           args.contractData
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update employee contract: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update employee contract: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

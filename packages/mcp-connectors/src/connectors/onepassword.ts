@@ -27,17 +27,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         });
         const vaults = await op.listVaults();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(vaults, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(vaults, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list vaults: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list vaults: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -58,17 +62,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         });
         const vault = await op.getVault(args.vaultId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(vault, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(vault, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get vault: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get vault: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -89,17 +97,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         });
         const items = await op.listItems(args.vaultId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(items, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(items, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list items: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list items: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -121,17 +133,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         });
         const item = await op.getItem(args.vaultId, args.itemId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(item, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(item, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get item: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get item: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -164,10 +180,12 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         // Format results as readable strings instead of JSON
         if (filteredItems.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No items found matching "${args.query}" in vault ${args.vaultId}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No items found matching "${args.query}" in vault ${args.vaultId}`,
+              },
+            ],
           };
         }
 
@@ -181,17 +199,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
           .join('\n');
 
         return {
-          content: [{
-            type: 'text',
-            text: `Found ${filteredItems.length} item${filteredItems.length === 1 ? '' : 's'}:\n${formattedItems}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Found ${filteredItems.length} item${filteredItems.length === 1 ? '' : 's'}:\n${formattedItems}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search items: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search items: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -209,9 +231,7 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
       fields: z
         .array(
           z.object({
-            type: z
-              .string()
-              .describe('Field type (e.g., STRING, CONCEALED, URL, etc.)'),
+            type: z.string().describe('Field type (e.g., STRING, CONCEALED, URL, etc.)'),
             label: z.string().optional().describe('Field label'),
             value: z.string().optional().describe('Field value'),
             purpose: z
@@ -284,17 +304,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         const newItem = itemBuilder.build();
         const item = await op.createItem(args.vaultId, newItem);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(item, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(item, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create item: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create item: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -362,17 +386,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
 
         const updatedItem = await op.updateItem(args.vaultId, existingItem);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(updatedItem, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(updatedItem, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update item: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update item: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -394,17 +422,21 @@ export function createOnePasswordServer(credentials: OnePasswordCredentials): Mc
         });
         await op.deleteItem(args.vaultId, args.itemId);
         return {
-          content: [{
-            type: 'text',
-            text: 'Item deleted successfully',
-          }],
+          content: [
+            {
+              type: 'text',
+              text: 'Item deleted successfully',
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete item: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete item: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

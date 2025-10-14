@@ -414,17 +414,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(incidents, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(incidents, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -441,17 +445,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const incident = await client.getIncident(args.incidentId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(incident, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(incident, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -481,17 +489,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
           args.visibility
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(incident, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(incident, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create incident: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create incident: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -523,17 +535,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
 
         const incident = await client.updateIncident(args.incidentId, updates);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(incident, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(incident, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update incident: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update incident: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -550,17 +566,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const users = await client.listUsers(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(users, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(users, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list users: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list users: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -577,17 +597,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const user = await client.getUser(args.userId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -604,17 +628,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const services = await client.listServices(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(services, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(services, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list services: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list services: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -631,17 +659,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const teams = await client.listTeams(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(teams, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(teams, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -661,17 +693,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const escalationPaths = await client.listEscalationPaths(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(escalationPaths, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(escalationPaths, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list escalation paths: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list escalation paths: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -688,17 +724,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const schedules = await client.listSchedules(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(schedules, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(schedules, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list schedules: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list schedules: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -715,17 +755,21 @@ export function createIncidentServer(credentials: IncidentCredentials): McpServe
         const client = new IncidentIoClient(credentials.apiKey);
         const scheduleEntries = await client.getOnCallSchedule(args.scheduleId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(scheduleEntries, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(scheduleEntries, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get on-call schedule: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get on-call schedule: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
