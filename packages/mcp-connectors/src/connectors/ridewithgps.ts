@@ -281,17 +281,21 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
       try {
         const user = await client.getCurrentUser();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get current user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get current user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -301,10 +305,7 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
     'ridewithgps_get_routes',
     "List user's planned cycling routes. These are pre-built routes that the user created for future bike rides, showing distance, elevation, and location details.",
     {
-      userId: z
-        .number()
-        .optional()
-        .describe('User ID (defaults to authenticated user)'),
+      userId: z.number().optional().describe('User ID (defaults to authenticated user)'),
       offset: z.number().default(0).describe('Offset for pagination'),
       limit: z.number().default(20).describe('Number of routes to retrieve (max 50)'),
     },
@@ -312,17 +313,21 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
       try {
         const routes = await client.getRoutes(args.userId, args.offset, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(routes, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(routes, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get routes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get routes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -338,17 +343,21 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
       try {
         const route = await client.getRouteDetails(args.routeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(route, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(route, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get route details: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get route details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -358,10 +367,7 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
     'ridewithgps_get_rides',
     'View completed cycling activities with speed, power, heart rate, and performance analytics. Perfect for tracking fitness progress and analyzing ride history.',
     {
-      userId: z
-        .number()
-        .optional()
-        .describe('User ID (defaults to authenticated user)'),
+      userId: z.number().optional().describe('User ID (defaults to authenticated user)'),
       offset: z.number().default(0).describe('Offset for pagination'),
       limit: z.number().default(20).describe('Number of rides to retrieve (max 50)'),
     },
@@ -369,17 +375,21 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
       try {
         const rides = await client.getTrips(args.userId, args.offset, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(rides, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(rides, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get rides: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get rides: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -395,17 +405,21 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
       try {
         const ride = await client.getTripDetails(args.rideId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(ride, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(ride, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get ride details: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get ride details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -430,9 +444,7 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
       startDistance: z
         .number()
         .optional()
-        .describe(
-          'Search radius in miles from location (try 15, 25, 50, or 100 miles)'
-        ),
+        .describe('Search radius in miles from location (try 15, 25, 50, or 100 miles)'),
       minLength: z
         .number()
         .optional()
@@ -517,21 +529,13 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
                 ? `https://ridewithgps.com/trips/${id}`
                 : `https://ridewithgps.com/routes/${id}`,
             distance_km: distance ? Math.round((distance / 1000) * 10) / 10 : null,
-            distance_miles: distance
-              ? Math.round((distance / 1609.34) * 10) / 10
-              : null,
-            elevation_gain_ft: elevationGain
-              ? Math.round(elevationGain * 3.28084)
-              : null,
+            distance_miles: distance ? Math.round((distance / 1609.34) * 10) / 10 : null,
+            elevation_gain_ft: elevationGain ? Math.round(elevationGain * 3.28084) : null,
             quick_stats:
               distance && elevationGain
                 ? `${Math.round(distance / 1000)}km, ${Math.round(elevationGain)}m climb`
                 : null,
-            location_summary: [
-              data.locality,
-              data.administrative_area,
-              data.country_code,
-            ]
+            location_summary: [data.locality, data.administrative_area, data.country_code]
               .filter(Boolean)
               .join(', '),
             result_type: itemType,
@@ -561,17 +565,21 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({ summary, routes: enhancedRoutes }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({ summary, routes: enhancedRoutes }, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search routes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search routes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -581,26 +589,27 @@ export function createRideWithGPSServer(credentials: RideWithGPSCredentials): Mc
     'ridewithgps_get_events',
     'Find cycling events, group rides, races, and challenges. Discover local cycling community activities, organized rides, and competitive events to join.',
     {
-      userId: z
-        .number()
-        .optional()
-        .describe('User ID (defaults to authenticated user)'),
+      userId: z.number().optional().describe('User ID (defaults to authenticated user)'),
     },
     async (args) => {
       try {
         const events = await client.getEvents(args.userId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(events, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(events, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get events: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get events: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

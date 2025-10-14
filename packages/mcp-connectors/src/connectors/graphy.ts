@@ -270,17 +270,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         const client = new GraphyClient(credentials.apiKey);
         const boards = await client.getBoards(args.limit, args.offset);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(boards, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(boards, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -297,17 +301,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         const client = new GraphyClient(credentials.apiKey);
         const board = await client.getBoard(args.boardId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(board, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(board, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -334,17 +342,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
           args.config
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(board, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(board, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -372,17 +384,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
           args.config
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(board, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(board, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -399,17 +415,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         const client = new GraphyClient(credentials.apiKey);
         await client.deleteBoard(args.boardId);
         return {
-          content: [{
-            type: 'text',
-            text: `Board ${args.boardId} deleted successfully`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Board ${args.boardId} deleted successfully`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -438,17 +458,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         const client = new GraphyClient(credentials.apiKey);
         const datasets = await client.getDatasets(args.limit, args.offset);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(datasets, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(datasets, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -465,17 +489,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         const client = new GraphyClient(credentials.apiKey);
         const dataset = await client.getDataset(args.datasetId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(dataset, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(dataset, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -491,9 +519,7 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         .array(
           z.object({
             name: z.string().describe('Column name'),
-            type: z
-              .string()
-              .describe('Column data type (string, number, date, boolean)'),
+            type: z.string().describe('Column data type (string, number, date, boolean)'),
           })
         )
         .describe('Array of column definitions'),
@@ -509,17 +535,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
           args.description
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(dataset, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(dataset, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -553,17 +583,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
           resultText = String(data);
         }
         return {
-          content: [{
-            type: 'text',
-            text: resultText,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: resultText,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }
@@ -585,17 +619,21 @@ export function createGraphyServer(credentials: GraphyCredentials): McpServer {
         const client = new GraphyClient(credentials.apiKey);
         const embedUrl = await client.shareBoard(args.boardId, args.isPublic);
         return {
-          content: [{
-            type: 'text',
-            text: `Board shared successfully. Embed URL: ${embedUrl}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Board shared successfully. Embed URL: ${embedUrl}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleGraphyError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleGraphyError(error),
+            },
+          ],
         };
       }
     }

@@ -96,29 +96,28 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
     version: '1.0.0',
   });
 
-  server.tool(
-    'notion_get_me',
-    'Get the authenticated user',
-    {},
-    async () => {
-      try {
-        const response = await notionRequest('/users/me', credentials.token);
-        return {
-          content: [{
+  server.tool('notion_get_me', 'Get the authenticated user', {}, async () => {
+    try {
+      const response = await notionRequest('/users/me', credentials.token);
+      return {
+        content: [
+          {
             type: 'text',
             text: JSON.stringify(response, null, 2),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
             type: 'text',
             text: handleNotionError(error),
-          }],
-        };
-      }
+          },
+        ],
+      };
     }
-  );
+  });
 
   server.tool(
     'notion_list_users',
@@ -142,17 +141,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
         const path = queryString ? `/users?${queryString}` : '/users';
         const response = await notionRequest(path, credentials.token);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -168,17 +171,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
       try {
         const response = await notionRequest(`/pages/${args.page_id}`, credentials.token);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -207,9 +214,7 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
         const { parent_id, parent_type, title, properties, children } = args;
 
         const parent =
-          parent_type === 'page_id'
-            ? { page_id: parent_id }
-            : { database_id: parent_id };
+          parent_type === 'page_id' ? { page_id: parent_id } : { database_id: parent_id };
 
         let pageProperties: Record<string, unknown> = {};
 
@@ -256,17 +261,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
 
         const response = await notionRequest('/pages', credentials.token, 'POST', body);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -291,19 +300,28 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
           body.archived = archived;
         }
 
-        const response = await notionRequest(`/pages/${page_id}`, credentials.token, 'PATCH', body);
+        const response = await notionRequest(
+          `/pages/${page_id}`,
+          credentials.token,
+          'PATCH',
+          body
+        );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -340,24 +358,31 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
           body.discussion_id = discussion_id;
         } else {
           body.parent =
-            parent_type === 'page_id'
-              ? { page_id: parent_id }
-              : { block_id: parent_id };
+            parent_type === 'page_id' ? { page_id: parent_id } : { block_id: parent_id };
         }
 
-        const response = await notionRequest('/comments', credentials.token, 'POST', body);
+        const response = await notionRequest(
+          '/comments',
+          credentials.token,
+          'POST',
+          body
+        );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -378,17 +403,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
 
         const response = await notionRequest(`/comments?${params}`, credentials.token);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -442,17 +471,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
 
         const response = await notionRequest('/search', credentials.token, 'POST', body);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -486,19 +519,28 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
           properties,
         };
 
-        const response = await notionRequest('/databases', credentials.token, 'POST', body);
+        const response = await notionRequest(
+          '/databases',
+          credentials.token,
+          'POST',
+          body
+        );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -530,17 +572,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
 
         const response = await notionRequest('/search', credentials.token, 'POST', body);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -554,19 +600,26 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
     },
     async (args) => {
       try {
-        const response = await notionRequest(`/databases/${args.database_id}`, credentials.token);
+        const response = await notionRequest(
+          `/databases/${args.database_id}`,
+          credentials.token
+        );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -613,17 +666,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
           body
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -655,17 +712,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
 
         const response = await notionRequest(path, credentials.token);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }
@@ -691,17 +752,21 @@ export function createNotionServer(credentials: NotionCredentials): McpServer {
           body
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: handleNotionError(error),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: handleNotionError(error),
+            },
+          ],
         };
       }
     }

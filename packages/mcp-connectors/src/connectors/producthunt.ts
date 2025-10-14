@@ -444,34 +444,38 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
     'producthunt_get_product',
     'Get detailed information about a specific product on Product Hunt',
     {
-      slug: z
-        .string()
-        .describe('Product slug (from URL, e.g., "claude" for claude.ai)'),
+      slug: z.string().describe('Product slug (from URL, e.g., "claude" for claude.ai)'),
     },
     async (args) => {
       try {
         const api = new ProductHuntAPI(credentials.access_token);
         const product = await api.getProduct(args.slug);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(product, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(product, null, 2),
+            },
+          ],
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
           return {
-            content: [{
-              type: 'text',
-              text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+              },
+            ],
           };
         }
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get product: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get product: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -493,25 +497,31 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
         const api = new ProductHuntAPI(credentials.access_token);
         const products = await api.searchProducts(args.query, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(products, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(products, null, 2),
+            },
+          ],
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
           return {
-            content: [{
-              type: 'text',
-              text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+              },
+            ],
           };
         }
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search products: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search products: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -538,25 +548,31 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
         const api = new ProductHuntAPI(credentials.access_token);
         const products = await api.getFeaturedProducts(args.date, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(products, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(products, null, 2),
+            },
+          ],
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
           return {
-            content: [{
-              type: 'text',
-              text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+              },
+            ],
           };
         }
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get featured products: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get featured products: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -573,25 +589,31 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
         const api = new ProductHuntAPI(credentials.access_token);
         const user = await api.getUser(args.username);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
           return {
-            content: [{
-              type: 'text',
-              text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+              },
+            ],
           };
         }
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -601,9 +623,7 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
     'producthunt_get_comments',
     'Get comments for a specific product on Product Hunt',
     {
-      slug: z
-        .string()
-        .describe('Product slug (from URL, e.g., "claude" for claude.ai)'),
+      slug: z.string().describe('Product slug (from URL, e.g., "claude" for claude.ai)'),
       limit: z
         .number()
         .optional()
@@ -615,25 +635,31 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
         const api = new ProductHuntAPI(credentials.access_token);
         const comments = await api.getProductComments(args.slug, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(comments, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(comments, null, 2),
+            },
+          ],
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
           return {
-            content: [{
-              type: 'text',
-              text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+              },
+            ],
           };
         }
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get comments: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get comments: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -654,25 +680,31 @@ export function createProductHuntServer(credentials: ProductHuntCredentials): Mc
         const api = new ProductHuntAPI(credentials.access_token);
         const collections = await api.getCollections(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(collections, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(collections, null, 2),
+            },
+          ],
         };
       } catch (error) {
         if (error instanceof z.ZodError) {
           return {
-            content: [{
-              type: 'text',
-              text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Invalid input: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+              },
+            ],
           };
         }
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get collections: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get collections: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

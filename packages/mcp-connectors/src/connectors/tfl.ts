@@ -909,17 +909,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const lines = await client.getLines();
         const filtered = await filterLineStatus(lines);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get lines: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get lines: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -939,17 +943,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const status = await client.getLineStatus(args.lineIds);
         const filtered = await filterLineStatus(status);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get line status: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get line status: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -961,9 +969,7 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
     {
       mode: z
         .string()
-        .describe(
-          'Transport mode (e.g., "tube", "bus", "dlr", "overground", "tflrail")'
-        ),
+        .describe('Transport mode (e.g., "tube", "bus", "dlr", "overground", "tflrail")'),
     },
     async (args) => {
       try {
@@ -971,17 +977,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const stopPoints = await client.getStopPointsByMode(args.mode);
         const filtered = await filterStopPoints(stopPoints);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get stop points: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get stop points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -998,17 +1008,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const client = new TFLClient(credentials.appKey);
         const stopPoint = await client.getStopPoint(args.id);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(stopPoint, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(stopPoint, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get stop point: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get stop point: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1026,17 +1040,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const results = await client.searchStopPoints(args.query);
         const filtered = await filterStopPoints(results, args.query);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search stop points: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search stop points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1084,46 +1102,49 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const journey = await client.planJourney(from, to, options);
         const filtered = await filterJourneyPlan(journey);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to plan journey: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to plan journey: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
   );
 
-  server.tool(
-    'tfl_get_modes',
-    'Get all available transport modes',
-    {},
-    async () => {
-      try {
-        const client = new TFLClient(credentials.appKey);
-        const modes = await client.getModes();
-        return {
-          content: [{
+  server.tool('tfl_get_modes', 'Get all available transport modes', {}, async () => {
+    try {
+      const client = new TFLClient(credentials.appKey);
+      const modes = await client.getModes();
+      return {
+        content: [
+          {
             type: 'text',
             text: JSON.stringify(modes, null, 2),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
             type: 'text',
             text: `Failed to get modes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
-        };
-      }
+          },
+        ],
+      };
     }
-  );
+  });
 
   server.tool(
     'tfl_get_arrivals',
@@ -1137,17 +1158,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const arrivals = await client.getArrivals(args.stopPointId);
         const filtered = await filterArrivals(arrivals);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get arrivals: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get arrivals: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1166,17 +1191,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const arrivals = await client.getLineArrivals(args.lineId, args.stopPointId);
         const filtered = await filterArrivals(arrivals);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get line arrivals: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get line arrivals: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1191,17 +1220,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const client = new TFLClient(credentials.appKey);
         const airQuality = await client.getAirQuality();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(airQuality, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(airQuality, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get air quality: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get air quality: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1219,17 +1252,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const accidents = await client.getAccidentStats(args.year);
         const filtered = await filterAccidentStats(accidents);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get accident stats: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get accident stats: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1245,17 +1282,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const bikePoints = await client.getBikePoints();
         const filtered = await filterBikePoints(bikePoints);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get bike points: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get bike points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1272,17 +1313,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const client = new TFLClient(credentials.appKey);
         const bikePoint = await client.getBikePoint(args.id);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(bikePoint, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(bikePoint, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get bike point: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get bike point: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1302,17 +1347,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const results = await client.searchBikePoints(args.query);
         const filtered = await filterBikePoints(results, args.query);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search bike points: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search bike points: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1327,46 +1376,49 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const client = new TFLClient(credentials.appKey);
         const categories = await client.getPlaceCategories();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(categories, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(categories, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get place categories: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get place categories: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
   );
 
-  server.tool(
-    'tfl_get_place_types',
-    'Get all available place types',
-    {},
-    async () => {
-      try {
-        const client = new TFLClient(credentials.appKey);
-        const types = await client.getPlaceTypes();
-        return {
-          content: [{
+  server.tool('tfl_get_place_types', 'Get all available place types', {}, async () => {
+    try {
+      const client = new TFLClient(credentials.appKey);
+      const types = await client.getPlaceTypes();
+      return {
+        content: [
+          {
             type: 'text',
             text: JSON.stringify(types, null, 2),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
             type: 'text',
             text: `Failed to get place types: ${error instanceof Error ? error.message : String(error)}`,
-          }],
-        };
-      }
+          },
+        ],
+      };
     }
-  );
+  });
 
   server.tool(
     'tfl_get_place',
@@ -1383,17 +1435,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const client = new TFLClient(credentials.appKey);
         const place = await client.getPlace(args.id, args.includeChildren);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(place, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(place, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get place: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get place: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1415,17 +1471,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const results = await client.searchPlaces(args.name, args.types);
         const filtered = await filterPlaces(results, args.name);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search places: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search places: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1446,17 +1506,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const places = await client.getPlacesByType(args.types, args.activeOnly);
         const filtered = await filterPlaces(places);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get places by type: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get places by type: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1476,17 +1540,21 @@ export function createTFLServer(credentials: TFLCredentials): McpServer {
         const places = await client.getPlacesAt(args.type, args.lat, args.lon);
         const filtered = await filterPlaces(places);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(filtered, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(filtered, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get places at location: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get places at location: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

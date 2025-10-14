@@ -420,17 +420,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const about = await client.getAbout();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(about, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(about, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get Drive info: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get Drive info: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -463,17 +467,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
           args.pageToken
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -494,17 +502,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const file = await client.getFile(args.fileId, args.includePermissions);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(file, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(file, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -521,17 +533,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const content = await client.getFileContent(args.fileId);
         return {
-          content: [{
-            type: 'text',
-            text: content,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: content,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -556,17 +572,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
           parents: args.parentId ? [args.parentId] : undefined,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(file, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(file, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -590,17 +610,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
           mimeType: args.mimeType,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(file, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(file, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -617,17 +641,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const result = await client.deleteFile(args.fileId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -650,17 +678,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
           args.parentId ? [args.parentId] : undefined
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(file, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(file, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to copy file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to copy file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -678,17 +710,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const folder = await client.createFolder(args.name, args.parentId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(folder, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(folder, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -699,16 +735,11 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
     'Share a file with a user, group, or make it public',
     {
       fileId: z.string().describe('File ID'),
-      type: z
-        .enum(['user', 'group', 'domain', 'anyone'])
-        .describe('Type of permission'),
+      type: z.enum(['user', 'group', 'domain', 'anyone']).describe('Type of permission'),
       role: z
         .enum(['owner', 'organizer', 'fileOrganizer', 'writer', 'commenter', 'reader'])
         .describe('Role/permission level'),
-      emailAddress: z
-        .string()
-        .optional()
-        .describe('Email address (for user/group type)'),
+      emailAddress: z.string().optional().describe('Email address (for user/group type)'),
       domain: z.string().optional().describe('Domain name (for domain type)'),
     },
     async (args) => {
@@ -721,17 +752,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
           domain: args.domain,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(permission, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(permission, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to share file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to share file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -748,17 +783,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const permissions = await client.listPermissions(args.fileId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(permissions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(permissions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list permissions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list permissions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -776,17 +815,21 @@ export function createGoogleDriveServer(credentials: GoogleDriveCredentials): Mc
         const client = new GoogleDriveClient(credentials.accessToken);
         const result = await client.removePermission(args.fileId, args.permissionId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to remove permission: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to remove permission: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

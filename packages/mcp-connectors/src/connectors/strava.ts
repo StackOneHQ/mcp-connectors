@@ -468,17 +468,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         const client = new StravaClient(credentials);
         const athlete = await client.getAthlete();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(athlete, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(athlete, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get athlete profile: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get athlete profile: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -505,17 +509,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
 
         const stats = await client.getAthleteStats(athleteId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(stats, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(stats, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get athlete stats: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get athlete stats: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -534,10 +542,7 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         .optional()
         .describe('Unix timestamp to retrieve activities after'),
       page: z.number().default(1).describe('Page number for pagination'),
-      perPage: z
-        .number()
-        .default(30)
-        .describe('Number of activities per page (max 200)'),
+      perPage: z.number().default(30).describe('Number of activities per page (max 200)'),
     },
     async (args) => {
       try {
@@ -549,17 +554,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
           args.perPage
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(activities, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(activities, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get activities: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get activities: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -576,17 +585,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         const client = new StravaClient(credentials);
         const activity = await client.getActivity(args.activityId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(activity, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(activity, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get activity: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get activity: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -609,17 +622,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         const client = new StravaClient(credentials);
         const streams = await client.getActivityStreams(args.activityId, args.keys);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(streams, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(streams, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get activity streams: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get activity streams: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -636,17 +653,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         const client = new StravaClient(credentials);
         const segment = await client.getSegment(args.segmentId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(segment, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(segment, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get segment: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get segment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -689,17 +710,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
           args.maxCategory
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to explore segments: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to explore segments: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -725,17 +750,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
           args.perPage
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(routes, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(routes, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get athlete routes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get athlete routes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -752,17 +781,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         const client = new StravaClient(credentials);
         const route = await client.getRoute(args.routeId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(route, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(route, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get route: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get route: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -780,17 +813,21 @@ export function createStravaServer(credentials: StravaCredentials): McpServer {
         const client = new StravaClient(credentials);
         const segments = await client.getStarredSegments(args.page, args.perPage);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(segments, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(segments, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get starred segments: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get starred segments: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

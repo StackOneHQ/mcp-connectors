@@ -165,29 +165,42 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
         const base64Audio = await streamToBase64(response.body);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              audio_base64: base64Audio,
-              format: args.output_format || 'mp3_44100_128',
-              voice_id: voiceId,
-              text_length: args.text.length,
-              message:
-                'Audio generated successfully. Use the audio_base64 field to access the audio data.',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  audio_base64: base64Audio,
+                  format: args.output_format || 'mp3_44100_128',
+                  voice_id: voiceId,
+                  text_length: args.text.length,
+                  message:
+                    'Audio generated successfully. Use the audio_base64 field to access the audio data.',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         console.error('Text-to-speech error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error occurred',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
     }
@@ -252,25 +265,38 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              voices,
-              count: voices.length,
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  voices,
+                  count: voices.length,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         console.error('List voices error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error occurred',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
     }
@@ -297,40 +323,53 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
         const voice = (await response.json()) as ElevenLabsVoice;
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              voice: {
-                voice_id: voice.voice_id,
-                name: voice.name,
-                category: voice.category,
-                description: voice.description || '',
-                preview_url: voice.preview_url,
-                available_for_tiers: voice.available_for_tiers,
-                settings: voice.settings,
-                samples:
-                  voice.samples?.map((sample) => ({
-                    sample_id: sample.sample_id,
-                    file_name: sample.file_name,
-                    mime_type: sample.mime_type,
-                    size_bytes: sample.size_bytes,
-                    hash: sample.hash,
-                  })) || [],
-              },
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  voice: {
+                    voice_id: voice.voice_id,
+                    name: voice.name,
+                    category: voice.category,
+                    description: voice.description || '',
+                    preview_url: voice.preview_url,
+                    available_for_tiers: voice.available_for_tiers,
+                    settings: voice.settings,
+                    samples:
+                      voice.samples?.map((sample) => ({
+                        sample_id: sample.sample_id,
+                        file_name: sample.file_name,
+                        mime_type: sample.mime_type,
+                        size_bytes: sample.size_bytes,
+                        hash: sample.hash,
+                      })) || [],
+                  },
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         console.error('Get voice error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error occurred',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
     }
@@ -404,27 +443,40 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
         const result = (await response.json()) as ElevenLabsTranscriptionResult;
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              transcript: result.text || '',
-              language: result.language,
-              duration: result.duration,
-              speakers: result.speakers,
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  transcript: result.text || '',
+                  language: result.language,
+                  duration: result.duration,
+                  speakers: result.speakers,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         console.error('Speech-to-text error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error occurred',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
     }
@@ -454,10 +506,14 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
           prompt_influence: args.prompt_influence || 0.3,
         };
 
-        const response = await makeElevenLabsRequest('/sound-generation', credentials.apiKey, {
-          method: 'POST',
-          body: JSON.stringify(requestBody),
-        });
+        const response = await makeElevenLabsRequest(
+          '/sound-generation',
+          credentials.apiKey,
+          {
+            method: 'POST',
+            body: JSON.stringify(requestBody),
+          }
+        );
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -471,28 +527,41 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
         const base64Audio = await streamToBase64(response.body);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              audio_base64: base64Audio,
-              description: args.text,
-              duration: args.duration_seconds,
-              message:
-                'Sound effect generated successfully. Use the audio_base64 field to access the audio data.',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  audio_base64: base64Audio,
+                  description: args.text,
+                  duration: args.duration_seconds,
+                  message:
+                    'Sound effect generated successfully. Use the audio_base64 field to access the audio data.',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         console.error('Sound effects generation error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error occurred',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
     }
@@ -514,33 +583,47 @@ export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpS
         const user = (await response.json()) as ElevenLabsUser;
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: true,
-              user: {
-                user_id: user.user_id,
-                subscription: user.subscription,
-                available_characters: user.available_characters,
-                used_characters: user.used_characters,
-                can_extend_character_limit: user.can_extend_character_limit,
-                can_use_instant_voice_cloning: user.can_use_instant_voice_cloning,
-                can_use_professional_voice_cloning: user.can_use_professional_voice_cloning,
-                api_tier: user.api_tier,
-              },
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: true,
+                  user: {
+                    user_id: user.user_id,
+                    subscription: user.subscription,
+                    available_characters: user.available_characters,
+                    used_characters: user.used_characters,
+                    can_extend_character_limit: user.can_extend_character_limit,
+                    can_use_instant_voice_cloning: user.can_use_instant_voice_cloning,
+                    can_use_professional_voice_cloning:
+                      user.can_use_professional_voice_cloning,
+                    api_tier: user.api_tier,
+                  },
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         console.error('Get user info error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify({
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-            }, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error occurred',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       }
     }

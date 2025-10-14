@@ -287,9 +287,11 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
 // Simple in-memory cache for documentation
 const documentationCache = new Map<string, string>();
 
-export interface DocumentationCredentials {}
+export type DocumentationCredentials = {};
 
-export function createDocumentationServer(_credentials: DocumentationCredentials): McpServer {
+export function createDocumentationServer(
+  _credentials: DocumentationCredentials
+): McpServer {
   const server = new McpServer({
     name: 'Documentation',
     version: '1.0.0',
@@ -315,10 +317,12 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
           ).join('\n----------\n');
 
           return {
-            content: [{
-              type: 'text',
-              text: `${generateProviderExplanation()}${providerList}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `${generateProviderExplanation()}${providerList}`,
+              },
+            ],
           };
         }
 
@@ -333,10 +337,12 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
         const searchResults = await search(index, args.provider_name);
         if (searchResults.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No providers found matching "${args.provider_name}". Try a broader search or call get_provider_key without arguments.`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No providers found matching "${args.provider_name}". Try a broader search or call get_provider_key without arguments.`,
+              },
+            ],
           };
         }
 
@@ -347,18 +353,22 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
         );
 
         return {
-          content: [{
-            type: 'text',
-            text: `${generateProviderExplanation()}Found ${results.length} provider${results.length === 1 ? '' : 's'} matching "${args.provider_name}":\n\n${results.join('\n----------\n')}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `${generateProviderExplanation()}Found ${results.length} provider${results.length === 1 ? '' : 's'} matching "${args.provider_name}":\n\n${results.join('\n----------\n')}`,
+            },
+          ],
         };
       } catch (error) {
         console.error('[get_provider_key] Handler error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `Error getting provider keys: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error getting provider keys: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
         };
       }
     }
@@ -389,25 +399,27 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
     async (args) => {
       try {
         const maxResults = args.max_results || 5;
-        const provider = DOCUMENTATION_PROVIDERS.find(
-          (p) => p.key === args.provider_key
-        );
+        const provider = DOCUMENTATION_PROVIDERS.find((p) => p.key === args.provider_key);
 
         if (!provider) {
           return {
-            content: [{
-              type: 'text',
-              text: `Provider "${args.provider_key}" not found. Call get_provider_key to see available providers.`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Provider "${args.provider_key}" not found. Call get_provider_key to see available providers.`,
+              },
+            ],
           };
         }
 
         if (!args.query || args.query.trim().length < 2) {
           return {
-            content: [{
-              type: 'text',
-              text: 'Please provide a meaningful search query (at least 2 characters).',
-            }],
+            content: [
+              {
+                type: 'text',
+                text: 'Please provide a meaningful search query (at least 2 characters).',
+              },
+            ],
           };
         }
 
@@ -429,10 +441,12 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
 
           if (!res.ok) {
             return {
-              content: [{
-                type: 'text',
-                text: `Error fetching documentation for ${provider.name}: ${res.status} ${res.statusText}`,
-              }],
+              content: [
+                {
+                  type: 'text',
+                  text: `Error fetching documentation for ${provider.name}: ${res.status} ${res.statusText}`,
+                },
+              ],
             };
           }
 
@@ -453,10 +467,12 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
 
         if (chunks.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No content found in ${provider.name} documentation.`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No content found in ${provider.name} documentation.`,
+              },
+            ],
           };
         }
 
@@ -477,10 +493,12 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
 
         if (searchResults.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No relevant documentation found for "${args.query}" in ${provider.name}. Try different search terms.`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No relevant documentation found for "${args.query}" in ${provider.name}. Try different search terms.`,
+              },
+            ],
           };
         }
 
@@ -493,18 +511,22 @@ export function createDocumentationServer(_credentials: DocumentationCredentials
           .join(`\n\n${'----------'}\n\n`);
 
         return {
-          content: [{
-            type: 'text',
-            text: `Found ${searchResults.length} relevant sections in ${provider.name} documentation for "${args.query}":\n\n${results}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Found ${searchResults.length} relevant sections in ${provider.name} documentation for "${args.query}":\n\n${results}`,
+            },
+          ],
         };
       } catch (error) {
         console.error('[search_docs] Handler error:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `Error searching "${args.provider_key}" for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error searching "${args.provider_key}" for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
         };
       }
     }

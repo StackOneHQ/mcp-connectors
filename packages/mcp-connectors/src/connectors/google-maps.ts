@@ -367,10 +367,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
         args.keyword
       );
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify({ results }, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ results }, null, 2),
+          },
+        ],
       };
     }
   );
@@ -389,10 +391,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
       const client = new GoogleMapsClient(credentials.apiKey);
       const result = await client.getPlaceDetails(args.placeId, args.fields);
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify(result, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
       };
     }
   );
@@ -407,10 +411,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
       const client = new GoogleMapsClient(credentials.apiKey);
       const results = await client.geocode(args.address);
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify({ results }, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ results }, null, 2),
+          },
+        ],
       };
     }
   );
@@ -426,10 +432,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
       const client = new GoogleMapsClient(credentials.apiKey);
       const results = await client.reverseGeocode(args.lat, args.lng);
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify({ results }, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ results }, null, 2),
+          },
+        ],
       };
     }
   );
@@ -459,10 +467,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
         args.avoidHighways
       );
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify(result, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
       };
     }
   );
@@ -486,10 +496,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
         args.mode
       );
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify(result, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
       };
     }
   );
@@ -511,10 +523,12 @@ export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpS
       const client = new GoogleMapsClient(credentials.apiKey);
       const result = await client.getElevation(args.locations);
       return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify(result, null, 2),
-        }],
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
       };
     }
   );

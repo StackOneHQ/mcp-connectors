@@ -126,17 +126,21 @@ export function createZapierServer(credentials: ZapierCredentials): McpServer {
         const client = new ZapierClient(credentials.apiKey);
         const response = await client.listActions();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list actions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list actions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -153,17 +157,21 @@ export function createZapierServer(credentials: ZapierCredentials): McpServer {
         const client = new ZapierClient(credentials.apiKey);
         const response = await client.searchActions(args.query);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search actions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search actions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -181,17 +189,21 @@ export function createZapierServer(credentials: ZapierCredentials): McpServer {
         const client = new ZapierClient(credentials.apiKey);
         const response = await client.executeAction(args.action_id, args.parameters);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to execute action: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to execute action: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -208,17 +220,21 @@ export function createZapierServer(credentials: ZapierCredentials): McpServer {
         const client = new ZapierClient(credentials.apiKey);
         const response = await client.getActionDetails(args.action_id);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get action details: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get action details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
