@@ -43,7 +43,7 @@ describe('#GraphyConnector', () => {
           const mcpServer = createGraphyServer({ apiKey: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.graphy_list_boards.handler({});
+          const actual = await tools.graphy_list_boards?.handler({});
 
           server.close();
           expect(actual).toBe(JSON.stringify(mockBoards, null, 2));
@@ -77,7 +77,10 @@ describe('#GraphyConnector', () => {
           const mcpServer = createGraphyServer({ apiKey: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.graphy_list_boards.handler({ limit: 10, offset: 5 });
+          const actual = await tools.graphy_list_boards?.handler({
+            limit: 10,
+            offset: 5,
+          });
 
           server.close();
           expect(actual).toBe(JSON.stringify(mockBoards, null, 2));
@@ -97,7 +100,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_list_boards.handler({});
+        const actual = await tools.graphy_list_boards?.handler({});
 
         server.close();
         expect(actual).toBe('Unauthorized access');
@@ -116,7 +119,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_list_boards.handler({});
+        const actual = await tools.graphy_list_boards?.handler({});
 
         server.close();
         expect(actual).toBe('Endpoint not found');
@@ -147,7 +150,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_get_board.handler({ boardId: 'board-1' });
+        const actual = await tools.graphy_get_board?.handler({ boardId: 'board-1' });
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
@@ -166,7 +169,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_get_board.handler({ boardId: 'nonexistent' });
+        const actual = await tools.graphy_get_board?.handler({ boardId: 'nonexistent' });
 
         server.close();
         expect(actual).toBe('Board not found');
@@ -197,7 +200,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_create_board.handler({
+        const actual = await tools.graphy_create_board?.handler({
           title: 'New Board',
           type: 'line',
           description: 'A new board',
@@ -220,7 +223,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_create_board.handler({
+        const actual = await tools.graphy_create_board?.handler({
           title: '',
           type: 'line',
         });
@@ -254,7 +257,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_update_board.handler({
+        const actual = await tools.graphy_update_board?.handler({
           boardId: 'board-1',
           title: 'Updated Board',
           description: 'Updated description',
@@ -279,7 +282,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_delete_board.handler({ boardId: 'board-1' });
+        const actual = await tools.graphy_delete_board?.handler({ boardId: 'board-1' });
 
         server.close();
         expect(actual).toBe('Board board-1 deleted successfully');
@@ -315,7 +318,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_list_datasets.handler({});
+        const actual = await tools.graphy_list_datasets?.handler({});
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockDatasets, null, 2));
@@ -349,7 +352,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_create_dataset.handler({
+        const actual = await tools.graphy_create_dataset?.handler({
           name: 'Test Dataset',
           data: [
             [1, 'John'],
@@ -391,7 +394,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_get_board_data.handler({
+        const actual = await tools.graphy_get_board_data?.handler({
           boardId: 'board-1',
           format: 'json',
         });
@@ -419,7 +422,7 @@ describe('#GraphyConnector', () => {
         const mcpServer = createGraphyServer({ apiKey: 'test-token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.graphy_share_board.handler({
+        const actual = await tools.graphy_share_board?.handler({
           boardId: 'board-1',
           isPublic: true,
         });

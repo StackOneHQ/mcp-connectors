@@ -33,7 +33,7 @@ describe('#TurbopufferConnector', () => {
           openaiApiKey: 'test-openai-key',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.turbopuffer_list_namespaces.handler({});
+        const actual = await tools.turbopuffer_list_namespaces?.handler({});
 
         server.close();
 
@@ -56,7 +56,7 @@ describe('#TurbopufferConnector', () => {
           openaiApiKey: 'test-openai-key',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.turbopuffer_list_namespaces.handler({});
+        const actual = await tools.turbopuffer_list_namespaces?.handler({});
 
         server.close();
 
@@ -78,7 +78,7 @@ describe('#TurbopufferConnector', () => {
           openaiApiKey: 'test-openai-key',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.turbopuffer_list_namespaces.handler({});
+        const actual = await tools.turbopuffer_list_namespaces?.handler({});
 
         server.close();
 
@@ -126,7 +126,7 @@ describe('#TurbopufferConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_vector_search.handler({
+        const actual = await tools.turbopuffer_vector_search?.handler({
           query: 'test query',
           namespace: 'docs',
           top_k: 5,
@@ -165,7 +165,7 @@ describe('#TurbopufferConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_vector_search.handler({
+        const actual = await tools.turbopuffer_vector_search?.handler({
           query: 'test query',
           namespace: 'docs',
           top_k: 5,
@@ -194,7 +194,7 @@ describe('#TurbopufferConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_vector_search.handler({
+        const actual = await tools.turbopuffer_vector_search?.handler({
           query: 'test query',
           namespace: 'docs',
           top_k: 5,
@@ -235,7 +235,7 @@ describe('#TurbopufferConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_write_documents.handler({
+        const actual = await tools.turbopuffer_write_documents?.handler({
           namespace: 'docs',
           documents: [
             {
@@ -294,7 +294,7 @@ describe('#TurbopufferConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_write_documents.handler({
+        const actual = await tools.turbopuffer_write_documents?.handler({
           namespace: 'docs',
           documents: [
             {
@@ -337,7 +337,7 @@ describe('#TurbopufferConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_write_documents.handler({
+        const actual = await tools.turbopuffer_write_documents?.handler({
           namespace: 'nonexistent',
           documents: [
             {

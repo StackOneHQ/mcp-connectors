@@ -45,7 +45,7 @@ describe('#GoogleMapsConnector', () => {
         const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search_nearby.handler({
+        const actual = await tools.search_nearby?.handler({
           location: '40.7128,-74.0060',
           radius: 1000,
           type: 'restaurant',
@@ -74,7 +74,7 @@ describe('#GoogleMapsConnector', () => {
         const tools = extractToolsFromServer(mcpServer);
 
         await expect(
-          tools.search_nearby.handler({
+          tools.search_nearby?.handler({
             location: 'invalid',
             radius: 1000,
           })
@@ -116,7 +116,7 @@ describe('#GoogleMapsConnector', () => {
         const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_place_details.handler({
+        const actual = await tools.get_place_details?.handler({
           placeId: 'ChIJ1234567890abcdef',
         });
 
@@ -170,7 +170,7 @@ describe('#GoogleMapsConnector', () => {
         const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.maps_geocode.handler({
+        const actual = await tools.maps_geocode?.handler({
           address: '1600 Amphitheatre Parkway, Mountain View, CA',
         });
 
@@ -240,7 +240,7 @@ describe('#GoogleMapsConnector', () => {
         const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.maps_directions.handler({
+        const actual = await tools.maps_directions?.handler({
           origin: 'San Francisco, CA',
           destination: 'Mountain View, CA',
           mode: 'driving',

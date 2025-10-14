@@ -27,7 +27,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_capture_event.handler({
+          const actual = await tools.posthog_capture_event?.handler({
             event: 'user_signup',
             distinctId: 'user123',
             properties: { plan: 'free' },
@@ -45,7 +45,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_capture_event.handler({
+        const actual = await tools.posthog_capture_event?.handler({
           event: 'test_event',
           distinctId: 'user123',
           properties: {},
@@ -69,7 +69,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_capture_event.handler({
+        const actual = await tools.posthog_capture_event?.handler({
           event: 'test_event',
           distinctId: 'user123',
           properties: {},
@@ -96,7 +96,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_capture_batch_events.handler({
+          const actual = await tools.posthog_capture_batch_events?.handler({
             events: [
               {
                 event: 'user_signup',
@@ -123,7 +123,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_capture_batch_events.handler({
+        const actual = await tools.posthog_capture_batch_events?.handler({
           events: [
             {
               event: 'test_event',
@@ -151,7 +151,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_capture_batch_events.handler({
+        const actual = await tools.posthog_capture_batch_events?.handler({
           events: [
             {
               event: 'invalid_event',
@@ -193,7 +193,10 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_events.handler({ limit: 50, offset: 0 });
+          const actual = await tools.posthog_get_events?.handler({
+            limit: 50,
+            offset: 0,
+          });
 
           expect(actual).toContain('user_signup');
           expect(actual).toContain('user123');
@@ -208,7 +211,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_events.handler({ limit: 10 });
+        const actual = await tools.posthog_get_events?.handler({ limit: 10 });
 
         expect(actual).toContain('Personal API Key is required for getting events');
       });
@@ -227,7 +230,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_events.handler({ limit: 10 });
+        const actual = await tools.posthog_get_events?.handler({ limit: 10 });
 
         expect(actual).toContain('Failed to get events');
       });
@@ -250,7 +253,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_identify_user.handler({
+          const actual = await tools.posthog_identify_user?.handler({
             distinctId: 'user123',
             properties: { email: 'user@example.com', name: 'Test User' },
           });
@@ -267,7 +270,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_identify_user.handler({
+        const actual = await tools.posthog_identify_user?.handler({
           distinctId: 'user123',
           properties: {},
         });
@@ -290,7 +293,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_identify_user.handler({
+        const actual = await tools.posthog_identify_user?.handler({
           distinctId: 'user123',
           properties: {},
         });
@@ -331,7 +334,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_feature_flags.handler({});
+          const actual = await tools.posthog_get_feature_flags?.handler({});
 
           expect(actual).toContain('Beta Feature');
           expect(actual).toContain('beta-feature');
@@ -346,7 +349,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_feature_flags.handler({});
+        const actual = await tools.posthog_get_feature_flags?.handler({});
 
         expect(actual).toContain(
           'Personal API Key is required for getting feature flags'
@@ -367,7 +370,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_feature_flags.handler({});
+        const actual = await tools.posthog_get_feature_flags?.handler({});
 
         expect(actual).toContain('Failed to get feature flags');
       });
@@ -401,7 +404,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_create_feature_flag.handler({
+          const actual = await tools.posthog_create_feature_flag?.handler({
             name: 'New Feature',
             key: 'new-feature',
             active: false,
@@ -427,7 +430,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_create_feature_flag.handler({
+        const actual = await tools.posthog_create_feature_flag?.handler({
           name: 'Duplicate Feature',
           key: 'existing-key',
           active: true,
@@ -460,7 +463,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_evaluate_feature_flag.handler({
+          const actual = await tools.posthog_evaluate_feature_flag?.handler({
             key: 'beta-feature',
             distinctId: 'user123',
             groups: {},
@@ -478,7 +481,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_evaluate_feature_flag.handler({
+        const actual = await tools.posthog_evaluate_feature_flag?.handler({
           key: 'test-flag',
           distinctId: 'user123',
         });
@@ -503,7 +506,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_evaluate_feature_flag.handler({
+        const actual = await tools.posthog_evaluate_feature_flag?.handler({
           key: 'nonexistent-flag',
           distinctId: 'user123',
         });
@@ -539,7 +542,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_insights.handler({
+          const actual = await tools.posthog_get_insights?.handler({
             limit: 25,
             offset: 0,
           });
@@ -556,7 +559,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_insights.handler({ limit: 10 });
+        const actual = await tools.posthog_get_insights?.handler({ limit: 10 });
 
         expect(actual).toContain('Personal API Key is required for getting insights');
       });
@@ -575,7 +578,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_insights.handler({ limit: 10 });
+        const actual = await tools.posthog_get_insights?.handler({ limit: 10 });
 
         expect(actual).toContain('Failed to get insights');
       });
@@ -604,7 +607,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_create_insight.handler({
+          const actual = await tools.posthog_create_insight?.handler({
             name: 'New Insight',
             filters: { events: [{ id: 'page_view' }] },
           });
@@ -627,7 +630,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_create_insight.handler({
+        const actual = await tools.posthog_create_insight?.handler({
           name: 'Invalid Insight',
           filters: {},
         });
@@ -666,7 +669,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_cohorts.handler({});
+          const actual = await tools.posthog_get_cohorts?.handler({});
 
           expect(actual).toContain('Premium Users');
           expect(actual).toContain('150');
@@ -687,7 +690,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_cohorts.handler({});
+        const actual = await tools.posthog_get_cohorts?.handler({});
 
         expect(actual).toContain('Failed to get cohorts');
       });
@@ -721,7 +724,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_create_cohort.handler({
+          const actual = await tools.posthog_create_cohort?.handler({
             name: 'Active Users',
             groups: [
               { properties: [{ key: 'last_seen', operator: 'gt', value: '30d' }] },
@@ -751,7 +754,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_create_cohort.handler({
+        const actual = await tools.posthog_create_cohort?.handler({
           name: 'Invalid Cohort',
           groups: [],
         });
@@ -788,7 +791,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_dashboards.handler({});
+          const actual = await tools.posthog_get_dashboards?.handler({});
 
           expect(actual).toContain('Product Analytics');
           expect(actual).toContain('Key product metrics');
@@ -809,7 +812,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_dashboards.handler({});
+        const actual = await tools.posthog_get_dashboards?.handler({});
 
         expect(actual).toContain('Failed to get dashboards');
       });
@@ -839,7 +842,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_create_dashboard.handler({
+          const actual = await tools.posthog_create_dashboard?.handler({
             name: 'New Dashboard',
             description: 'Dashboard description',
           });
@@ -863,7 +866,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_create_dashboard.handler({
+        const actual = await tools.posthog_create_dashboard?.handler({
           name: '',
         });
 
@@ -900,7 +903,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_persons.handler({
+          const actual = await tools.posthog_get_persons?.handler({
             limit: 100,
             offset: 0,
           });
@@ -924,7 +927,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_persons.handler({ limit: 10 });
+        const actual = await tools.posthog_get_persons?.handler({ limit: 10 });
 
         expect(actual).toContain('Failed to get persons');
       });
@@ -954,7 +957,7 @@ describe('#PostHogConnector', () => {
             host: 'https://us.posthog.com',
           });
           const tools = extractToolsFromServer(mcpServer);
-          const actual = await tools.posthog_get_project_info.handler({});
+          const actual = await tools.posthog_get_project_info?.handler({});
 
           expect(actual).toContain('My Project');
           expect(actual).toContain('My Org');
@@ -975,7 +978,7 @@ describe('#PostHogConnector', () => {
           host: 'https://us.posthog.com',
         });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.posthog_get_project_info.handler({});
+        const actual = await tools.posthog_get_project_info?.handler({});
 
         expect(actual).toContain('Failed to get project info');
       });

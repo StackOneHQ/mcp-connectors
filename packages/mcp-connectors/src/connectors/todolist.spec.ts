@@ -17,7 +17,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.list_todos.handler({});
+        const actual = await tools.list_todos?.handler({});
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -52,7 +52,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.list_todos.handler({});
+        const actual = await tools.list_todos?.handler({});
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -66,7 +66,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.list_todos.handler({});
+        const actual = await tools.list_todos?.handler({});
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -94,7 +94,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.create_todo.handler({
+        const actual = await tools.create_todo?.handler({
           title: 'New Todo',
           description: 'New Description',
           dueDate: '2025-01-01',
@@ -114,7 +114,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.create_todo.handler({
+        const actual = await tools.create_todo?.handler({
           title: 'Simple Todo',
         });
 
@@ -131,7 +131,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.create_todo.handler({ title: 'Test' });
+        const actual = await tools.create_todo?.handler({ title: 'Test' });
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -159,7 +159,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.update_todo.handler({
+        const actual = await tools.update_todo?.handler({
           id: 1,
           title: 'Updated Title',
           priority: 5,
@@ -177,7 +177,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.update_todo.handler({ id: 999 });
+        const actual = await tools.update_todo?.handler({ id: 999 });
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -203,7 +203,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.update_todo.handler({ id: 1, title: 'Updated' });
+        const actual = await tools.update_todo?.handler({ id: 1, title: 'Updated' });
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -240,7 +240,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.delete_todo.handler({ id: 1 });
+        const actual = await tools.delete_todo?.handler({ id: 1 });
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -254,7 +254,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.delete_todo.handler({ id: 999 });
+        const actual = await tools.delete_todo?.handler({ id: 999 });
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'
@@ -280,7 +280,7 @@ describe('#TodoListConnector', () => {
 
         const mcpServer = createTodoListServer({});
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.delete_todo.handler({ id: 1 });
+        const actual = await tools.delete_todo?.handler({ id: 1 });
 
         expect(actual).toContain(
           'Error: This connector requires external storage implementation'

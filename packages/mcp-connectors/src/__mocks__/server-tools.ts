@@ -4,11 +4,13 @@ export interface ToolHandler {
   handler: (args: Record<string, unknown>) => Promise<string>;
 }
 
+export type ExtractedTools = Record<string, ToolHandler | undefined>;
+
 /**
  * Extract tools from an MCP Server instance for testing purposes.
  * This helper allows tests to call tool handlers directly by using the server's internal request handler.
  */
-export function extractToolsFromServer(server: McpServer): Record<string, ToolHandler> {
+export function extractToolsFromServer(server: McpServer): ExtractedTools {
   const tools: Record<string, ToolHandler> = {};
 
   // Access the internal tools from the server
@@ -47,6 +49,7 @@ export function extractToolsFromServer(server: McpServer): Record<string, ToolHa
           if (
             Array.isArray(content) &&
             content.length > 0 &&
+            content[0] &&
             content[0].type === 'text'
           ) {
             return content[0].text;

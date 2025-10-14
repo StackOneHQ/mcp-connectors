@@ -32,7 +32,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_get_me.handler({});
+        const actual = (await tools.notion_get_me?.handler({}))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('user-123');
@@ -55,7 +55,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'invalid_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_get_me.handler({});
+        const actual = await tools.notion_get_me?.handler({});
 
         expect(actual).toContain('Unauthorized');
         expect(actual).toContain('check your Notion integration token');
@@ -90,10 +90,10 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_list_users.handler({
+        const actual = (await tools.notion_list_users?.handler({
           page_size: 10,
           start_cursor: 'cursor-123',
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(2);
@@ -127,7 +127,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_get_page.handler({ page_id: 'page-123' });
+        const actual = (await tools.notion_get_page?.handler({ page_id: 'page-123' }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('page-123');
@@ -149,7 +149,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_get_page.handler({ page_id: 'invalid-id' });
+        const actual = await tools.notion_get_page?.handler({ page_id: 'invalid-id' });
 
         expect(actual).toContain('not found');
         expect(actual).toContain('check the ID');
@@ -180,11 +180,11 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_create_page.handler({
+        const actual = (await tools.notion_create_page?.handler({
           parent_id: 'parent-123',
           parent_type: 'page_id',
           title: 'New Page',
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('new-page-123');
@@ -215,7 +215,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_create_page.handler({
+        const actual = (await tools.notion_create_page?.handler({
           parent_id: 'parent-123',
           parent_type: 'page_id',
           title: 'Page with Content',
@@ -233,7 +233,7 @@ describe('#NotionConnector', () => {
               },
             },
           ],
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('new-page-123');
@@ -280,11 +280,11 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_search.handler({
+        const actual = (await tools.notion_search?.handler({
           query: 'test query',
           filter: 'page',
           page_size: 20,
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(2);
@@ -306,7 +306,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_search.handler({ query: 'test' });
+        const actual = await tools.notion_search?.handler({ query: 'test' });
 
         expect(actual).toContain('Rate limited');
         expect(actual).toContain('wait before making more requests');
@@ -350,11 +350,11 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_query_database.handler({
+        const actual = (await tools.notion_query_database?.handler({
           database_id: 'db-123',
           filter: { property: 'Status', select: { equals: 'Done' } },
           sorts: [{ property: 'Created', direction: 'descending' }],
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(2);
@@ -388,7 +388,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_create_database.handler({
+        const actual = (await tools.notion_create_database?.handler({
           parent_page_id: 'parent-page-123',
           title: 'Tasks Database',
           properties: {
@@ -404,7 +404,7 @@ describe('#NotionConnector', () => {
               },
             },
           },
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('db-new-123');
@@ -446,7 +446,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_append_block_children.handler({
+        const actual = (await tools.notion_append_block_children?.handler({
           block_id: 'block-123',
           children: [
             {
@@ -463,7 +463,7 @@ describe('#NotionConnector', () => {
             },
             { type: 'divider', divider: {} },
           ],
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(3);
@@ -495,7 +495,7 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_update_page.handler({
+        const actual = (await tools.notion_update_page?.handler({
           page_id: 'page-123',
           properties: {
             title: {
@@ -503,7 +503,7 @@ describe('#NotionConnector', () => {
             },
           },
           archived: false,
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('page-123');
@@ -536,11 +536,11 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_create_comment.handler({
+        const actual = (await tools.notion_create_comment?.handler({
           parent_id: 'page-123',
           parent_type: 'page_id',
           comment_text: 'This is a comment',
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('comment-123');
@@ -570,12 +570,12 @@ describe('#NotionConnector', () => {
         const mcpServer = createNotionServer({ token: 'secret_test_token' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.notion_create_comment.handler({
+        const actual = (await tools.notion_create_comment?.handler({
           parent_id: 'page-123',
           parent_type: 'page_id',
           comment_text: 'Reply to thread',
           discussion_id: 'discussion-123',
-        });
+        }))!;
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('comment-456');

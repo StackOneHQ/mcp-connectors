@@ -44,7 +44,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_current_user.handler({});
+        const actual = await tools.ridewithgps_get_current_user?.handler({});
 
         expect(actual).toContain('"id": 123');
         expect(actual).toContain('"name": "John Doe"');
@@ -70,7 +70,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_current_user.handler({});
+        const actual = await tools.ridewithgps_get_current_user?.handler({});
 
         expect(actual).toContain('Failed to get current user');
         expect(actual).toContain('401');
@@ -116,7 +116,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_routes.handler({
+        const actual = await tools.ridewithgps_get_routes?.handler({
           offset: 0,
           limit: 20,
         });
@@ -156,7 +156,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_routes.handler({
+        const actual = await tools.ridewithgps_get_routes?.handler({
           userId: 456,
           offset: 0,
           limit: 10,
@@ -203,7 +203,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_route_details.handler({
+        const actual = await tools.ridewithgps_get_route_details?.handler({
           routeId: 456,
         });
 
@@ -232,7 +232,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_route_details.handler({
+        const actual = await tools.ridewithgps_get_route_details?.handler({
           routeId: 999,
         });
 
@@ -280,7 +280,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_rides.handler({
+        const actual = await tools.ridewithgps_get_rides?.handler({
           offset: 0,
           limit: 20,
         });
@@ -335,7 +335,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_ride_details.handler({ rideId: 789 });
+        const actual = await tools.ridewithgps_get_ride_details?.handler({ rideId: 789 });
 
         expect(actual).toContain('"id": 789');
         expect(actual).toContain('"name": "Epic Mountain Ride"');
@@ -363,7 +363,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_ride_details.handler({ rideId: 999 });
+        const actual = await tools.ridewithgps_get_ride_details?.handler({ rideId: 999 });
 
         expect(actual).toContain('Failed to get ride details');
         expect(actual).toContain('404');
@@ -410,7 +410,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_events.handler({});
+        const actual = await tools.ridewithgps_get_events?.handler({});
 
         expect(actual).toContain('"id": 101');
         expect(actual).toContain('"name": "Annual Century Ride"');
@@ -444,7 +444,7 @@ describe('#RideWithGPSConnector', () => {
         });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.ridewithgps_get_events.handler({});
+        const actual = await tools.ridewithgps_get_events?.handler({});
 
         expect(actual).toContain('[]');
 

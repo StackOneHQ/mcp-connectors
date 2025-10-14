@@ -11,7 +11,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_provider_key.handler({});
+        const actual = await tools.get_provider_key?.handler({});
 
         expect(actual).toContain('Available Documentation Providers:');
       });
@@ -22,7 +22,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_provider_key.handler({ provider_name: '' });
+        const actual = await tools.get_provider_key?.handler({ provider_name: '' });
 
         expect(actual).toContain('Available Documentation Providers:');
       });
@@ -33,7 +33,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_provider_key.handler({
+        const actual = await tools.get_provider_key?.handler({
           provider_name: 'anthropic',
         });
 
@@ -46,7 +46,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_provider_key.handler({
+        const actual = await tools.get_provider_key?.handler({
           provider_name: 'nonexistent',
         });
 
@@ -61,7 +61,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search_docs.handler({
+        const actual = await tools.search_docs?.handler({
           provider_key: 'nonexistent',
           query: 'test query',
         });
@@ -75,7 +75,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search_docs.handler({
+        const actual = await tools.search_docs?.handler({
           provider_key: 'anthropic',
           query: '',
         });
@@ -89,7 +89,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search_docs.handler({
+        const actual = await tools.search_docs?.handler({
           provider_key: 'anthropic',
           query: 'a',
         });
@@ -111,7 +111,7 @@ describe('#DocumentationConnectorConfig', () => {
           const mcpServer = createDocumentationServer({});
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.search_docs.handler({
+          const actual = await tools.search_docs?.handler({
             provider_key: 'anthropic',
             query: 'test',
           });
@@ -141,7 +141,7 @@ describe('#DocumentationConnectorConfig', () => {
         server.listen();
 
         // First request to populate cache
-        await tools.search_docs.handler({
+        await tools.search_docs?.handler({
           provider_key: 'anthropic',
           query: 'hello',
         });
@@ -149,7 +149,7 @@ describe('#DocumentationConnectorConfig', () => {
         server.close();
 
         // Second request should use cache
-        const actual = await tools.search_docs.handler({
+        const actual = await tools.search_docs?.handler({
           provider_key: 'anthropic',
           query: 'hello',
         });
@@ -172,7 +172,7 @@ describe('#DocumentationConnectorConfig', () => {
         const mcpServer = createDocumentationServer({});
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search_docs.handler({
+        const actual = await tools.search_docs?.handler({
           provider_key: 'pinecone',
           query: 'pinecone',
         });

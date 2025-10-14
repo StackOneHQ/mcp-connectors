@@ -316,7 +316,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_me.handler({});
+        const result = await tools.wandb_get_me?.handler({});
 
         expect(result).toContain('testuser');
         expect(result).toContain('test@example.com');
@@ -337,7 +337,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_me.handler({});
+        const result = await tools.wandb_get_me?.handler({});
 
         expect(result).toContain('Error:');
         expect(result).toContain('401');
@@ -353,7 +353,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_projects.handler({});
+        const result = await tools.wandb_list_projects?.handler({});
 
         expect(result).toContain('test-project');
         expect(result).toContain('testuser');
@@ -374,7 +374,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_projects.handler({});
+        const result = await tools.wandb_list_projects?.handler({});
 
         expect(result).toContain('[]');
       });
@@ -389,7 +389,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_project.handler({
+        const result = await tools.wandb_get_project?.handler({
           entity: 'testuser',
           project: 'test-project',
         });
@@ -413,7 +413,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_project.handler({
+        const result = await tools.wandb_get_project?.handler({
           entity: 'testuser',
           project: 'nonexistent',
         });
@@ -432,7 +432,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_create_project.handler({
+        const result = await tools.wandb_create_project?.handler({
           entity: 'testuser',
           name: 'new-project',
           description: 'A new project',
@@ -458,7 +458,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_create_project.handler({
+        const result = await tools.wandb_create_project?.handler({
           entity: 'testuser',
           name: 'existing-project',
         });
@@ -477,7 +477,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_runs.handler({
+        const result = await tools.wandb_list_runs?.handler({
           entity: 'testuser',
           project: 'test-project',
         });
@@ -495,7 +495,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_runs.handler({
+        const result = await tools.wandb_list_runs?.handler({
           entity: 'testuser',
           project: 'test-project',
           state: 'finished',
@@ -514,11 +514,11 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_runs.handler({
+        const result = (await tools.wandb_list_runs?.handler({
           entity: 'testuser',
           project: 'test-project',
           limit: 1,
-        });
+        }))!;
 
         const parsed = JSON.parse(result);
         expect(parsed.runs).toHaveLength(1);
@@ -534,7 +534,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_create_run.handler({
+        const result = await tools.wandb_create_run?.handler({
           entity: 'testuser',
           project: 'test-project',
           display_name: 'New Test Run',
@@ -560,7 +560,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_log_metrics.handler({
+        const result = await tools.wandb_log_metrics?.handler({
           entity: 'testuser',
           project: 'test-project',
           run_id: 'run_123',
@@ -588,7 +588,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_log_metrics.handler({
+        const result = await tools.wandb_log_metrics?.handler({
           entity: 'testuser',
           project: 'test-project',
           run_id: 'nonexistent',
@@ -609,7 +609,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_run_history.handler({
+        const result = await tools.wandb_get_run_history?.handler({
           entity: 'testuser',
           project: 'test-project',
           run_id: 'run_123',
@@ -629,7 +629,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_run_history.handler({
+        const result = await tools.wandb_get_run_history?.handler({
           entity: 'testuser',
           project: 'test-project',
           run_id: 'run_123',
@@ -649,7 +649,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_artifacts.handler({
+        const result = await tools.wandb_list_artifacts?.handler({
           entity: 'testuser',
           project: 'test-project',
         });
@@ -667,7 +667,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_list_artifacts.handler({
+        const result = await tools.wandb_list_artifacts?.handler({
           entity: 'testuser',
           project: 'test-project',
           type: 'model',
@@ -687,7 +687,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_artifact.handler({
+        const result = await tools.wandb_get_artifact?.handler({
           entity: 'testuser',
           project: 'test-project',
           artifact_name: 'model',
@@ -716,7 +716,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_get_artifact.handler({
+        const result = await tools.wandb_get_artifact?.handler({
           entity: 'testuser',
           project: 'test-project',
           artifact_name: 'nonexistent',
@@ -736,7 +736,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_delete_run.handler({
+        const result = await tools.wandb_delete_run?.handler({
           entity: 'testuser',
           project: 'test-project',
           run_id: 'run_123',
@@ -753,7 +753,7 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.wandb_delete_run.handler({
+        const result = await tools.wandb_delete_run?.handler({
           entity: 'testuser',
           project: 'test-project',
           run_id: 'nonexistent',

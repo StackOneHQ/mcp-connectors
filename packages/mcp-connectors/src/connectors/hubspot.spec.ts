@@ -42,7 +42,7 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.hubspot_get_contacts.handler({ limit: 10 });
+        const actual = (await tools.hubspot_get_contacts?.handler({ limit: 10 }))!;
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -63,7 +63,7 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_get_contacts.handler({ limit: 20, after: 'cursor123' });
+          await tools.hubspot_get_contacts?.handler({ limit: 20, after: 'cursor123' });
 
           expect(capturedUrl?.searchParams.get('limit')).toBe('20');
           expect(capturedUrl?.searchParams.get('after')).toBe('cursor123');
@@ -84,7 +84,7 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_get_contacts.handler({
+          await tools.hubspot_get_contacts?.handler({
             properties: ['email', 'firstname', 'company'],
           });
 
@@ -104,7 +104,7 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'invalid-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.hubspot_get_contacts.handler({});
+        const result = await tools.hubspot_get_contacts?.handler({});
 
         expect(result).toContain('Failed to fetch contacts');
         expect(result).toContain('401');
@@ -137,7 +137,7 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.hubspot_get_deals.handler({ limit: 10 });
+        const actual = (await tools.hubspot_get_deals?.handler({ limit: 10 }))!;
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -158,7 +158,7 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_get_deals.handler({ limit: 50, after: 'next-page' });
+          await tools.hubspot_get_deals?.handler({ limit: 50, after: 'next-page' });
 
           expect(capturedUrl?.searchParams.get('limit')).toBe('50');
           expect(capturedUrl?.searchParams.get('after')).toBe('next-page');
@@ -176,7 +176,7 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.hubspot_get_deals.handler({});
+        const result = await tools.hubspot_get_deals?.handler({});
 
         expect(result).toContain('Failed to fetch deals');
         expect(result).toContain('403');
@@ -204,11 +204,11 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.hubspot_create_contact.handler({
+        const actual = (await tools.hubspot_create_contact?.handler({
           email: 'new@example.com',
           firstname: 'Jane',
           lastname: 'Smith',
-        });
+        }))!;
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('123');
@@ -230,7 +230,7 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_create_contact.handler({
+          await tools.hubspot_create_contact?.handler({
             email: 'test@example.com',
             company: 'Test Corp',
             phone: '555-1234',
@@ -260,7 +260,7 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.hubspot_create_contact.handler({
+        const result = await tools.hubspot_create_contact?.handler({
           email: 'duplicate@example.com',
         });
 
@@ -290,11 +290,11 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.hubspot_create_deal.handler({
+        const actual = (await tools.hubspot_create_deal?.handler({
           dealname: 'New Deal',
           amount: '50000',
           dealstage: 'presentationscheduled',
-        });
+        }))!;
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('456');
@@ -313,7 +313,7 @@ describe('#HubSpotConnector', () => {
 
           const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
           const tools = extractToolsFromServer(mcpServer);
-          await tools.hubspot_create_deal.handler({
+          await tools.hubspot_create_deal?.handler({
             dealname: 'Big Deal',
             amount: '100000',
             dealstage: 'qualifiedtobuy',
@@ -347,7 +347,9 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const result = await tools.hubspot_create_deal.handler({ dealname: 'Test Deal' });
+        const result = await tools.hubspot_create_deal?.handler({
+          dealname: 'Test Deal',
+        });
 
         expect(result).toContain('Failed to create deal');
         expect(result).toContain('400');

@@ -57,7 +57,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search.handler({
+        const actual = await tools.search?.handler({
           query: 'test query',
           numResults: 10,
           includeText: false,
@@ -87,7 +87,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search.handler({
+        const actual = await tools.search?.handler({
           query: 'test query',
           includeText: true,
         });
@@ -110,7 +110,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'invalid-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search.handler({
+        const actual = await tools.search?.handler({
           query: 'test query',
         });
 
@@ -133,7 +133,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search.handler({
+        const actual = await tools.search?.handler({
           query: 'test query',
         });
 
@@ -156,7 +156,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.search.handler({
+        const actual = await tools.search?.handler({
           query: 'nonexistent query',
         });
 
@@ -180,7 +180,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        await tools.search.handler({
+        await tools.search?.handler({
           query: 'test query',
           type: 'neural',
           category: 'research paper',
@@ -220,7 +220,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_contents.handler({
+        const actual = await tools.get_contents?.handler({
           ids: ['test-id-1'],
           text: true,
           highlights: true,
@@ -249,7 +249,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.get_contents.handler({
+        const actual = await tools.get_contents?.handler({
           ids: ['invalid-id'],
         });
 
@@ -274,7 +274,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        await tools.get_contents.handler({
+        await tools.get_contents?.handler({
           ids: ['id-1', 'id-2', 'id-3'],
           text: true,
         });
@@ -302,7 +302,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.neural_search.handler({
+        const actual = await tools.neural_search?.handler({
           query: 'semantic search query',
           numResults: 5,
           category: 'research paper',
@@ -329,7 +329,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        await tools.neural_search.handler({
+        await tools.neural_search?.handler({
           query: 'semantic query',
         });
 
@@ -351,7 +351,7 @@ describe('#ExaConnectorConfig', () => {
         const mcpServer = createExaServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.neural_search.handler({
+        const actual = await tools.neural_search?.handler({
           query: 'test query',
         });
 

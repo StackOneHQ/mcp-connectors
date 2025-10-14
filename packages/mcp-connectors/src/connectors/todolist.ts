@@ -5,18 +5,6 @@ import { z } from 'zod';
 // It would need to be reimplemented with external storage (e.g., file system, database)
 // This is a placeholder that shows the structure but won't function without storage
 
-const todoSchema = z.object({
-  id: z.number().describe('Unique identifier for the todo'),
-  title: z.string().nullable().describe('Title of the todo'),
-  description: z.string().nullable().describe('Description of the todo'),
-  dueDate: z.date().nullable().describe('Due date for the todo'),
-  priority: z.number().nullable().describe('Priority level (1-5, where 5 is highest)'),
-  createdAt: z.date().nullable().describe('When the todo was created'),
-  updatedAt: z.date().nullable().describe('When the todo was last updated'),
-});
-
-type _Todo = z.infer<typeof todoSchema>;
-
 export type TodoListCredentials = Record<string, never>;
 
 export function createTodoListServer(_credentials: TodoListCredentials): McpServer {

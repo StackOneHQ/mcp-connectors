@@ -53,7 +53,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_product.handler({
+          const actual = await tools.producthunt_get_product?.handler({
             slug: 'test-product',
           });
 
@@ -77,7 +77,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'invalid-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_product.handler({
+          const actual = await tools.producthunt_get_product?.handler({
             slug: 'test-product',
           });
 
@@ -99,7 +99,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_product.handler({
+          const actual = await tools.producthunt_get_product?.handler({
             slug: 'nonexistent',
           });
 
@@ -148,7 +148,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_search_products.handler({
+          const actual = await tools.producthunt_search_products?.handler({
             query: 'AI',
             limit: 10,
           });
@@ -179,7 +179,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          await tools.producthunt_search_products.handler({ query: 'test', limit: 5 });
+          await tools.producthunt_search_products?.handler({ query: 'test', limit: 5 });
 
           expect(requestBody.variables?.first).toBe(5);
         });
@@ -222,7 +222,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_featured.handler({ limit: 10 });
+          const actual = await tools.producthunt_get_featured?.handler({ limit: 10 });
 
           const products = JSON.parse(actual as string);
           expect(products).toHaveLength(1);
@@ -250,7 +250,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          await tools.producthunt_get_featured.handler({
+          await tools.producthunt_get_featured?.handler({
             date: '2024-01-01T00:00:00Z',
             limit: 10,
           });
@@ -288,7 +288,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_user.handler({
+          const actual = await tools.producthunt_get_user?.handler({
             username: 'johndoe',
           });
 
@@ -336,7 +336,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_comments.handler({
+          const actual = await tools.producthunt_get_comments?.handler({
             slug: 'test-product',
             limit: 10,
           });
@@ -382,7 +382,7 @@ describe('#ProductHuntConnector', () => {
           const mcpServer = createProductHuntServer({ access_token: 'test-token' });
           const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tools.producthunt_get_collections.handler({ limit: 10 });
+          const actual = await tools.producthunt_get_collections?.handler({ limit: 10 });
 
           const collections = JSON.parse(actual as string);
           expect(collections).toHaveLength(1);
