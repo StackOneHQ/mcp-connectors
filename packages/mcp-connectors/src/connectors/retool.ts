@@ -539,17 +539,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const users = await client.getUsers(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(users, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(users, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list users: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list users: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -565,17 +569,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const user = await client.getUser(args.userId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -595,17 +603,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const user = await client.createUser(args);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -626,17 +638,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
         const { userId, ...updateData } = args;
         const user = await client.updateUser(userId, updateData);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -652,17 +668,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const result = await client.deleteUser(args.userId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -678,17 +698,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const groups = await client.getGroups(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(groups, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(groups, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list groups: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list groups: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -704,17 +728,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const group = await client.getGroup(args.groupId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(group, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(group, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get group: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get group: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -735,17 +763,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const group = await client.createGroup(args);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(group, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(group, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create group: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create group: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -768,17 +800,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
         const { groupId, ...updateData } = args;
         const group = await client.updateGroup(groupId, updateData);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(group, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(group, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update group: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update group: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -794,17 +830,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const result = await client.deleteGroup(args.groupId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete group: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete group: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -820,17 +860,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const folders = await client.getFolders(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(folders, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(folders, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list folders: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list folders: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -847,17 +891,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const folder = await client.createFolder(args);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(folder, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(folder, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -874,17 +922,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const apps = await client.getApps(args.folderId, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(apps, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(apps, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list apps: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list apps: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -900,17 +952,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const permissions = await client.getAppPermissions(args.appId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(permissions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(permissions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get app permissions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get app permissions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -926,17 +982,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const permissions = await client.getFolderPermissions(args.folderId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(permissions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(permissions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get folder permissions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get folder permissions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -966,17 +1026,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
           args.permissions
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(permissions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(permissions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update app permissions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update app permissions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -990,17 +1054,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const libraries = await client.getCustomComponentLibraries();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(libraries, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(libraries, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list custom component libraries: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list custom component libraries: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1016,17 +1084,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const library = await client.getCustomComponentLibrary(args.libraryId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(library, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(library, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get custom component library: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get custom component library: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1043,17 +1115,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const library = await client.createCustomComponentLibrary(args);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(library, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(library, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create custom component library: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create custom component library: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1070,22 +1146,23 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
     async (args) => {
       try {
         const { libraryId, ...updateData } = args;
-        const library = await client.updateCustomComponentLibrary(
-          libraryId,
-          updateData
-        );
+        const library = await client.updateCustomComponentLibrary(libraryId, updateData);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(library, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(library, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update custom component library: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update custom component library: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1101,17 +1178,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
       try {
         const result = await client.deleteCustomComponentLibrary(args.libraryId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete custom component library: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete custom component library: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1131,17 +1212,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(revisions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(revisions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list custom component revisions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list custom component revisions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1171,17 +1256,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
           revisionData
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(revision, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(revision, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create custom component revision: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create custom component revision: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1201,17 +1290,21 @@ export function createRetoolServer(credentials: RetoolCredentials): McpServer {
           args.revisionId
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(files, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(files, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get custom component revision files: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get custom component revision files: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

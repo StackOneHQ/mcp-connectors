@@ -332,17 +332,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const project = await client.getProject(args.projectId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -360,17 +364,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const projects = await client.listProjects(args.owned, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(projects, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(projects, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -392,17 +400,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const issues = await client.listIssues(args.projectId, args.state, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issues, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issues, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -420,17 +432,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const issue = await client.getIssue(args.projectId, args.issueIid);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issue, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -460,17 +476,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
           args.assigneeIds
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issue, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -499,17 +519,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(mergeRequests, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(mergeRequests, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list merge requests: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list merge requests: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -530,17 +554,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
           args.mergeRequestIid
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(mergeRequest, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(mergeRequest, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get merge request: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get merge request: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -555,17 +583,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const user = await client.getCurrentUser();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get current user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get current user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -582,17 +614,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const user = await client.getUser(args.userId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -614,17 +650,21 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
         const files = await client.listFiles(args.projectId, args.path, args.ref);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(files, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(files, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -644,23 +684,23 @@ export function createGitLabServer(credentials: GitLabCredentials): McpServer {
     async (args) => {
       try {
         const client = new GitLabClient(credentials.token, credentials.baseUrl);
-        const content = await client.getFileContent(
-          args.projectId,
-          args.path,
-          args.ref
-        );
+        const content = await client.getFileContent(args.projectId, args.path, args.ref);
         return {
-          content: [{
-            type: 'text',
-            text: content,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: content,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

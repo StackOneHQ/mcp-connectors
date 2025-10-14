@@ -185,10 +185,7 @@ ${imageResults.map((img) => img.url).join('\n')}`;
     {
       image_url: z.string().url().describe('URL of the image to upscale'),
       scale: z.number().min(1).max(4).default(2).describe('Upscaling factor (1-4x)'),
-      model: z
-        .string()
-        .default('fal-ai/real-esrgan')
-        .describe('Upscaling model to use'),
+      model: z.string().default('fal-ai/real-esrgan').describe('Upscaling model to use'),
     },
     async (args) => {
       try {

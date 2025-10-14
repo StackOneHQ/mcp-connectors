@@ -111,7 +111,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { App, Image, Secret, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const app = await App.lookup(args.appName || 'mcp-sandbox', {
           createIfMissing: true,
@@ -142,17 +145,21 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         const sandbox = await app.createSandbox(image, sandboxOptions);
 
         return {
-          content: [{
-            type: 'text',
-            text: formatSandboxInfo(sandbox),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: formatSandboxInfo(sandbox),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create sandbox: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create sandbox: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -167,7 +174,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -175,25 +185,29 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         const exitCode = await sandbox.poll();
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                sandbox_id: sandbox.sandboxId,
-                state: exitCode === null ? 'RUNNING' : 'TERMINATED',
-                exit_code: exitCode,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  sandbox_id: sandbox.sandboxId,
+                  state: exitCode === null ? 'RUNNING' : 'TERMINATED',
+                  exit_code: exitCode,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get sandbox: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get sandbox: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -208,23 +222,30 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
         await sandbox.terminate();
 
         return {
-          content: [{
-            type: 'text',
-            text: `Sandbox ${args.sandboxId} terminated successfully`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Sandbox ${args.sandboxId} terminated successfully`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to terminate sandbox: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to terminate sandbox: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -251,7 +272,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -273,34 +297,40 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         // If background mode, return immediately without waiting
         if (args.background) {
           return {
-            content: [{
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  message: 'Command started in background',
-                  sandbox_id: args.sandboxId,
-                  is_running: true,
-                },
-                null,
-                2
-              ),
-            }],
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    message: 'Command started in background',
+                    sandbox_id: args.sandboxId,
+                    is_running: true,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         }
 
         const result = await formatProcessInfo(process);
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to execute command: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to execute command: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -313,7 +343,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async () => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandboxes = [];
         for await (const sandbox of Sandbox.list()) {
@@ -321,17 +354,21 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(sandboxes, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(sandboxes, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list sandboxes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list sandboxes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -355,16 +392,16 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         .string()
         .optional()
         .describe('Container image to use (default: python:3.12-slim)'),
-      entrypoint: z
-        .array(z.string())
-        .optional()
-        .describe('Command to run as entrypoint'),
+      entrypoint: z.array(z.string()).optional().describe('Command to run as entrypoint'),
       timeout: z.number().optional().describe('Timeout in milliseconds'),
     },
     async (args) => {
       try {
         const { App, Image, Volume, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const app = await App.lookup(args.appName || 'mcp-sandbox', {
           createIfMissing: true,
@@ -388,26 +425,30 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         const sandbox = await app.createSandbox(image, sandboxOptions);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                sandbox_id: sandbox.sandboxId,
-                volume_name: args.volumeName,
-                mount_path: args.mountPath,
-                message: 'Sandbox with volume created successfully',
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  sandbox_id: sandbox.sandboxId,
+                  volume_name: args.volumeName,
+                  mount_path: args.mountPath,
+                  message: 'Sandbox with volume created successfully',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create sandbox with volume: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create sandbox with volume: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -423,7 +464,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -435,25 +479,29 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         const text = decoder.decode(content);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                file_path: args.filePath,
-                content: text,
-                size: content.length,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  file_path: args.filePath,
+                  content: text,
+                  size: content.length,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -470,7 +518,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -480,25 +531,29 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         await handle.close();
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                file_path: args.filePath,
-                bytes_written: args.content.length,
-                message: 'File written successfully',
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  file_path: args.filePath,
+                  bytes_written: args.content.length,
+                  message: 'File written successfully',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to write file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to write file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -513,7 +568,10 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
         const tunnels = await sandbox.tunnels();
@@ -527,24 +585,28 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                sandbox_id: args.sandboxId,
-                tunnels: tunnelInfo,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  sandbox_id: args.sandboxId,
+                  tunnels: tunnelInfo,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get sandbox tunnels: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get sandbox tunnels: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -559,31 +621,38 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
     async (args) => {
       try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({ tokenId: credentials.tokenId, tokenSecret: credentials.tokenSecret });
+        await initializeClient({
+          tokenId: credentials.tokenId,
+          tokenSecret: credentials.tokenSecret,
+        });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
         const exitCode = await sandbox.wait();
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                sandbox_id: args.sandboxId,
-                exit_code: exitCode,
-                state: 'TERMINATED',
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  sandbox_id: args.sandboxId,
+                  exit_code: exitCode,
+                  state: 'TERMINATED',
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to wait for sandbox: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to wait for sandbox: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

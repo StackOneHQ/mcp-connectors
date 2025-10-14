@@ -332,17 +332,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
         const client = new GitHubClient(credentials.token);
         const repository = await client.getRepository(args.owner, args.repo);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(repository, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(repository, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get repository: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get repository: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -354,10 +358,7 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
     {
       username: z.string().optional().describe('Username to list repositories for'),
       org: z.string().optional().describe('Organization to list repositories for'),
-      limit: z
-        .number()
-        .default(30)
-        .describe('Maximum number of repositories to return'),
+      limit: z.number().default(30).describe('Maximum number of repositories to return'),
     },
     async (args) => {
       try {
@@ -368,17 +369,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(repositories, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(repositories, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list repositories: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list repositories: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -406,17 +411,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issues, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issues, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -435,17 +444,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
         const client = new GitHubClient(credentials.token);
         const issue = await client.getIssue(args.owner, args.repo, args.issueNumber);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issue, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -477,17 +490,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
           args.assignees
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issue, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -503,10 +520,7 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
         .enum(['open', 'closed', 'all'])
         .default('open')
         .describe('Pull request state filter'),
-      limit: z
-        .number()
-        .default(30)
-        .describe('Maximum number of pull requests to return'),
+      limit: z.number().default(30).describe('Maximum number of pull requests to return'),
     },
     async (args) => {
       try {
@@ -518,17 +532,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(pullRequests, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(pullRequests, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list pull requests: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list pull requests: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -551,17 +569,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
           args.pullNumber
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(pullRequest, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(pullRequest, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get pull request: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get pull request: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -581,17 +603,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
         const client = new GitHubClient(credentials.token);
         const user = await client.getUser(args.username);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -612,24 +638,23 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
     async (args) => {
       try {
         const client = new GitHubClient(credentials.token);
-        const files = await client.listFiles(
-          args.owner,
-          args.repo,
-          args.path,
-          args.ref
-        );
+        const files = await client.listFiles(args.owner, args.repo, args.path, args.ref);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(files, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(files, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -657,17 +682,21 @@ export function createGitHubServer(credentials: GitHubCredentials): McpServer {
           args.ref
         );
         return {
-          content: [{
-            type: 'text',
-            text: content,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: content,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

@@ -196,17 +196,21 @@ ${imageResults
 ${imageResults.map((img) => img.url).join('\n')}`;
 
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to generate image with FLUX: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to generate image with FLUX: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -320,17 +324,21 @@ ${imageResults
 ${imageResults.map((img) => img.url).join('\n')}`;
 
         return {
-          content: [{
-            type: 'text',
-            text: result,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to generate image with SDXL: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to generate image with SDXL: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -379,25 +387,31 @@ ${imageResults.map((img) => img.url).join('\n')}`;
 **Direct Image URL:** ${output}`;
 
           return {
-            content: [{
-              type: 'text',
-              text: result,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: result,
+              },
+            ],
           };
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: 'No upscaled image was generated.',
-          }],
+          content: [
+            {
+              type: 'text',
+              text: 'No upscaled image was generated.',
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to upscale image: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to upscale image: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -407,10 +421,7 @@ ${imageResults.map((img) => img.url).join('\n')}`;
     'replicate_remove_background',
     'Remove background from images using REMBG on Replicate',
     {
-      image_url: z
-        .string()
-        .url()
-        .describe('URL of the image to remove background from'),
+      image_url: z.string().url().describe('URL of the image to remove background from'),
       model: z
         .enum(['u2net', 'u2netp', 'u2net_human_seg', 'silueta', 'isnet-general-use'])
         .default('u2net')
@@ -470,25 +481,31 @@ ${imageResults.map((img) => img.url).join('\n')}`;
 **Direct Image URL:** ${output}`;
 
           return {
-            content: [{
-              type: 'text',
-              text: result,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: result,
+              },
+            ],
           };
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: 'No processed image was generated.',
-          }],
+          content: [
+            {
+              type: 'text',
+              text: 'No processed image was generated.',
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to remove background: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to remove background: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -594,10 +611,12 @@ ${selectedModels
 **Usage:** Use the model ID when calling specific model endpoints, or use the dedicated tools for popular models.`;
 
       return {
-        content: [{
-          type: 'text',
-          text: result,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: result,
+          },
+        ],
       };
     }
   );
