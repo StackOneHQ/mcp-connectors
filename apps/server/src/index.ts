@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import express, { type Request, type Response } from 'express';
 import winston from 'winston';
@@ -47,7 +47,10 @@ const CONNECTOR_REGISTRY: Record<
   perplexity: { name: 'Perplexity', factory: 'createPerplexityServer' },
   posthog: { name: 'PostHog', factory: 'createPostHogServer' },
   producthunt: { name: 'Product Hunt', factory: 'createProductHuntServer' },
-  'pydantic-logfire': { name: 'Pydantic Logfire', factory: 'createPydanticLogfireServer' },
+  'pydantic-logfire': {
+    name: 'Pydantic Logfire',
+    factory: 'createPydanticLogfireServer',
+  },
   pylon: { name: 'Pylon', factory: 'createPylonServer' },
   replicate: { name: 'Replicate', factory: 'createReplicateServer' },
   retool: { name: 'Retool', factory: 'createRetoolServer' },
@@ -133,9 +136,7 @@ const printUsage = () => {
   console.log('');
   console.log('Examples:');
   console.log('  npm start -- --connector asana --credentials \'{"apiKey":"sk-xxx"}\'');
-  console.log(
-    '  npm start -- --connector github --credentials \'{"token":"ghp_xxx"}\''
-  );
+  console.log('  npm start -- --connector github --credentials \'{"token":"ghp_xxx"}\'');
 };
 
 export const startServer = async (): Promise<{

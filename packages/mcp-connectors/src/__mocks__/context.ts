@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 // Context interface for connector testing
-export interface ConnectorContext<C = any, S = any, O = any> {
+export interface ConnectorContext<C = unknown, S = unknown, O = unknown> {
   getCredentials(): Promise<C>;
   getSetup(): Promise<S>;
   getData<T = unknown>(key?: string): Promise<T | null>;

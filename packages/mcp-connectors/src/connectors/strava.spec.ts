@@ -1,9 +1,8 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { StravaConnectorConfig } from './strava';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createStravaServer } from './strava';
 
 const server = setupServer();
 
@@ -118,12 +117,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ATHLETE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.strava_get_athlete.handler({});
 
         expect(actual).toBe(JSON.stringify(mockAthlete, null, 2));
       });
@@ -137,12 +134,13 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ATHLETE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: { ...mockOAuth2Credentials, accessToken: 'invalid_token' },
+        const mcpServer = createStravaServer({
+          ...mockOAuth2Credentials,
+          accessToken: 'invalid_token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.strava_get_athlete.handler({});
 
         expect(actual).toContain('Failed to get athlete profile');
       });
@@ -163,12 +161,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ATHLETE_STATS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ athleteId: 123456 }, mockContext);
+        const actual = await tools.strava_get_athlete_stats.handler({ athleteId: 123456 });
 
         expect(actual).toBe(JSON.stringify(mockStats, null, 2));
       });
@@ -190,12 +186,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ATHLETE_STATS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.strava_get_athlete_stats.handler({});
 
         expect(actual).toBe(JSON.stringify(mockStats, null, 2));
       });
@@ -213,12 +207,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ACTIVITIES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.strava_get_activities.handler({});
 
         expect(actual).toBe(JSON.stringify(mockActivities, null, 2));
       });
@@ -235,12 +227,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ACTIVITIES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        await tool.handler({ page: 2, perPage: 10 }, mockContext);
+        await tools.strava_get_activities.handler({ page: 2, perPage: 10 });
       });
     });
   });
@@ -254,12 +244,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ACTIVITY as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ activityId: 987654321 }, mockContext);
+        const actual = await tools.strava_get_activity.handler({ activityId: 987654321 });
 
         expect(actual).toBe(JSON.stringify(mockActivity, null, 2));
       });
@@ -273,12 +261,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ACTIVITY as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ activityId: 999999 }, mockContext);
+        const actual = await tools.strava_get_activity.handler({ activityId: 999999 });
 
         expect(actual).toContain('Failed to get activity');
       });
@@ -305,13 +291,12 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools
-          .GET_ACTIVITY_STREAMS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ activityId: 987654321 }, mockContext);
+        const actual = await tools.strava_get_activity_streams.handler({
+          activityId: 987654321,
+        });
 
         expect(actual).toBe(JSON.stringify(mockStreams, null, 2));
       });
@@ -330,16 +315,13 @@ describe('#StravaConnector', () => {
           )
         );
 
-        const tool = StravaConnectorConfig.tools
-          .GET_ACTIVITY_STREAMS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        await tool.handler(
-          { activityId: 987654321, keys: ['heartrate', 'watts'] },
-          mockContext
-        );
+        await tools.strava_get_activity_streams.handler({
+          activityId: 987654321,
+          keys: ['heartrate', 'watts'],
+        });
       });
     });
   });
@@ -353,12 +335,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_SEGMENT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ segmentId: 654321 }, mockContext);
+        const actual = await tools.strava_get_segment.handler({ segmentId: 654321 });
 
         expect(actual).toBe(JSON.stringify(mockSegment, null, 2));
       });
@@ -381,20 +361,15 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.EXPLORE_SEGMENTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            bounds: {
-              sw: [37.7, -122.5],
-              ne: [37.8, -122.4],
-            },
+        const actual = await tools.strava_explore_segments.handler({
+          bounds: {
+            sw: [37.7, -122.5],
+            ne: [37.8, -122.4],
           },
-          mockContext
-        );
+        });
 
         expect(actual).toBe(JSON.stringify(mockExploreResult, null, 2));
       });
@@ -410,21 +385,16 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.EXPLORE_SEGMENTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        await tool.handler(
-          {
-            bounds: {
-              sw: [37.7, -122.5],
-              ne: [37.8, -122.4],
-            },
-            activityType: 'running',
+        await tools.strava_explore_segments.handler({
+          bounds: {
+            sw: [37.7, -122.5],
+            ne: [37.8, -122.4],
           },
-          mockContext
-        );
+          activityType: 'running',
+        });
       });
     });
   });
@@ -457,12 +427,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ATHLETE_ROUTES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.strava_get_athlete_routes.handler({});
 
         expect(actual).toBe(JSON.stringify(mockRoutes, null, 2));
       });
@@ -492,12 +460,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools.GET_ROUTE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ routeId: 456789 }, mockContext);
+        const actual = await tools.strava_get_route.handler({ routeId: 456789 });
 
         expect(actual).toBe(JSON.stringify(mockRoute, null, 2));
       });
@@ -515,13 +481,10 @@ describe('#StravaConnector', () => {
           })
         );
 
-        const tool = StravaConnectorConfig.tools
-          .GET_STARRED_SEGMENTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          oauth2Credentials: mockOAuth2Credentials,
-        });
+        const mcpServer = createStravaServer(mockOAuth2Credentials);
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.strava_get_starred_segments.handler({});
 
         expect(actual).toBe(JSON.stringify(mockStarredSegments, null, 2));
       });

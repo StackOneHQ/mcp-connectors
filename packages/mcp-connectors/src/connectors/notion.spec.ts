@@ -1,9 +1,8 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { NotionConnectorConfig } from './notion';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createNotionServer } from './notion';
 
 const server = setupServer();
 
@@ -30,13 +29,10 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.GET_ME as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.notion_get_me.handler({});
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('user-123');
@@ -56,13 +52,10 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.GET_ME as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'invalid_token' });
+        const mcpServer = createNotionServer({ token: 'invalid_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.notion_get_me.handler({});
 
         expect(actual).toContain('Unauthorized');
         expect(actual).toContain('check your Notion integration token');
@@ -94,16 +87,13 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.LIST_USERS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          { page_size: 10, start_cursor: 'cursor-123' },
-          mockContext
-        );
+        const actual = await tools.notion_list_users.handler({
+          page_size: 10,
+          start_cursor: 'cursor-123',
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(2);
@@ -134,13 +124,10 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.GET_PAGE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ page_id: 'page-123' }, mockContext);
+        const actual = await tools.notion_get_page.handler({ page_id: 'page-123' });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('page-123');
@@ -159,13 +146,10 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.GET_PAGE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ page_id: 'invalid-id' }, mockContext);
+        const actual = await tools.notion_get_page.handler({ page_id: 'invalid-id' });
 
         expect(actual).toContain('not found');
         expect(actual).toContain('check the ID');
@@ -193,20 +177,14 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.CREATE_PAGE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            parent_id: 'parent-123',
-            parent_type: 'page_id',
-            title: 'New Page',
-          },
-          mockContext
-        );
+        const actual = await tools.notion_create_page.handler({
+          parent_id: 'parent-123',
+          parent_type: 'page_id',
+          title: 'New Page',
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('new-page-123');
@@ -234,34 +212,28 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.CREATE_PAGE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            parent_id: 'parent-123',
-            parent_type: 'page_id',
-            title: 'Page with Content',
-            children: [
-              {
-                type: 'heading_1',
-                heading_1: {
-                  rich_text: [{ type: 'text', text: { content: 'Heading' } }],
-                },
+        const actual = await tools.notion_create_page.handler({
+          parent_id: 'parent-123',
+          parent_type: 'page_id',
+          title: 'Page with Content',
+          children: [
+            {
+              type: 'heading_1',
+              heading_1: {
+                rich_text: [{ type: 'text', text: { content: 'Heading' } }],
               },
-              {
-                type: 'paragraph',
-                paragraph: {
-                  rich_text: [{ type: 'text', text: { content: 'Paragraph text' } }],
-                },
+            },
+            {
+              type: 'paragraph',
+              paragraph: {
+                rich_text: [{ type: 'text', text: { content: 'Paragraph text' } }],
               },
-            ],
-          },
-          mockContext
-        );
+            },
+          ],
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('new-page-123');
@@ -305,16 +277,14 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.SEARCH as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          { query: 'test query', filter: 'page', page_size: 20 },
-          mockContext
-        );
+        const actual = await tools.notion_search.handler({
+          query: 'test query',
+          filter: 'page',
+          page_size: 20,
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(2);
@@ -333,13 +303,10 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.SEARCH as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ query: 'test' }, mockContext);
+        const actual = await tools.notion_search.handler({ query: 'test' });
 
         expect(actual).toContain('Rate limited');
         expect(actual).toContain('wait before making more requests');
@@ -380,20 +347,14 @@ describe('#NotionConnector', () => {
           )
         );
 
-        const tool = NotionConnectorConfig.tools.QUERY_DATABASE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            database_id: 'db-123',
-            filter: { property: 'Status', select: { equals: 'Done' } },
-            sorts: [{ property: 'Created', direction: 'descending' }],
-          },
-          mockContext
-        );
+        const actual = await tools.notion_query_database.handler({
+          database_id: 'db-123',
+          filter: { property: 'Status', select: { equals: 'Done' } },
+          sorts: [{ property: 'Created', direction: 'descending' }],
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(2);
@@ -424,32 +385,26 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.CREATE_DATABASE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            parent_page_id: 'parent-page-123',
-            title: 'Tasks Database',
-            properties: {
-              Name: { type: 'title', title: {} },
-              Status: {
-                type: 'select',
-                select: {
-                  options: [
-                    { name: 'Todo', color: 'gray' },
-                    { name: 'In Progress', color: 'blue' },
-                    { name: 'Done', color: 'green' },
-                  ],
-                },
+        const actual = await tools.notion_create_database.handler({
+          parent_page_id: 'parent-page-123',
+          title: 'Tasks Database',
+          properties: {
+            Name: { type: 'title', title: {} },
+            Status: {
+              type: 'select',
+              select: {
+                options: [
+                  { name: 'Todo', color: 'gray' },
+                  { name: 'In Progress', color: 'blue' },
+                  { name: 'Done', color: 'green' },
+                ],
               },
             },
           },
-          mockContext
-        );
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('db-new-123');
@@ -488,34 +443,27 @@ describe('#NotionConnector', () => {
           )
         );
 
-        const tool = NotionConnectorConfig.tools
-          .APPEND_BLOCK_CHILDREN as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            block_id: 'block-123',
-            children: [
-              {
-                type: 'heading_2',
-                heading_2: {
-                  rich_text: [{ type: 'text', text: { content: 'Section Title' } }],
-                },
+        const actual = await tools.notion_append_block_children.handler({
+          block_id: 'block-123',
+          children: [
+            {
+              type: 'heading_2',
+              heading_2: {
+                rich_text: [{ type: 'text', text: { content: 'Section Title' } }],
               },
-              {
-                type: 'paragraph',
-                paragraph: {
-                  rich_text: [{ type: 'text', text: { content: 'Some content' } }],
-                },
+            },
+            {
+              type: 'paragraph',
+              paragraph: {
+                rich_text: [{ type: 'text', text: { content: 'Some content' } }],
               },
-              { type: 'divider', divider: {} },
-            ],
-          },
-          mockContext
-        );
+            },
+            { type: 'divider', divider: {} },
+          ],
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.results).toHaveLength(3);
@@ -544,24 +492,18 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.UPDATE_PAGE as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            page_id: 'page-123',
-            properties: {
-              title: {
-                title: [{ type: 'text', text: { content: 'Updated Title' } }],
-              },
+        const actual = await tools.notion_update_page.handler({
+          page_id: 'page-123',
+          properties: {
+            title: {
+              title: [{ type: 'text', text: { content: 'Updated Title' } }],
             },
-            archived: false,
           },
-          mockContext
-        );
+          archived: false,
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('page-123');
@@ -591,20 +533,14 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.CREATE_COMMENT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            parent_id: 'page-123',
-            parent_type: 'page_id',
-            comment_text: 'This is a comment',
-          },
-          mockContext
-        );
+        const actual = await tools.notion_create_comment.handler({
+          parent_id: 'page-123',
+          parent_type: 'page_id',
+          comment_text: 'This is a comment',
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('comment-123');
@@ -631,21 +567,15 @@ describe('#NotionConnector', () => {
           })
         );
 
-        const tool = NotionConnectorConfig.tools.CREATE_COMMENT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        mockContext.getCredentials = vi
-          .fn()
-          .mockResolvedValue({ token: 'secret_test_token' });
+        const mcpServer = createNotionServer({ token: 'secret_test_token' });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            parent_id: 'page-123',
-            parent_type: 'page_id',
-            comment_text: 'Reply to thread',
-            discussion_id: 'discussion-123',
-          },
-          mockContext
-        );
+        const actual = await tools.notion_create_comment.handler({
+          parent_id: 'page-123',
+          parent_type: 'page_id',
+          comment_text: 'Reply to thread',
+          discussion_id: 'discussion-123',
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('comment-456');
@@ -654,61 +584,4 @@ describe('#NotionConnector', () => {
     });
   });
 
-  describe('configuration', () => {
-    it('should be properly configured', () => {
-      expect(NotionConnectorConfig).toBeDefined();
-      expect(NotionConnectorConfig.name).toBe('Notion');
-      expect(NotionConnectorConfig.key).toBe('notion');
-      expect(NotionConnectorConfig.version).toBe('1.0.0');
-    });
-
-    it('should have valid credentials schema', () => {
-      const credentialsSchema = NotionConnectorConfig.credentials;
-
-      expect(() =>
-        credentialsSchema.parse({
-          token: 'secret_1234567890abcdefghijklmnopqrstuv',
-        })
-      ).not.toThrow();
-
-      expect(() => credentialsSchema.parse({})).toThrow();
-    });
-
-    it('should have empty setup schema', () => {
-      const setupSchema = NotionConnectorConfig.setup;
-      expect(() => setupSchema.parse({})).not.toThrow();
-    });
-
-    it('should have an example prompt', () => {
-      expect(NotionConnectorConfig.examplePrompt).toBeDefined();
-      expect(typeof NotionConnectorConfig.examplePrompt).toBe('string');
-      expect(NotionConnectorConfig.examplePrompt?.length).toBeGreaterThan(0);
-    });
-
-    it('should have tools object with expected tools', () => {
-      expect(typeof NotionConnectorConfig.tools).toBe('object');
-      expect(NotionConnectorConfig.tools).toBeDefined();
-
-      const expectedTools = [
-        'GET_ME',
-        'LIST_USERS',
-        'GET_PAGE',
-        'CREATE_PAGE',
-        'UPDATE_PAGE',
-        'CREATE_COMMENT',
-        'LIST_COMMENTS',
-        'SEARCH',
-        'CREATE_DATABASE',
-        'LIST_DATABASES',
-        'GET_DATABASE',
-        'QUERY_DATABASE',
-        'GET_BLOCK_CHILDREN',
-        'APPEND_BLOCK_CHILDREN',
-      ];
-
-      for (const toolName of expectedTools) {
-        expect(NotionConnectorConfig.tools[toolName]).toBeDefined();
-      }
-    });
-  });
 });

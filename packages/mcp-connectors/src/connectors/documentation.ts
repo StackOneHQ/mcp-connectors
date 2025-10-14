@@ -287,7 +287,7 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
 // Simple in-memory cache for documentation
 const documentationCache = new Map<string, string>();
 
-export type DocumentationCredentials = {};
+export type DocumentationCredentials = Record<string, never>;
 
 export function createDocumentationServer(
   _credentials: DocumentationCredentials

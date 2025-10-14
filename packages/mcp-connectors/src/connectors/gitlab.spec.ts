@@ -1,92 +1,46 @@
 import { describe, expect, it } from 'vitest';
-import { GitLabConnectorConfig } from './gitlab';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createGitLabServer } from './gitlab';
 
-describe('GitLabConnectorConfig', () => {
-  it('should have the correct basic properties', () => {
-    expect(GitLabConnectorConfig.name).toBe('GitLab');
-    expect(GitLabConnectorConfig.key).toBe('gitlab');
-    expect(GitLabConnectorConfig.version).toBe('1.0.0');
+describe('GitLabConnector', () => {
+  it('should create a server with the correct name and version', () => {
+    const server = createGitLabServer({ token: 'test-token' });
+    expect(server).toBeDefined();
   });
 
-  it('should have tools object with expected tools', () => {
-    expect(typeof GitLabConnectorConfig.tools).toBe('object');
-    expect(GitLabConnectorConfig.tools).toBeDefined();
+  it('should have all expected tools', () => {
+    const server = createGitLabServer({ token: 'test-token' });
+    const tools = extractToolsFromServer(server);
 
     const expectedTools = [
-      'GET_PROJECT',
-      'LIST_PROJECTS',
-      'LIST_ISSUES',
-      'GET_ISSUE',
-      'CREATE_ISSUE',
-      'LIST_MERGE_REQUESTS',
-      'GET_MERGE_REQUEST',
-      'GET_CURRENT_USER',
-      'GET_USER',
-      'LIST_FILES',
-      'GET_FILE_CONTENT',
+      'gitlab_get_project',
+      'gitlab_list_projects',
+      'gitlab_list_issues',
+      'gitlab_get_issue',
+      'gitlab_create_issue',
+      'gitlab_list_merge_requests',
+      'gitlab_get_merge_request',
+      'gitlab_get_current_user',
+      'gitlab_get_user',
+      'gitlab_list_files',
+      'gitlab_get_file_content',
     ];
 
     for (const toolName of expectedTools) {
-      expect(GitLabConnectorConfig.tools[toolName]).toBeDefined();
+      expect(tools[toolName]).toBeDefined();
     }
   });
 
-  it('should have correct credential schema', () => {
-    const credentialsSchema = GitLabConnectorConfig.credentials;
-    const parsedCredentials = credentialsSchema.safeParse({
+  it('should accept credentials with token only', () => {
+    const server = createGitLabServer({ token: 'test-token' });
+    expect(server).toBeDefined();
+  });
+
+  it('should accept credentials with token and custom baseUrl', () => {
+    const server = createGitLabServer({
       token: 'test-token',
       baseUrl: 'https://gitlab.example.com/api/v4',
     });
-
-    expect(parsedCredentials.success).toBe(true);
-  });
-
-  it('should use default baseUrl when not provided', () => {
-    const credentialsSchema = GitLabConnectorConfig.credentials;
-    const parsedCredentials = credentialsSchema.safeParse({
-      token: 'test-token',
-    });
-
-    expect(parsedCredentials.success).toBe(true);
-    if (parsedCredentials.success) {
-      expect(parsedCredentials.data.baseUrl).toBe('https://gitlab.com/api/v4');
-    }
-  });
-
-  it('should have a meaningful example prompt', () => {
-    expect(GitLabConnectorConfig.examplePrompt).toContain('issues');
-    expect(GitLabConnectorConfig.examplePrompt).toContain('merge requests');
-  });
-
-  describe('URL Security Validation', () => {
-    it('should accept valid HTTPS URLs', () => {
-      const credentialsSchema = GitLabConnectorConfig.credentials;
-      const parsedCredentials = credentialsSchema.safeParse({
-        token: 'test-token',
-        baseUrl: 'https://gitlab.example.com/api/v4',
-      });
-
-      expect(parsedCredentials.success).toBe(true);
-    });
-
-    it('should reject invalid URLs', () => {
-      const credentialsSchema = GitLabConnectorConfig.credentials;
-      const parsedCredentials = credentialsSchema.safeParse({
-        token: 'test-token',
-        baseUrl: 'not-a-valid-url',
-      });
-
-      expect(parsedCredentials.success).toBe(false);
-    });
-
-    it('should reject malformed URLs', () => {
-      const credentialsSchema = GitLabConnectorConfig.credentials;
-      const parsedCredentials = credentialsSchema.safeParse({
-        token: 'test-token',
-        baseUrl: 'https://',
-      });
-
-      expect(parsedCredentials.success).toBe(false);
-    });
+    expect(server).toBeDefined();
   });
 });

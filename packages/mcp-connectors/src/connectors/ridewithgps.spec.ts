@@ -1,9 +1,8 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { describe, expect, it } from 'vitest';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { RideWithGPSConnectorConfig } from './ridewithgps';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createRideWithGPSServer } from './ridewithgps';
 
 const server = setupServer();
 
@@ -39,13 +38,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools
-          .GET_CURRENT_USER as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.ridewithgps_get_current_user.handler({});
 
         expect(actual).toContain('"id": 123');
         expect(actual).toContain('"name": "John Doe"');
@@ -65,13 +64,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools
-          .GET_CURRENT_USER as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'invalid-key', authToken: 'invalid-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'invalid-key',
+          authToken: 'invalid-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.ridewithgps_get_current_user.handler({});
 
         expect(actual).toContain('Failed to get current user');
         expect(actual).toContain('401');
@@ -111,12 +110,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools.GET_ROUTES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ offset: 0, limit: 20 }, mockContext);
+        const actual = await tools.ridewithgps_get_routes.handler({ offset: 0, limit: 20 });
 
         expect(actual).toContain('"id": 456');
         expect(actual).toContain('"name": "Morning Commute"');
@@ -147,15 +147,17 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools.GET_ROUTES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          { userId: 456, offset: 0, limit: 10 },
-          mockContext
-        );
+        const actual = await tools.ridewithgps_get_routes.handler({
+          userId: 456,
+          offset: 0,
+          limit: 10,
+        });
 
         expect(actual).toContain('"id": 789');
         expect(actual).toContain('"user_id": 456');
@@ -192,13 +194,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools
-          .GET_ROUTE_DETAILS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ routeId: 456 }, mockContext);
+        const actual = await tools.ridewithgps_get_route_details.handler({ routeId: 456 });
 
         expect(actual).toContain('"id": 456');
         expect(actual).toContain('"name": "Mountain Loop"');
@@ -219,13 +221,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools
-          .GET_ROUTE_DETAILS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ routeId: 999 }, mockContext);
+        const actual = await tools.ridewithgps_get_route_details.handler({ routeId: 999 });
 
         expect(actual).toContain('Failed to get route details');
         expect(actual).toContain('404');
@@ -265,12 +267,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools.GET_RIDES as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ offset: 0, limit: 20 }, mockContext);
+        const actual = await tools.ridewithgps_get_rides.handler({ offset: 0, limit: 20 });
 
         expect(actual).toContain('"id": 789');
         expect(actual).toContain('"name": "Weekend Ride"');
@@ -316,13 +319,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools
-          .GET_RIDE_DETAILS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ rideId: 789 }, mockContext);
+        const actual = await tools.ridewithgps_get_ride_details.handler({ rideId: 789 });
 
         expect(actual).toContain('"id": 789');
         expect(actual).toContain('"name": "Epic Mountain Ride"');
@@ -344,13 +347,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools
-          .GET_RIDE_DETAILS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ rideId: 999 }, mockContext);
+        const actual = await tools.ridewithgps_get_ride_details.handler({ rideId: 999 });
 
         expect(actual).toContain('Failed to get ride details');
         expect(actual).toContain('404');
@@ -391,12 +394,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools.GET_EVENTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.ridewithgps_get_events.handler({});
 
         expect(actual).toContain('"id": 101');
         expect(actual).toContain('"name": "Annual Century Ride"');
@@ -424,12 +428,13 @@ describe('#RideWithGPSConnector', () => {
 
         server.listen();
 
-        const tool = RideWithGPSConnectorConfig.tools.GET_EVENTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key', authToken: 'test-auth-token' },
+        const mcpServer = createRideWithGPSServer({
+          apiKey: 'test-api-key',
+          authToken: 'test-auth-token',
         });
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.ridewithgps_get_events.handler({});
 
         expect(actual).toContain('[]');
 
