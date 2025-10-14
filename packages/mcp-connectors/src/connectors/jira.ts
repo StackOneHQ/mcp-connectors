@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 // Jira API types
@@ -301,7 +301,7 @@ class JiraClient {
     };
 
     content.forEach(processNode);
-    return [...new Map(mentions.map((m) => [m.key, m])).values()]; // Remove duplicates
+    return Array.from(new Map(mentions.map((m) => [m.key, m])).values()); // Remove duplicates
   }
 
   // Clean comment data
@@ -715,235 +715,380 @@ class JiraClient {
   }
 }
 
-export const JiraConnectorConfig = mcpConnectorConfig({
-  name: 'Jira',
-  key: 'jira',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/jira/filled/svg',
-  credentials: z.object({
-    baseUrl: z
-      .string()
-      .describe(
-        'The Jira API base URL :: https://your-domain.atlassian.net :: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/'
-      ),
-    email: z
-      .string()
-      .describe('The email address associated with the API token :: user@example.com'),
-    apiToken: z
-      .string()
-      .describe(
-        'The Jira API token from Account Settings > Security > API tokens :: ATATT3xFfGF01234567890abcdefghijklmnop :: https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/'
-      ),
-  }),
-  setup: z.object({}),
-  description:
-    'Jira is a project management tool that allows you to create, update, and get issues, projects, and more.',
-  examplePrompt:
-    'Search for all open bugs in project "PROJ", create a new story for implementing user authentication, and add a comment to ticket PROJ-123.',
-  tools: (tool) => ({
-    SEARCH_ISSUES: tool({
-      name: 'jira_search_issues',
-      description: 'Search JIRA issues using JQL (Jira Query Language)',
-      schema: z.object({
-        searchString: z.string().describe('JQL search string'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.searchIssues(args.searchString);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to search issues: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_EPIC_CHILDREN: tool({
-      name: 'jira_get_epic_children',
-      description: 'Get all child issues in an epic including their comments',
-      schema: z.object({
-        epicKey: z.string().describe('The key of the epic issue'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.getEpicChildren(args.epicKey);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to get epic children: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_ISSUE: tool({
-      name: 'jira_get_issue',
-      description:
-        'Get detailed information about a specific JIRA issue including comments',
-      schema: z.object({
-        issueId: z.string().describe('The ID or key of the JIRA issue'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.getIssueWithComments(args.issueId);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_ISSUE: tool({
-      name: 'jira_create_issue',
-      description: 'Create a new JIRA issue',
-      schema: z.object({
-        projectKey: z
-          .string()
-          .describe('The project key where the issue will be created'),
-        issueType: z
-          .string()
-          .describe('The type of issue to create (e.g., "Bug", "Story", "Task")'),
-        summary: z.string().describe('The issue summary/title'),
-        description: z.string().optional().describe('The issue description'),
-        fields: z
-          .record(z.any())
-          .optional()
-          .describe('Additional fields to set on the issue'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.createIssue(
-            args.projectKey,
-            args.issueType,
-            args.summary,
-            args.description,
-            args.fields
-          );
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    UPDATE_ISSUE: tool({
-      name: 'jira_update_issue',
-      description: 'Update an existing JIRA issue',
-      schema: z.object({
-        issueKey: z.string().describe('The key of the issue to update'),
-        fields: z.record(z.any()).describe('Fields to update on the issue'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          await client.updateIssue(args.issueKey, args.fields);
-          return JSON.stringify(
-            { message: `Issue ${args.issueKey} updated successfully` },
-            null,
-            2
-          );
-        } catch (error) {
-          return `Failed to update issue: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_TRANSITIONS: tool({
-      name: 'jira_get_transitions',
-      description: 'Get available status transitions for a JIRA issue',
-      schema: z.object({
-        issueKey: z.string().describe('The key of the issue to get transitions for'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.getTransitions(args.issueKey);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to get transitions: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    TRANSITION_ISSUE: tool({
-      name: 'jira_transition_issue',
-      description: 'Transition a JIRA issue to a new status',
-      schema: z.object({
-        issueKey: z.string().describe('The key of the issue to transition'),
-        transitionId: z.string().describe('The ID of the transition to perform'),
-        comment: z
-          .string()
-          .optional()
-          .describe('Optional comment to add with the transition'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          await client.transitionIssue(args.issueKey, args.transitionId, args.comment);
-          return JSON.stringify(
+export interface JiraCredentials {
+  baseUrl: string;
+  email: string;
+  apiToken: string;
+}
+
+export function createJiraServer(credentials: JiraCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Jira',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'jira_search_issues',
+    'Search JIRA issues using JQL (Jira Query Language)',
+    {
+      searchString: z.string().describe('JQL search string'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.searchIssues(args.searchString);
+        return {
+          content: [
             {
-              message: `Issue ${args.issueKey} transitioned successfully${args.comment ? ' with comment' : ''}`,
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
             },
-            null,
-            2
-          );
-        } catch (error) {
-          return `Failed to transition issue: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    ADD_ATTACHMENT: tool({
-      name: 'jira_add_attachment',
-      description: 'Add a file attachment to a JIRA issue',
-      schema: z.object({
-        issueKey: z.string().describe('The key of the issue to add attachment to'),
-        fileContent: z.string().describe('Base64 encoded content of the file'),
-        filename: z.string().describe('Name of the file to be attached'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.addAttachment(
-            args.issueKey,
-            args.fileContent,
-            args.filename
-          );
-          return JSON.stringify(
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
             {
-              message: `File ${args.filename} attached successfully to issue ${args.issueKey}`,
-              attachmentId: result.id,
-              filename: result.filename,
+              type: 'text',
+              text: `Failed to search issues: ${error instanceof Error ? error.message : String(error)}`,
             },
-            null,
-            2
-          );
-        } catch (error) {
-          return `Failed to add attachment: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    ADD_COMMENT: tool({
-      name: 'jira_add_comment',
-      description: 'Add a comment to a JIRA issue',
-      schema: z.object({
-        issueIdOrKey: z
-          .string()
-          .describe('The ID or key of the issue to add the comment to'),
-        body: z.string().describe('The content of the comment (plain text)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { baseUrl, email, apiToken } = await context.getCredentials();
-          const client = new JiraClient(baseUrl, email, apiToken);
-          const result = await client.addComment(args.issueIdOrKey, args.body);
-          return JSON.stringify(result, null, 2);
-        } catch (error) {
-          return `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_get_epic_children',
+    'Get all child issues in an epic including their comments',
+    {
+      epicKey: z.string().describe('The key of the epic issue'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.getEpicChildren(args.epicKey);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get epic children: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_get_issue',
+    'Get detailed information about a specific JIRA issue including comments',
+    {
+      issueId: z.string().describe('The ID or key of the JIRA issue'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.getIssueWithComments(args.issueId);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_create_issue',
+    'Create a new JIRA issue',
+    {
+      projectKey: z.string().describe('The project key where the issue will be created'),
+      issueType: z
+        .string()
+        .describe('The type of issue to create (e.g., "Bug", "Story", "Task")'),
+      summary: z.string().describe('The issue summary/title'),
+      description: z.string().optional().describe('The issue description'),
+      fields: z
+        .record(z.any())
+        .optional()
+        .describe('Additional fields to set on the issue'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.createIssue(
+          args.projectKey,
+          args.issueType,
+          args.summary,
+          args.description,
+          args.fields
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_update_issue',
+    'Update an existing JIRA issue',
+    {
+      issueKey: z.string().describe('The key of the issue to update'),
+      fields: z.record(z.any()).describe('Fields to update on the issue'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        await client.updateIssue(args.issueKey, args.fields);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                { message: `Issue ${args.issueKey} updated successfully` },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_get_transitions',
+    'Get available status transitions for a JIRA issue',
+    {
+      issueKey: z.string().describe('The key of the issue to get transitions for'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.getTransitions(args.issueKey);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get transitions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_transition_issue',
+    'Transition a JIRA issue to a new status',
+    {
+      issueKey: z.string().describe('The key of the issue to transition'),
+      transitionId: z.string().describe('The ID of the transition to perform'),
+      comment: z
+        .string()
+        .optional()
+        .describe('Optional comment to add with the transition'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        await client.transitionIssue(args.issueKey, args.transitionId, args.comment);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  message: `Issue ${args.issueKey} transitioned successfully${args.comment ? ' with comment' : ''}`,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to transition issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_add_attachment',
+    'Add a file attachment to a JIRA issue',
+    {
+      issueKey: z.string().describe('The key of the issue to add attachment to'),
+      fileContent: z.string().describe('Base64 encoded content of the file'),
+      filename: z.string().describe('Name of the file to be attached'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.addAttachment(
+          args.issueKey,
+          args.fileContent,
+          args.filename
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  message: `File ${args.filename} attached successfully to issue ${args.issueKey}`,
+                  attachmentId: result.id,
+                  filename: result.filename,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add attachment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'jira_add_comment',
+    'Add a comment to a JIRA issue',
+    {
+      issueIdOrKey: z
+        .string()
+        .describe('The ID or key of the issue to add the comment to'),
+      body: z.string().describe('The content of the comment (plain text)'),
+    },
+    async (args) => {
+      try {
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
+        const result = await client.addComment(args.issueIdOrKey, args.body);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}
