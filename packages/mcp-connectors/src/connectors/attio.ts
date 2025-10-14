@@ -128,10 +128,12 @@ export function createAttioServer(credentials: AttioCredentials): McpServer {
 
         if (lists.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No lists found matching keyword: "${args.keyword}"`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No lists found matching keyword: "${args.keyword}"`,
+              },
+            ],
           };
         }
 
@@ -144,25 +146,29 @@ export function createAttioServer(credentials: AttioCredentials): McpServer {
         }));
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                keyword_used: args.keyword,
-                total_matches: lists.length,
-                lists: listSummary,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  keyword_used: args.keyword,
+                  total_matches: lists.length,
+                  lists: listSummary,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get filtered lists: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get filtered lists: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -189,17 +195,21 @@ export function createAttioServer(credentials: AttioCredentials): McpServer {
         };
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(fieldInfo, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(fieldInfo, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get list fields: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get list fields: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -224,10 +234,12 @@ export function createAttioServer(credentials: AttioCredentials): McpServer {
 
         if (entries.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No entries found in list: "${args.listSlug}"`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No entries found in list: "${args.listSlug}"`,
+              },
+            ],
           };
         }
 
@@ -240,26 +252,30 @@ export function createAttioServer(credentials: AttioCredentials): McpServer {
         }));
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                list_slug: args.listSlug,
-                total_entries: entries.length,
-                limit_applied: args.limit,
-                entries: entrySummary,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  list_slug: args.listSlug,
+                  total_entries: entries.length,
+                  limit_applied: args.limit,
+                  entries: entrySummary,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get list entries: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get list entries: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

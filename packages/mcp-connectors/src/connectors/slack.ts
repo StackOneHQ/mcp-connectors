@@ -268,7 +268,11 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
     version: '1.0.0',
   });
 
-  const client = new SlackClient(credentials.botToken, credentials.teamId, credentials.channelIds);
+  const client = new SlackClient(
+    credentials.botToken,
+    credentials.teamId,
+    credentials.channelIds
+  );
 
   server.tool(
     'slack_post_message',
@@ -281,17 +285,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
       try {
         const response = await client.postMessage(args.channel_id, args.text);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to post message: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to post message: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -311,17 +319,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
       try {
         const response = await client.getChannelHistory(args.channel_id, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get channel history: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get channel history: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -342,17 +354,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
       try {
         const response = await client.getThreadReplies(args.channel_id, args.thread_ts);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get thread replies: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get thread replies: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -374,17 +390,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
           args.reaction
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add reaction: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add reaction: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -407,17 +427,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
       try {
         const response = await client.getChannels(args.limit, args.cursor);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list channels: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list channels: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -440,17 +464,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
       try {
         const response = await client.getUsers(args.limit, args.cursor);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get users: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get users: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -466,17 +494,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
       try {
         const response = await client.getUserProfile(args.user_id);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user profile: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user profile: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -502,17 +534,21 @@ export function createSlackServer(credentials: SlackCredentials): McpServer {
           args.text
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to reply to thread: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to reply to thread: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

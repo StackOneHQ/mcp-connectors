@@ -47,10 +47,7 @@ class LinkedInClient {
     options: RequestInit = {}
   ): Promise<Response> {
     const headers = new Headers(options.headers);
-    headers.set(
-      'Authorization',
-      `${this.tokenType} ${this.accessToken}`
-    );
+    headers.set('Authorization', `${this.tokenType} ${this.accessToken}`);
     headers.set('X-Restli-Protocol-Version', '2.0.0');
     headers.set('LinkedIn-Version', '202401');
 
@@ -212,17 +209,21 @@ export function createLinkedInServer(credentials: LinkedInCredentials): McpServe
         );
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search companies: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search companies: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -241,17 +242,21 @@ export function createLinkedInServer(credentials: LinkedInCredentials): McpServe
         const company = await client.getCompany(args.companyId);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(company, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(company, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get company: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get company: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -270,17 +275,21 @@ export function createLinkedInServer(credentials: LinkedInCredentials): McpServe
         const result = await client.searchOrganizations(args.vanityName);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search organizations: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search organizations: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -299,17 +308,21 @@ export function createLinkedInServer(credentials: LinkedInCredentials): McpServe
         const organization = await client.getOrganization(args.organizationId);
 
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(organization, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(organization, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get organization: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get organization: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

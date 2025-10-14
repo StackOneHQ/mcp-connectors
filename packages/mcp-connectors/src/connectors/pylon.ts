@@ -310,17 +310,21 @@ export function createPylonServer(credentials: PylonCredentials): McpServer {
         const client = new PylonClient(credentials.apiToken);
         const issue = await client.getIssue(args.issueId, args.includeMessages);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issue, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error getting Pylon issue: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error getting Pylon issue: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
         };
       }
     }
@@ -344,23 +348,23 @@ export function createPylonServer(credentials: PylonCredentials): McpServer {
     async (args) => {
       try {
         const client = new PylonClient(credentials.apiToken);
-        const accounts = await client.searchAccounts(
-          args.query,
-          args.limit,
-          args.cursor
-        );
+        const accounts = await client.searchAccounts(args.query, args.limit, args.cursor);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(accounts, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(accounts, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error searching Pylon accounts: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error searching Pylon accounts: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
         };
       }
     }
@@ -382,17 +386,21 @@ export function createPylonServer(credentials: PylonCredentials): McpServer {
         const client = new PylonClient(credentials.apiToken);
         const issues = await client.searchIssues(args.accountId, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issues, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issues, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error searching Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error searching Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
         };
       }
     }
@@ -414,17 +422,21 @@ export function createPylonServer(credentials: PylonCredentials): McpServer {
         const client = new PylonClient(credentials.apiToken);
         const issues = await client.listIssues(args.limit, args.cursor);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(issues, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issues, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Error listing Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error listing Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+          ],
         };
       }
     }

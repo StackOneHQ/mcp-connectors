@@ -139,17 +139,21 @@ export function createHubSpotServer(credentials: HubSpotCredentials): McpServer 
           properties: args.properties,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(data, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to fetch contacts: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to fetch contacts: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -175,17 +179,21 @@ export function createHubSpotServer(credentials: HubSpotCredentials): McpServer 
           properties: args.properties,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(data, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to fetch deals: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to fetch deals: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -226,17 +234,21 @@ export function createHubSpotServer(credentials: HubSpotCredentials): McpServer 
 
         const data = await client.createContact(properties);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(data, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create contact: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create contact: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -280,17 +292,21 @@ export function createHubSpotServer(credentials: HubSpotCredentials): McpServer 
 
         const data = await client.createDeal(properties);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(data, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create deal: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create deal: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
