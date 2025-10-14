@@ -656,10 +656,7 @@ export function createTodoistServer(credentials: TodoistCredentials): McpServer 
       name: z.string().optional().describe('New project name'),
       color: z.string().optional().describe('New project color'),
       isFavorite: z.boolean().optional().describe('New favorite status'),
-      viewStyle: z
-        .enum(['list', 'board'])
-        .optional()
-        .describe('New project view style'),
+      viewStyle: z.enum(['list', 'board']).optional().describe('New project view style'),
     },
     async (args) => {
       try {
@@ -717,51 +714,46 @@ export function createTodoistServer(credentials: TodoistCredentials): McpServer 
     }
   );
 
-  server.tool(
-    'list_labels',
-    "Lists all labels in the user's account.",
-    {},
-    async () => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const labels = await client.getLabels();
+  server.tool('list_labels', "Lists all labels in the user's account.", {}, async () => {
+    try {
+      const client = new TodoistClient(credentials.apiToken);
+      const labels = await client.getLabels();
 
-        if (labels.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'No labels found.',
-              },
-            ],
-          };
-        }
-
+      if (labels.length === 0) {
         return {
           content: [
             {
               type: 'text',
-              text: `Found ${labels.length} labels:\n${labels
-                .map(
-                  (label) =>
-                    `- ${label.name} (ID: ${label.id})\n  Color: ${label.color}\n  Favorite: ${label.isFavorite}`
-                )
-                .join('\n\n')}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list labels: ${error instanceof Error ? error.message : String(error)}`,
+              text: 'No labels found.',
             },
           ],
         };
       }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Found ${labels.length} labels:\n${labels
+              .map(
+                (label) =>
+                  `- ${label.name} (ID: ${label.id})\n  Color: ${label.color}\n  Favorite: ${label.isFavorite}`
+              )
+              .join('\n\n')}`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to list labels: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+      };
     }
-  );
+  });
 
   server.tool(
     'create_label',

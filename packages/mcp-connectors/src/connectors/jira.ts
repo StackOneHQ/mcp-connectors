@@ -735,20 +735,28 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.searchIssues(args.searchString);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search issues: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search issues: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -762,20 +770,28 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.getEpicChildren(args.epicKey);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get epic children: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get epic children: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -789,20 +805,28 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.getIssueWithComments(args.issueId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -812,9 +836,7 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     'jira_create_issue',
     'Create a new JIRA issue',
     {
-      projectKey: z
-        .string()
-        .describe('The project key where the issue will be created'),
+      projectKey: z.string().describe('The project key where the issue will be created'),
       issueType: z
         .string()
         .describe('The type of issue to create (e.g., "Bug", "Story", "Task")'),
@@ -827,7 +849,11 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.createIssue(
           args.projectKey,
           args.issueType,
@@ -836,17 +862,21 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
           args.fields
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -861,24 +891,32 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         await client.updateIssue(args.issueKey, args.fields);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              { message: `Issue ${args.issueKey} updated successfully` },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                { message: `Issue ${args.issueKey} updated successfully` },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -892,20 +930,28 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.getTransitions(args.issueKey);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get transitions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get transitions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -924,26 +970,34 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         await client.transitionIssue(args.issueKey, args.transitionId, args.comment);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                message: `Issue ${args.issueKey} transitioned successfully${args.comment ? ' with comment' : ''}`,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  message: `Issue ${args.issueKey} transitioned successfully${args.comment ? ' with comment' : ''}`,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to transition issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to transition issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -959,32 +1013,40 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.addAttachment(
           args.issueKey,
           args.fileContent,
           args.filename
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(
-              {
-                message: `File ${args.filename} attached successfully to issue ${args.issueKey}`,
-                attachmentId: result.id,
-                filename: result.filename,
-              },
-              null,
-              2
-            ),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  message: `File ${args.filename} attached successfully to issue ${args.issueKey}`,
+                  attachmentId: result.id,
+                  filename: result.filename,
+                },
+                null,
+                2
+              ),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add attachment: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add attachment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -1001,20 +1063,28 @@ export function createJiraServer(credentials: JiraCredentials): McpServer {
     },
     async (args) => {
       try {
-        const client = new JiraClient(credentials.baseUrl, credentials.email, credentials.apiToken);
+        const client = new JiraClient(
+          credentials.baseUrl,
+          credentials.email,
+          credentials.apiToken
+        );
         const result = await client.addComment(args.issueIdOrKey, args.body);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

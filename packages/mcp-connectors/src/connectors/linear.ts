@@ -307,17 +307,21 @@ export function createLinearServer(credentials: LinearCredentials): McpServer {
           args.status
         );
         return {
-          content: [{
-            type: 'text',
-            text: `Created issue ${result.identifier}: ${result.title}\nURL: ${result.url}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Created issue ${result.identifier}: ${result.title}\nURL: ${result.url}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -344,17 +348,21 @@ export function createLinearServer(credentials: LinearCredentials): McpServer {
           args.status
         );
         return {
-          content: [{
-            type: 'text',
-            text: `Updated issue ${result.identifier}\nURL: ${result.url}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Updated issue ${result.identifier}\nURL: ${result.url}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update issue: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -392,22 +400,26 @@ export function createLinearServer(credentials: LinearCredentials): McpServer {
         const issues = await client.searchIssues(args);
 
         return {
-          content: [{
-            type: 'text',
-            text: `Found ${issues.length} issues:\n${issues
-              .map(
-                (issue) =>
-                  `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.status || 'None'}\n  ${issue.url}`
-              )
-              .join('\n')}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Found ${issues.length} issues:\n${issues
+                .map(
+                  (issue) =>
+                    `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.status || 'None'}\n  ${issue.url}`
+                )
+                .join('\n')}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search issues: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search issues: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -443,30 +455,36 @@ export function createLinearServer(credentials: LinearCredentials): McpServer {
 
         if (issues.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: 'No issues found',
-            }],
+            content: [
+              {
+                type: 'text',
+                text: 'No issues found',
+              },
+            ],
           };
         }
 
         return {
-          content: [{
-            type: 'text',
-            text: `Found ${issues.length} issues:\n${issues
-              .map(
-                (issue) =>
-                  `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.stateName}\n  ${issue.url}`
-              )
-              .join('\n')}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Found ${issues.length} issues:\n${issues
+                .map(
+                  (issue) =>
+                    `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.stateName}\n  ${issue.url}`
+                )
+                .join('\n')}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user issues: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user issues: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -497,17 +515,21 @@ export function createLinearServer(credentials: LinearCredentials): McpServer {
           args.displayIconUrl
         );
         return {
-          content: [{
-            type: 'text',
-            text: `Added comment to issue ${result.issueIdentifier}\nURL: ${result.commentUrl}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Added comment to issue ${result.issueIdentifier}\nURL: ${result.commentUrl}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -522,46 +544,49 @@ export function createLinearServer(credentials: LinearCredentials): McpServer {
         const client = new LinearClientWrapper(credentials.apiKey);
         const result = await client.getOrganization();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get organization details: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get organization details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
   );
 
-  server.tool(
-    'get_viewer',
-    'Get details about the authenticated user',
-    {},
-    async () => {
-      try {
-        const client = new LinearClientWrapper(credentials.apiKey);
-        const result = await client.getViewer();
-        return {
-          content: [{
+  server.tool('get_viewer', 'Get details about the authenticated user', {}, async () => {
+    try {
+      const client = new LinearClientWrapper(credentials.apiKey);
+      const result = await client.getViewer();
+      return {
+        content: [
+          {
             type: 'text',
             text: JSON.stringify(result, null, 2),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
             type: 'text',
             text: `Failed to get viewer details: ${error instanceof Error ? error.message : String(error)}`,
-          }],
-        };
-      }
+          },
+        ],
+      };
     }
-  );
+  });
 
   return server;
 }

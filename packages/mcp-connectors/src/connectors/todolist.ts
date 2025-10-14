@@ -25,19 +25,16 @@ export function createTodoListServer(_credentials: TodoListCredentials): McpServ
     version: '1.0.0',
   });
 
-  server.tool(
-    'list_todos',
-    'List all todos stored in memory',
-    {},
-    async (_args) => {
-      return {
-        content: [{
+  server.tool('list_todos', 'List all todos stored in memory', {}, async (_args) => {
+    return {
+      content: [
+        {
           type: 'text',
           text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
-        }],
-      };
-    }
-  );
+        },
+      ],
+    };
+  });
 
   server.tool(
     'create_todo',
@@ -55,10 +52,12 @@ export function createTodoListServer(_credentials: TodoListCredentials): McpServ
     },
     async (_args) => {
       return {
-        content: [{
-          type: 'text',
-          text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
-        }],
+        content: [
+          {
+            type: 'text',
+            text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
+          },
+        ],
       };
     }
   );
@@ -80,10 +79,12 @@ export function createTodoListServer(_credentials: TodoListCredentials): McpServ
     },
     async (_args) => {
       return {
-        content: [{
-          type: 'text',
-          text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
-        }],
+        content: [
+          {
+            type: 'text',
+            text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
+          },
+        ],
       };
     }
   );
@@ -96,10 +97,12 @@ export function createTodoListServer(_credentials: TodoListCredentials): McpServ
     },
     async (_args) => {
       return {
-        content: [{
-          type: 'text',
-          text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
-        }],
+        content: [
+          {
+            type: 'text',
+            text: 'Error: This connector requires external storage implementation. context.getData/setData are not available in native SDK.',
+          },
+        ],
       };
     }
   );

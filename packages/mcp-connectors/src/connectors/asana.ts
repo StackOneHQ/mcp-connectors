@@ -422,17 +422,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
         const client = new AsanaClient(credentials.accessToken);
         const user = await client.getUser(args.userGid);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(user, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -447,17 +451,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
         const client = new AsanaClient(credentials.accessToken);
         const workspaces = await client.getWorkspaces();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(workspaces, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(workspaces, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list workspaces: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list workspaces: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -474,17 +482,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
         const client = new AsanaClient(credentials.accessToken);
         const teams = await client.getTeams(args.workspaceGid);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(teams, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(teams, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -507,17 +519,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(projects, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(projects, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -534,17 +550,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
         const client = new AsanaClient(credentials.accessToken);
         const project = await client.getProject(args.projectGid);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -574,17 +594,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(tasks, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(tasks, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -601,17 +625,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
         const client = new AsanaClient(credentials.accessToken);
         const task = await client.getTask(args.taskGid);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(task, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(task, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get task: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get task: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -644,17 +672,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
           completed: args.completed,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(task, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(task, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -686,17 +718,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
           completed: args.completed,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(task, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(task, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update task: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update task: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -713,17 +749,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
         const client = new AsanaClient(credentials.accessToken);
         const result = await client.deleteTask(args.taskGid);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to delete task: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to delete task: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -752,17 +792,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
           color: args.color,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -790,17 +834,21 @@ export function createAsanaServer(credentials: AsanaCredentials): McpServer {
           archived: args.archived,
         });
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(project, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to update project: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to update project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
