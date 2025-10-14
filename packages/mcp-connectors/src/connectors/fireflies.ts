@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface FirefliesTranscript {
@@ -215,105 +215,137 @@ class FirefliesClient {
   }
 }
 
-export const FirefliesConnectorConfig = mcpConnectorConfig({
-  name: 'Fireflies',
-  key: 'fireflies',
-  version: '1.0.0',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .describe(
-        'Fireflies API Key from Settings > API Keys :: ff_api_1234567890abcdef :: https://docs.fireflies.ai/fundamentals/authorization'
-      ),
-  }),
-  logo: 'https://stackone-logos.com/api/fireflies/filled/svg',
-  setup: z.object({
-    userEmail: z
-      .string()
-      .optional()
-      .describe('Default user email for searching meetings :: user@example.com'),
-  }),
-  examplePrompt:
-    'Find all meetings I attended last week, search for meetings about "product roadmap", and get detailed transcript summaries with action items.',
-  tools: (tool) => ({
-    GET_MEETINGS_BY_EMAIL: tool({
-      name: 'fireflies_get_meetings_by_email',
-      description:
-        'Gets meetings by participant email address. Returns full transcript data for meetings where the specified email was a participant. Uses the default user email from setup if no email is provided. Essential for finding all meetings involving a specific person, tracking participant involvement, or analyzing meeting patterns by attendee.',
-      schema: z.object({
-        email: z
-          .string()
-          .optional()
-          .describe(
-            'Email address to filter meetings by (uses default user email from setup if not provided)'
-          ),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const setup = await context.getSetup();
+export interface FirefliesCredentials {
+  apiKey: string;
+}
 
-          // Use provided email or fall back to setup default
-          const emailToUse = args.email || setup.userEmail;
+export function createFirefliesServer(credentials: FirefliesCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Fireflies',
+    version: '1.0.0',
+  });
 
-          if (!emailToUse) {
-            return 'Error: No email provided and no default user email configured in setup';
-          }
+  server.tool(
+    'fireflies_get_meetings_by_email',
+    'Gets meetings by participant email address. Returns full transcript data for meetings where the specified email was a participant. Uses the default user email from setup if no email is provided. Essential for finding all meetings involving a specific person, tracking participant involvement, or analyzing meeting patterns by attendee.',
+    {
+      email: z
+        .string()
+        .optional()
+        .describe(
+          'Email address to filter meetings by (uses default user email from setup if not provided)'
+        ),
+    },
+    async (args) => {
+      try {
+        const emailToUse = args.email;
 
-          const client = new FirefliesClient(apiKey);
-          const response = await client.getMeetingsByEmail(emailToUse);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to get meetings by email: ${error instanceof Error ? error.message : String(error)}`;
+        if (!emailToUse) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Error: No email provided and no default user email configured in setup',
+              },
+            ],
+          };
         }
-      },
-    }),
-    GET_TRANSCRIPT_DETAILS: tool({
-      name: 'fireflies_get_transcript_details',
-      description:
-        'Retrieve comprehensive summary and metadata about a specific transcript. Returns meeting details, participant info, and extensive summary data including overview, action items, topics discussed, and meeting insights. Optimized for extracting actionable information and meeting outcomes without full conversation text.',
-      schema: z.object({
-        transcriptId: z.string().describe('ID of the transcript to retrieve'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new FirefliesClient(apiKey);
-          const response = await client.getTranscriptDetails(args.transcriptId);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to get transcript details: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    SEARCH_TRANSCRIPTS: tool({
-      name: 'fireflies_search_transcripts',
-      description:
-        'Search for transcripts containing specific keywords in the title, with optional date filtering. Returns a list of matching transcripts with metadata and summary information. Perfect for finding meetings about specific topics, projects, or containing particular keywords.',
-      schema: z.object({
-        query: z.string().describe('Search query to find relevant transcripts'),
-        limit: z
-          .number()
-          .optional()
-          .describe('Maximum number of transcripts to return (default: 20)'),
-        fromDate: z.string().optional().describe('Start date in ISO format (YYYY-MM-DD)'),
-        toDate: z.string().optional().describe('End date in ISO format (YYYY-MM-DD)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new FirefliesClient(apiKey);
-          const response = await client.searchTranscripts(
-            args.query,
-            args.limit,
-            args.fromDate,
-            args.toDate
-          );
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to search transcripts: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+
+        const client = new FirefliesClient(credentials.apiKey);
+        const response = await client.getMeetingsByEmail(emailToUse);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get meetings by email: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'fireflies_get_transcript_details',
+    'Retrieve comprehensive summary and metadata about a specific transcript. Returns meeting details, participant info, and extensive summary data including overview, action items, topics discussed, and meeting insights. Optimized for extracting actionable information and meeting outcomes without full conversation text.',
+    {
+      transcriptId: z.string().describe('ID of the transcript to retrieve'),
+    },
+    async (args) => {
+      try {
+        const client = new FirefliesClient(credentials.apiKey);
+        const response = await client.getTranscriptDetails(args.transcriptId);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get transcript details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'fireflies_search_transcripts',
+    'Search for transcripts containing specific keywords in the title, with optional date filtering. Returns a list of matching transcripts with metadata and summary information. Perfect for finding meetings about specific topics, projects, or containing particular keywords.',
+    {
+      query: z.string().describe('Search query to find relevant transcripts'),
+      limit: z
+        .number()
+        .optional()
+        .describe('Maximum number of transcripts to return (default: 20)'),
+      fromDate: z.string().optional().describe('Start date in ISO format (YYYY-MM-DD)'),
+      toDate: z.string().optional().describe('End date in ISO format (YYYY-MM-DD)'),
+    },
+    async (args) => {
+      try {
+        const client = new FirefliesClient(credentials.apiKey);
+        const response = await client.searchTranscripts(
+          args.query,
+          args.limit,
+          args.fromDate,
+          args.toDate
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search transcripts: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}
