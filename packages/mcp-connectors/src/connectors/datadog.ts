@@ -286,17 +286,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
           args.severity
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(incidents, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(incidents, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -313,17 +317,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
         const incident = await client.getIncident(args.incidentId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(incident, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(incident, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -345,17 +353,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
         const monitors = await client.getMonitors(args.limit, args.state, args.tags);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(monitors, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(monitors, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get monitors: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get monitors: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -372,17 +384,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
         const monitor = await client.getMonitor(args.monitorId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(monitor, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(monitor, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get monitor: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get monitor: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -403,24 +419,23 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
     async (args) => {
       try {
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const logs = await client.searchLogs(
-          args.query,
-          args.from,
-          args.to,
-          args.limit
-        );
+        const logs = await client.searchLogs(args.query, args.from, args.to, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(logs, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(logs, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search logs: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search logs: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -439,17 +454,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
         const metrics = await client.getMetrics(args.query, args.from, args.to);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(metrics, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(metrics, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get metrics: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get metrics: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -466,17 +485,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
         const downtimes = await client.getDowntimes(args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(downtimes, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(downtimes, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get downtimes: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get downtimes: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -494,17 +517,21 @@ export function createDatadogServer(credentials: DatadogCredentials): McpServer 
         const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
         const hosts = await client.getHosts(args.limit, args.filter);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(hosts, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(hosts, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get hosts: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get hosts: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

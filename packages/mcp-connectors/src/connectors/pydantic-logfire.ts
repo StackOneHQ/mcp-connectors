@@ -246,7 +246,9 @@ export interface PydanticLogfireCredentials {
   readToken: string;
 }
 
-export function createPydanticLogfireServer(credentials: PydanticLogfireCredentials): McpServer {
+export function createPydanticLogfireServer(
+  credentials: PydanticLogfireCredentials
+): McpServer {
   const server = new McpServer({
     name: 'Pydantic Logfire',
     version: '1.0.0',
@@ -267,17 +269,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
         const client = new LogfireClient(credentials.readToken);
         const exceptions = await client.findExceptions(args.timeRange, args.limit);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(exceptions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(exceptions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to find exceptions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to find exceptions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -303,17 +309,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
           args.limit
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(traces, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(traces, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to find exceptions in file: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to find exceptions in file: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -330,17 +340,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
         const client = new LogfireClient(credentials.readToken);
         const result = await client.arbitraryQuery(args.query);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to execute query: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to execute query: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -355,17 +369,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
         const client = new LogfireClient(credentials.readToken);
         const schema = await client.getLogfireRecordsSchema();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(schema, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(schema, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get schema: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get schema: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -398,17 +416,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
           args.severityLevel
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(records, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(records, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search records: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search records: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -427,22 +449,23 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
     async (args) => {
       try {
         const client = new LogfireClient(credentials.readToken);
-        const metrics = await client.getServiceMetrics(
-          args.serviceName,
-          args.timeRange
-        );
+        const metrics = await client.getServiceMetrics(args.serviceName, args.timeRange);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(metrics, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(metrics, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get service metrics: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get service metrics: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -459,17 +482,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
         const client = new LogfireClient(credentials.readToken);
         const trace = await client.getTraceDetails(args.traceId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(trace, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(trace, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get trace details: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get trace details: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -493,17 +520,21 @@ export function createPydanticLogfireServer(credentials: PydanticLogfireCredenti
           args.serviceName
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(metrics, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(metrics, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get performance metrics: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get performance metrics: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

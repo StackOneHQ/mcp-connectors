@@ -721,12 +721,17 @@ export function createWandbServer(credentials: WandbCredentials): McpServer {
     },
     async (args) => {
       try {
-        const history = await client.getRunHistory(args.entity, args.project, args.run_id, {
-          keys: args.keys,
-          samples: args.samples,
-          minStep: args.min_step,
-          maxStep: args.max_step,
-        });
+        const history = await client.getRunHistory(
+          args.entity,
+          args.project,
+          args.run_id,
+          {
+            keys: args.keys,
+            samples: args.samples,
+            minStep: args.min_step,
+            maxStep: args.max_step,
+          }
+        );
         return {
           content: [
             {
@@ -801,10 +806,7 @@ export function createWandbServer(credentials: WandbCredentials): McpServer {
       entity: z.string().describe('Entity name (username or team)'),
       project: z.string().describe('Project name'),
       artifact_name: z.string().describe('Artifact name'),
-      version: z
-        .string()
-        .optional()
-        .describe('Artifact version (defaults to "latest")'),
+      version: z.string().optional().describe('Artifact version (defaults to "latest")'),
     },
     async (args) => {
       try {

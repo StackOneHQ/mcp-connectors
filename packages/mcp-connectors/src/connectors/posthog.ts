@@ -514,7 +514,11 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.captureEvent(
           args.event,
           args.distinctId,
@@ -522,17 +526,21 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
           args.timestamp
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to capture event: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to capture event: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -561,7 +569,11 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
 
         const events = args.events.map((event) => ({
           event: event.event,
@@ -572,17 +584,21 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
 
         const response = await client.captureBatchEvents(events);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to capture batch events: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to capture batch events: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -597,20 +613,28 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.getEvents(args.limit, args.offset);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get events: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get events: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -628,20 +652,28 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.identifyUser(args.distinctId, args.properties);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to identify user: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to identify user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -653,20 +685,28 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     {},
     async () => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.getFeatureFlags();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get feature flags: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get feature flags: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -686,7 +726,11 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.createFeatureFlag(
           args.name,
           args.key,
@@ -694,17 +738,21 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
           args.filters
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create feature flag: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create feature flag: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -723,24 +771,32 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.evaluateFeatureFlag(
           args.key,
           args.distinctId,
           args.groups
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to evaluate feature flag: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to evaluate feature flag: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -751,27 +807,32 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     'Get insights and analytics from PostHog',
     {
       limit: z.number().default(25).describe('Maximum number of insights to return'),
-      offset: z
-        .number()
-        .default(0)
-        .describe('Number of insights to skip for pagination'),
+      offset: z.number().default(0).describe('Number of insights to skip for pagination'),
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.getInsights(args.limit, args.offset);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get insights: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get insights: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -786,49 +847,60 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.createInsight(args.name, args.filters);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create insight: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create insight: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
   );
 
-  server.tool(
-    'posthog_get_cohorts',
-    'Get user cohorts for the project',
-    {},
-    async () => {
-      try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
-        const response = await client.getCohorts();
-        return {
-          content: [{
+  server.tool('posthog_get_cohorts', 'Get user cohorts for the project', {}, async () => {
+    try {
+      const client = new PostHogClient(
+        credentials.apiKey,
+        host,
+        credentials.projectApiKey
+      );
+      const response = await client.getCohorts();
+      return {
+        content: [
+          {
             type: 'text',
             text: JSON.stringify(response, null, 2),
-          }],
-        };
-      } catch (error) {
-        return {
-          content: [{
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
             type: 'text',
             text: `Failed to get cohorts: ${error instanceof Error ? error.message : String(error)}`,
-          }],
-        };
-      }
+          },
+        ],
+      };
     }
-  );
+  });
 
   server.tool(
     'posthog_create_cohort',
@@ -836,31 +908,36 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     {
       name: z.string().describe('Name for the cohort'),
       groups: z.array(z.unknown()).describe('Group definitions for the cohort'),
-      description: z
-        .string()
-        .optional()
-        .describe('Optional description for the cohort'),
+      description: z.string().optional().describe('Optional description for the cohort'),
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.createCohort(
           args.name,
           args.groups,
           args.description
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create cohort: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create cohort: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -872,20 +949,28 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     {},
     async () => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.getDashboards();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get dashboards: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get dashboards: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -903,20 +988,28 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.createDashboard(args.name, args.description);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to create dashboard: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create dashboard: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -927,27 +1020,32 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     'Get persons (users) from PostHog',
     {
       limit: z.number().default(100).describe('Maximum number of persons to return'),
-      offset: z
-        .number()
-        .default(0)
-        .describe('Number of persons to skip for pagination'),
+      offset: z.number().default(0).describe('Number of persons to skip for pagination'),
     },
     async (args) => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.getPersons(args.limit, args.offset);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get persons: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get persons: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -959,20 +1057,28 @@ export function createPostHogServer(credentials: PostHogCredentials): McpServer 
     {},
     async () => {
       try {
-        const client = new PostHogClient(credentials.apiKey, host, credentials.projectApiKey);
+        const client = new PostHogClient(
+          credentials.apiKey,
+          host,
+          credentials.projectApiKey
+        );
         const response = await client.getProjectInfo();
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(response, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get project info: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get project info: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }

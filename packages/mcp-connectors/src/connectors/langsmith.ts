@@ -244,17 +244,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
           args.offset
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(history, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(history, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get thread history: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get thread history: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -282,17 +286,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
           args.isPublic
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(prompts, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(prompts, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get prompts: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get prompts: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -313,17 +321,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
         const client = new LangsmithClient(credentials.apiKey);
         const prompt = await client.pullPrompt(args.promptName, args.version);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(prompt, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(prompt, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to pull prompt: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to pull prompt: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -349,17 +361,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
           args.nameContains
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(sessions, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(sessions, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get sessions: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get sessions: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -376,17 +392,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
         const client = new LangsmithClient(credentials.apiKey);
         const session = await client.getSession(args.sessionId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(session, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(session, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get session: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get session: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -403,17 +423,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
         const client = new LangsmithClient(credentials.apiKey);
         const run = await client.getRun(args.runId);
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(run, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(run, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to get run: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get run: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -445,17 +469,21 @@ export function createLangsmithServer(credentials: LangsmithCredentials): McpSer
           args.offset
         );
         return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(runs, null, 2),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(runs, null, 2),
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to search runs: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to search runs: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
