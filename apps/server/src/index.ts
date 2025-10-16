@@ -25,6 +25,7 @@ const CONNECTOR_REGISTRY: Record<
   datadog: { name: 'Datadog', factory: 'createDatadogServer' },
   duckduckgo: { name: 'DuckDuckGo', factory: 'createDuckDuckGoServer' },
   deel: { name: 'Deel', factory: 'createDeelServer' },
+  deepseek: { name: 'DeepSeek', factory: 'createDeepSeekServer' },
   documentation: { name: 'Documentation', factory: 'createDocumentationServer' },
   elevenlabs: { name: 'ElevenLabs', factory: 'createElevenLabsServer' },
   exa: { name: 'Exa', factory: 'createExaServer' },
@@ -57,6 +58,10 @@ const CONNECTOR_REGISTRY: Record<
   replicate: { name: 'Replicate', factory: 'createReplicateServer' },
   retool: { name: 'Retool', factory: 'createRetoolServer' },
   ridewithgps: { name: 'Ride with GPS', factory: 'createRideWithGPSServer' },
+  'sequential-thinking': {
+    name: 'Sequential Thinking',
+    factory: 'createSequentialThinkingServer',
+  },
   slack: { name: 'Slack', factory: 'createSlackServer' },
   stackone: { name: 'StackOne', factory: 'createStackOneServer' },
   strava: { name: 'Strava', factory: 'createStravaServer' },
