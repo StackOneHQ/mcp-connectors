@@ -6,6 +6,13 @@ import { createZapierServer } from './zapier';
 
 const server = setupServer();
 
+function getToolOrThrow<T>(tool: T | undefined, name: string): T {
+  if (!tool) {
+    throw new Error(`Expected tool ${name} to be registered`);
+  }
+  return tool;
+}
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
@@ -43,7 +50,11 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.zapier_list_actions?.handler({}))!;
+        const zapierListActions = getToolOrThrow(
+          tools.zapier_list_actions,
+          'zapier_list_actions'
+        );
+        const actual = await zapierListActions.handler({});
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(2);
@@ -99,7 +110,11 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.zapier_search_actions?.handler({ query: 'gmail' }))!;
+        const zapierSearchActions = getToolOrThrow(
+          tools.zapier_search_actions,
+          'zapier_search_actions'
+        );
+        const actual = await zapierSearchActions.handler({ query: 'gmail' });
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(1);
@@ -118,9 +133,13 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.zapier_search_actions?.handler({
+        const zapierSearchActions = getToolOrThrow(
+          tools.zapier_search_actions,
+          'zapier_search_actions'
+        );
+        const actual = await zapierSearchActions.handler({
           query: 'nonexistent',
-        }))!;
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(0);
@@ -151,14 +170,18 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.zapier_execute_action?.handler({
+        const zapierExecuteAction = getToolOrThrow(
+          tools.zapier_execute_action,
+          'zapier_execute_action'
+        );
+        const actual = await zapierExecuteAction.handler({
           action_id: 'gmail-send',
           parameters: {
             to: 'test@example.com',
             subject: 'Test Email',
             body: 'This is a test email',
           },
-        }))!;
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.status).toBe('success');
@@ -206,10 +229,14 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.zapier_execute_action?.handler({
+        const zapierExecuteAction = getToolOrThrow(
+          tools.zapier_execute_action,
+          'zapier_execute_action'
+        );
+        const actual = await zapierExecuteAction.handler({
           action_id: 'gmail-send',
           parameters: { subject: 'Test' },
-        }))!;
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.status).toBe('error');
@@ -260,9 +287,13 @@ describe('#ZapierConnector', () => {
 
         const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.zapier_get_action_details?.handler({
+        const zapierGetActionDetails = getToolOrThrow(
+          tools.zapier_get_action_details,
+          'zapier_get_action_details'
+        );
+        const actual = await zapierGetActionDetails.handler({
           action_id: 'gmail-send',
-        }))!;
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('gmail-send');

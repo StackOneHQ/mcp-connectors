@@ -6,6 +6,13 @@ import { createWandbServer } from './wandb';
 
 const mockApiUrl = 'https://api.wandb.ai';
 
+function getToolOrThrow<T>(tool: T | undefined, name: string): T {
+  if (!tool) {
+    throw new Error(`Expected tool ${name} to be registered`);
+  }
+  return tool;
+}
+
 const server = setupServer(
   // Mock get user endpoint
   http.get(`${mockApiUrl}/api/v1/viewer`, () => {
@@ -514,11 +521,12 @@ describe('#WandbConnector', () => {
           base_url: mockApiUrl,
         });
         const tools = extractToolsFromServer(mcpServer);
-        const result = (await tools.wandb_list_runs?.handler({
+        const wandbListRuns = getToolOrThrow(tools.wandb_list_runs, 'wandb_list_runs');
+        const result = await wandbListRuns.handler({
           entity: 'testuser',
           project: 'test-project',
           limit: 1,
-        }))!;
+        });
 
         const parsed = JSON.parse(result);
         expect(parsed.runs).toHaveLength(1);

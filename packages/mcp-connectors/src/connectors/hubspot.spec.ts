@@ -6,6 +6,13 @@ import { createHubSpotServer } from './hubspot';
 
 const HUBSPOT_API_BASE = 'https://api.hubapi.com';
 
+function getToolOrThrow<T>(tool: T | undefined, name: string): T {
+  if (!tool) {
+    throw new Error(`Expected tool ${name} to be registered`);
+  }
+  return tool;
+}
+
 describe('#HubSpotConnector', () => {
   const server = setupServer();
 
@@ -42,7 +49,11 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.hubspot_get_contacts?.handler({ limit: 10 }))!;
+        const hubspotGetContacts = getToolOrThrow(
+          tools.hubspot_get_contacts,
+          'hubspot_get_contacts'
+        );
+        const actual = await hubspotGetContacts.handler({ limit: 10 });
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -137,7 +148,11 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.hubspot_get_deals?.handler({ limit: 10 }))!;
+        const hubspotGetDeals = getToolOrThrow(
+          tools.hubspot_get_deals,
+          'hubspot_get_deals'
+        );
+        const actual = await hubspotGetDeals.handler({ limit: 10 });
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -204,11 +219,15 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.hubspot_create_contact?.handler({
+        const hubspotCreateContact = getToolOrThrow(
+          tools.hubspot_create_contact,
+          'hubspot_create_contact'
+        );
+        const actual = await hubspotCreateContact.handler({
           email: 'new@example.com',
           firstname: 'Jane',
           lastname: 'Smith',
-        }))!;
+        });
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('123');
@@ -290,11 +309,15 @@ describe('#HubSpotConnector', () => {
 
         const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
         const tools = extractToolsFromServer(mcpServer);
-        const actual = (await tools.hubspot_create_deal?.handler({
+        const hubspotCreateDeal = getToolOrThrow(
+          tools.hubspot_create_deal,
+          'hubspot_create_deal'
+        );
+        const actual = await hubspotCreateDeal.handler({
           dealname: 'New Deal',
           amount: '50000',
           dealstage: 'presentationscheduled',
-        }))!;
+        });
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('456');

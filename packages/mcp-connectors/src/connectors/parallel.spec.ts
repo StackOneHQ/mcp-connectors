@@ -43,10 +43,11 @@ describe('#ParallelConnector', () => {
 
       const mcpServer = createParallelServer({ apiKey: 'test-api-key' });
       const tools = extractToolsFromServer(mcpServer);
-      const actual = (await tools.parallel_search?.handler({
-        objective: 'Find AI news',
-        maxResults: 3,
-      })) ?? '';
+      const actual =
+        (await tools.parallel_search?.handler({
+          objective: 'Find AI news',
+          maxResults: 3,
+        })) ?? '';
 
       expect(actual).toContain('Found 2 search results');
       expect(actual).toContain('Result 1');
@@ -76,11 +77,15 @@ describe('#ParallelConnector', () => {
         })
       );
 
-      const mcpServer = createParallelServer({ apiKey: 'test-api-key', processor: 'pro' });
+      const mcpServer = createParallelServer({
+        apiKey: 'test-api-key',
+        processor: 'pro',
+      });
       const tools = extractToolsFromServer(mcpServer);
-      const actual = (await tools.parallel_search?.handler({
-        objective: 'Find AI news',
-      })) ?? '';
+      const actual =
+        (await tools.parallel_search?.handler({
+          objective: 'Find AI news',
+        })) ?? '';
 
       expect(actual).toContain('Failed to perform search');
       expect(actual).toContain('400');

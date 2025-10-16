@@ -138,7 +138,7 @@ const fetchAndParse = async (url: string): Promise<string> => {
   }
 };
 
-export interface DuckDuckGoCredentials {}
+export type DuckDuckGoCredentials = Record<string, never>;
 
 export function createDuckDuckGoServer(_credentials: DuckDuckGoCredentials): McpServer {
   const server = new McpServer({
@@ -151,27 +151,28 @@ export function createDuckDuckGoServer(_credentials: DuckDuckGoCredentials): Mcp
     'Search DuckDuckGo and return formatted results',
     {
       query: z.string().describe('The search query string'),
-      maxResults: z
-        .number()
-        .default(10)
-        .describe('Maximum number of results to return'),
+      maxResults: z.number().default(10).describe('Maximum number of results to return'),
     },
     async (args) => {
       try {
         const results = await performSearch(args.query, args.maxResults);
         return {
-          content: [{
-            type: 'text',
-            text: formatResultsForLLM(results),
-          }],
+          content: [
+            {
+              type: 'text',
+              text: formatResultsForLLM(results),
+            },
+          ],
         };
       } catch (error) {
         console.error('Error during search:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `An error occurred while searching: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
         };
       }
     }
@@ -187,18 +188,22 @@ export function createDuckDuckGoServer(_credentials: DuckDuckGoCredentials): Mcp
       try {
         const content = await fetchAndParse(args.url);
         return {
-          content: [{
-            type: 'text',
-            text: content,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: content,
+            },
+          ],
         };
       } catch (error) {
         console.error('Error fetching content:', error);
         return {
-          content: [{
-            type: 'text',
-            text: `Error: Could not fetch the webpage (${error instanceof Error ? error.message : String(error)})`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Error: Could not fetch the webpage (${error instanceof Error ? error.message : String(error)})`,
+            },
+          ],
         };
       }
     }
