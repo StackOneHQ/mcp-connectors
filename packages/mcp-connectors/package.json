@@ -1,6 +1,6 @@
 {
     "name": "@stackone/mcp-connectors",
-    "version": "0.0.20",
+    "version": "0.0.21",
     "description": "MCP connectors for disco.dev",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
