@@ -15,6 +15,7 @@ import { FalConnectorConfig } from './connectors/fal';
 import { FigmaConnectorConfig } from './connectors/figma';
 import { FirefliesConnectorConfig } from './connectors/fireflies';
 import { GitHubConnectorConfig } from './connectors/github';
+import { GitLabConnectorConfig } from './connectors/gitlab';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { GraphyConnectorConfig } from './connectors/graphy';
@@ -68,6 +69,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   FalConnectorConfig,
   FigmaConnectorConfig,
   GitHubConnectorConfig,
+  GitLabConnectorConfig,
   GoogleDriveConnectorConfig,
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
@@ -121,6 +123,7 @@ export {
   FalConnectorConfig,
   FigmaConnectorConfig,
   GitHubConnectorConfig,
+  GitLabConnectorConfig,
   GoogleDriveConnectorConfig,
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,

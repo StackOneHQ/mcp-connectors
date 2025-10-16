@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.21](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.20...mcp-connectors-v0.0.21) (2025-10-13)
+
+
+### Bug Fixes
+
+* update Jira connector to use new JQL search endpoint ([#163](https://github.com/StackOneHQ/mcp-connectors/issues/163)) ([02a2759](https://github.com/StackOneHQ/mcp-connectors/commit/02a275995a63f2cd3fe5ac01a8ae308b4af59852))
+
+## [0.0.20](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.19...mcp-connectors-v0.0.20) (2025-10-08)
+
+
+### Features
+
+* add GitLab MCP connector ([#154](https://github.com/StackOneHQ/mcp-connectors/issues/154)) ([c853ed9](https://github.com/StackOneHQ/mcp-connectors/commit/c853ed936935d420f59fdf79437120afad8eb8e2))
+
 ## [0.0.19](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.18...mcp-connectors-v0.0.19) (2025-09-16)
 
 

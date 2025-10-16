@@ -440,7 +440,7 @@ class JiraClient {
     });
 
     const data = await this.fetchJson<JiraRawIssueResponse>(
-      `/rest/api/3/search?${params}`
+      `/rest/api/3/search/jql?${params}`
     );
 
     return {
@@ -471,7 +471,7 @@ class JiraClient {
     });
 
     const data = await this.fetchJson<JiraRawIssueResponse>(
-      `/rest/api/3/search?${params}`
+      `/rest/api/3/search/jql?${params}`
     );
 
     // Get comments for each child issue
