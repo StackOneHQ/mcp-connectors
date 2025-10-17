@@ -26,6 +26,7 @@ import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
 import { LinearConnectorConfig } from './connectors/linear';
 import { LinkedInConnectorConfig } from './connectors/linkedin';
+import { LumaConnectorConfig } from './connectors/luma';
 import { ModalConnectorConfig } from './connectors/modal';
 import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
@@ -82,6 +83,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   LinearConnectorConfig,
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
+  LumaConnectorConfig,
   ModalConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
@@ -136,6 +138,7 @@ export {
   LinearConnectorConfig,
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
+  LumaConnectorConfig,
   ModalConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
