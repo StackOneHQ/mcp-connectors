@@ -192,10 +192,7 @@ describe('#LumaConnector', () => {
       it('returns error message', async () => {
         server.use(
           http.post('https://public-api.luma.com/v1/event/create', () => {
-            return HttpResponse.json(
-              { error: 'Invalid calendar ID' },
-              { status: 400 }
-            );
+            return HttpResponse.json({ error: 'Invalid calendar ID' }, { status: 400 });
           })
         );
 
@@ -602,10 +599,7 @@ describe('#LumaConnector', () => {
       it('returns error message', async () => {
         server.use(
           http.post('https://public-api.luma.com/v1/event/add-guests', () => {
-            return HttpResponse.json(
-              { error: 'Event is at capacity' },
-              { status: 400 }
-            );
+            return HttpResponse.json({ error: 'Event is at capacity' }, { status: 400 });
           })
         );
 
@@ -664,8 +658,7 @@ describe('#LumaConnector', () => {
 
         server.listen();
 
-        const tool = LumaConnectorConfig.tools
-          .LIST_CALENDAR_EVENTS as MCPToolDefinition;
+        const tool = LumaConnectorConfig.tools.LIST_CALENDAR_EVENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: {
             apiKey: 'test-api-key',
@@ -706,8 +699,7 @@ describe('#LumaConnector', () => {
 
         server.listen();
 
-        const tool = LumaConnectorConfig.tools
-          .LIST_CALENDAR_EVENTS as MCPToolDefinition;
+        const tool = LumaConnectorConfig.tools.LIST_CALENDAR_EVENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: {
             apiKey: 'test-api-key',
@@ -754,8 +746,7 @@ describe('#LumaConnector', () => {
 
         server.listen();
 
-        const tool = LumaConnectorConfig.tools
-          .LIST_CALENDAR_EVENTS as MCPToolDefinition;
+        const tool = LumaConnectorConfig.tools.LIST_CALENDAR_EVENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: {
             apiKey: 'test-api-key',
@@ -784,8 +775,7 @@ describe('#LumaConnector', () => {
 
         server.listen();
 
-        const tool = LumaConnectorConfig.tools
-          .LIST_CALENDAR_EVENTS as MCPToolDefinition;
+        const tool = LumaConnectorConfig.tools.LIST_CALENDAR_EVENTS as MCPToolDefinition;
         const mockContext = createMockConnectorContext({
           credentials: {
             apiKey: 'test-api-key',

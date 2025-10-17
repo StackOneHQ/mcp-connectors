@@ -218,7 +218,7 @@ export const LumaConnectorConfig = mcpConnectorConfig({
   name: 'Lu.ma',
   key: 'luma',
   version: '1.0.0',
-  logo: 'https://cdn.brandfetch.io/idM0FJHHLh/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B',
+  logo: 'https://stackone-logos.com/api/luma/filled/svg',
   credentials: z.object({
     apiKey: z
       .string()
