@@ -18,6 +18,7 @@ import { GitLabConnectorConfig } from './connectors/gitlab';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { GraphyConnectorConfig } from './connectors/graphy';
+import { HarnessConnectorConfig } from './connectors/harness';
 import { HiBobConnectorConfig } from './connectors/hibob';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
@@ -25,6 +26,7 @@ import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
 import { LinearConnectorConfig } from './connectors/linear';
 import { LinkedInConnectorConfig } from './connectors/linkedin';
+import { LumaConnectorConfig } from './connectors/luma';
 import { ModalConnectorConfig } from './connectors/modal';
 import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
@@ -71,6 +73,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GoogleDriveConnectorConfig,
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
+  HarnessConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
@@ -80,6 +83,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   LinearConnectorConfig,
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
+  LumaConnectorConfig,
   ModalConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
@@ -124,6 +128,7 @@ export {
   GoogleDriveConnectorConfig,
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
+  HarnessConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
@@ -133,6 +138,7 @@ export {
   LinearConnectorConfig,
   LinkedInConnectorConfig,
   LogfireConnectorConfig,
+  LumaConnectorConfig,
   ModalConnectorConfig,
   NotionConnectorConfig,
   OnePasswordConnectorConfig,
