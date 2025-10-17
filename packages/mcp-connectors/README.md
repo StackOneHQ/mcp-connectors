@@ -12,23 +12,26 @@ Production-ready TypeScript connectors for 45+ SaaS tools including GitHub, Slac
 ## Installation
 
 ```bash
-npm install @stackone/mcp-connectors @stackone/mcp-config-types
+npm install @stackone/mcp-connectors
 ```
 
 ## Usage
 
 ```typescript
-import { GitHubConnectorConfig } from '@stackone/mcp-connectors';
+import { GitHubConnectorConfig } from "@stackone/mcp-connectors";
 
 // Get a tool from a connector
 const createIssueTool = GitHubConnectorConfig.tools.CREATE_ISSUE;
 
 // Use in your MCP server
-const result = await createIssueTool.handler({
-  owner: 'stackone-ai',
-  repo: 'mcp-connectors',
-  title: 'New feature request'
-}, context);
+const result = await createIssueTool.handler(
+  {
+    owner: "stackone-ai",
+    repo: "mcp-connectors",
+    title: "New feature request",
+  },
+  context
+);
 ```
 
 ## Available Connectors (45+)
