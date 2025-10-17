@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.22](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.21...mcp-connectors-v0.0.22) (2025-10-17)
+
+
+### Features
+
+* remove @stackone/mcp-config-types and migrate to native MCP SDK ([#175](https://github.com/StackOneHQ/mcp-connectors/issues/175)) ([2a31911](https://github.com/StackOneHQ/mcp-connectors/commit/2a31911dd0d1efdc3e8409b405607c0de1890079))
+
+
+### Bug Fixes
+
+* remove mcp-config-types package from GitHub workflows and documentation ([#178](https://github.com/StackOneHQ/mcp-connectors/issues/178)) ([b404a0b](https://github.com/StackOneHQ/mcp-connectors/commit/b404a0bcb518038f4b03463ed050b6a30e86e9b0))
+
 ## [0.0.21](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.20...mcp-connectors-v0.0.21) (2025-10-13)
 
 
