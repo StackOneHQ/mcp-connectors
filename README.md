@@ -1,9 +1,8 @@
 <div align="center">
   <img src="./docs/assets/logo.png" alt="Disco Logo" width="400" />
 
-  [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-  [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-connectors.svg)](https://badge.fury.io/js/@stackone%2Fmcp-connectors)
-  [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-config-types.svg)](https://badge.fury.io/js/@stackone%2Fmcp-config-types)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![npm version](https://badge.fury.io/js/@stackone%2Fmcp-connectors.svg)](https://badge.fury.io/js/@stackone%2Fmcp-connectors)
 
 > Pre-built MCP connectors for popular SaaS tools - powers [disco.dev](https://disco.dev)
 
@@ -21,10 +20,6 @@ This monorepo contains two packages built with TypeScript and Zod:
 - No dependencies on server runtime or transport
 - Runs on Bun, Node, and Cloudflare Workers
 
-**@stackone/mcp-config-types** - Shared configuration types
-
-- Zod schemas for connector credentials and setup fields
-- TypeScript types for all connector configurations
 - Designed for AI coding agents (Claude, Cursor, etc.)
 - Enables type-safe connector development
 
@@ -41,10 +36,10 @@ Go to [disco.dev](https://disco.dev) to get started with zero setup.
 Use these packages to build your own MCP servers:
 
 ```bash
-npm install @stackone/mcp-connectors @stackone/mcp-config-types
+npm install @stackone/mcp-connectors
 ```
 
-The connectors can be imported and used in your own MCP server implementations, and the config types provide TypeScript definitions for all connector configurations.
+The connectors can be imported and used in your own MCP server implementations.
 
 ## Getting Started (First Time Setup)
 
@@ -81,7 +76,7 @@ If you want to run the connectors locally or contribute to the project:
    bun test
    ```
 
-5. **Check out the documentation:**
+6. **Check out the documentation:**
    - See the [`docs/`](./docs/) directory for detailed guides
    - Start with [Running Locally](./docs/running-locally.md) for setup instructions
    - Read [Writing Connectors](./docs/writing-connectors.md) to create your own
@@ -108,7 +103,6 @@ Server runs at `http://localhost:3000/mcp`
 ### Package structure
 
 - `packages/mcp-connectors/` - The main connectors package
-- `packages/mcp-config-types/` - Shared configuration types
 
 ## Available Connectors
 

@@ -57,7 +57,7 @@ Tests must follow this exact structure pattern:
 
 ```typescript
 import { describe, expect, it } from "vitest";
-import type { MCPToolDefinition } from "@stackone/mcp-config-types";
+import type { MCPToolDefinition } from "@modelcontextprotocol/sdk/types.js";
 import { createMockConnectorContext } from "../__mocks__/context";
 import { YourConnectorConfig } from "./your-connector";
 

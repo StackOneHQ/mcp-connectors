@@ -5,11 +5,6 @@
             "bump-minor-pre-major": true,
             "bump-patch-for-minor-pre-major": true
         },
-        "packages/mcp-config-types": {
-            "release-type": "node",
-            "bump-minor-pre-major": true,
-            "bump-patch-for-minor-pre-major": true
-        },
         "apps/mcp-test": {
             "release-type": "node",
             "bump-minor-pre-major": true,
