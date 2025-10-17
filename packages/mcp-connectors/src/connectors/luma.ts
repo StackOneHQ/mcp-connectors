@@ -53,6 +53,15 @@ interface LumaCalendarEvent {
   [key: string]: unknown;
 }
 
+interface LumaPerson {
+  api_id: string;
+  name: string;
+  email?: string;
+  avatar_url?: string;
+  tags?: string[];
+  [key: string]: unknown;
+}
+
 class LumaClient {
   private headers: { 'x-luma-api-key': string; 'Content-Type': string };
   private baseUrl = 'https://public-api.luma.com/v1';
@@ -183,6 +192,44 @@ class LumaClient {
     })) as { added_guests: LumaGuest[] };
   }
 
+  async updateGuestStatus(
+    eventId: string,
+    guestId: string,
+    updates: {
+      approval_status?: 'approved' | 'pending' | 'rejected';
+      registration_status?: 'registered' | 'waitlisted' | 'cancelled';
+    }
+  ): Promise<LumaGuest> {
+    return (await this.makeRequest('event/update-guest-status', 'POST', {
+      event_api_id: eventId,
+      guest_api_id: guestId,
+      ...updates,
+    })) as LumaGuest;
+  }
+
+  async sendInvites(
+    eventId: string,
+    guestIds: string[]
+  ): Promise<{ success: boolean; sent_invites: number }> {
+    return (await this.makeRequest('event/send-invites', 'POST', {
+      event_api_id: eventId,
+      guest_api_ids: guestIds,
+    })) as { success: boolean; sent_invites: number };
+  }
+
+  async addHost(
+    eventId: string,
+    hostInfo: {
+      name?: string;
+      email?: string;
+    }
+  ): Promise<{ success: boolean }> {
+    return (await this.makeRequest('event/add-host', 'POST', {
+      event_api_id: eventId,
+      ...hostInfo,
+    })) as { success: boolean };
+  }
+
   // Calendar Management
   async listCalendarEvents(
     calendarId: string,
@@ -212,6 +259,31 @@ class LumaClient {
       next_cursor?: string;
     };
   }
+
+  async listPeople(
+    calendarId: string,
+    filters?: {
+      pagination_limit?: number;
+      pagination_cursor?: string;
+      tag?: string;
+    }
+  ): Promise<{ entries: LumaPerson[]; has_more: boolean; next_cursor?: string }> {
+    const params = new URLSearchParams({ calendar_api_id: calendarId });
+    if (filters?.pagination_limit) {
+      params.set('pagination_limit', filters.pagination_limit.toString());
+    }
+    if (filters?.pagination_cursor) {
+      params.set('pagination_cursor', filters.pagination_cursor);
+    }
+    if (filters?.tag) {
+      params.set('tag', filters.tag);
+    }
+    return (await this.makeRequest(`calendar/list-people?${params.toString()}`)) as {
+      entries: LumaPerson[];
+      has_more: boolean;
+      next_cursor?: string;
+    };
+  }
 }
 
 export const LumaConnectorConfig = mcpConnectorConfig({
@@ -228,18 +300,23 @@ export const LumaConnectorConfig = mcpConnectorConfig({
   }),
   setup: z.object({}),
   examplePrompt:
-    'Get information about my Luma account, list upcoming events in my calendar, create a new event, and retrieve guest information.',
+    'First, get my Luma user info (which includes my calendar ID). Then list my calendar events, create a new event, manage guests (add, update status, send invites), add co-hosts, and list all people in my calendar.',
   tools: (tool) => ({
     GET_SELF: tool({
       name: 'luma_get_self',
-      description: 'Get information about the authenticated Luma user',
+      description:
+        'Get information about the authenticated Luma user. The user API ID (api_id field) can be used as a calendar_api_id in other tools.',
       schema: z.object({}),
       handler: async (_, context) => {
         try {
           const { apiKey } = await context.getCredentials();
           const client = new LumaClient(apiKey);
           const result = await client.getSelf();
-          return JSON.stringify(result, null, 2);
+          const enhancedResult = {
+            ...result,
+            note: "The 'api_id' from this response can be used as 'calendar_api_id' in other tools like luma_list_calendar_events, luma_create_event, and luma_list_people",
+          };
+          return JSON.stringify(enhancedResult, null, 2);
         } catch (error) {
           return `Failed to get user info: ${error instanceof Error ? error.message : String(error)}`;
         }
@@ -274,7 +351,9 @@ export const LumaConnectorConfig = mcpConnectorConfig({
           .describe('Event start time in ISO 8601 format (e.g., 2024-03-20T19:00:00Z)'),
         calendar_api_id: z
           .string()
-          .describe('Calendar API ID where event will be created'),
+          .describe(
+            'Calendar API ID where event will be created (use your user api_id from luma_get_self)'
+          ),
         description: z.string().optional().describe('Event description'),
         end_at: z
           .string()
@@ -440,7 +519,9 @@ export const LumaConnectorConfig = mcpConnectorConfig({
       name: 'luma_list_calendar_events',
       description: 'List events from a specific calendar',
       schema: z.object({
-        calendarId: z.string().describe('Calendar API ID'),
+        calendarId: z
+          .string()
+          .describe('Calendar API ID (use your user api_id from luma_get_self)'),
         start_date: z
           .string()
           .optional()
@@ -471,6 +552,119 @@ export const LumaConnectorConfig = mcpConnectorConfig({
           return JSON.stringify(result, null, 2);
         } catch (error) {
           return `Failed to list calendar events: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    UPDATE_GUEST_STATUS: tool({
+      name: 'luma_update_guest_status',
+      description: 'Update the approval or registration status of a guest',
+      schema: z.object({
+        eventId: z.string().describe('Event API ID'),
+        guestId: z.string().describe('Guest API ID'),
+        approval_status: z
+          .enum(['approved', 'pending', 'rejected'])
+          .optional()
+          .describe('New approval status for the guest'),
+        registration_status: z
+          .enum(['registered', 'waitlisted', 'cancelled'])
+          .optional()
+          .describe('New registration status for the guest'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LumaClient(apiKey);
+          const result = await client.updateGuestStatus(args.eventId, args.guestId, {
+            approval_status: args.approval_status,
+            registration_status: args.registration_status,
+          });
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to update guest status: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    SEND_INVITES: tool({
+      name: 'luma_send_invites',
+      description: 'Send email and SMS invites to guests for an event',
+      schema: z.object({
+        eventId: z.string().describe('Event API ID'),
+        guestIds: z
+          .array(z.string())
+          .describe('Array of guest API IDs to send invites to'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LumaClient(apiKey);
+          const result = await client.sendInvites(args.eventId, args.guestIds);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to send invites: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    ADD_HOST: tool({
+      name: 'luma_add_host',
+      description: 'Add a co-host to an event',
+      schema: z.object({
+        eventId: z.string().describe('Event API ID'),
+        name: z.string().optional().describe('Name of the host to add'),
+        email: z
+          .string()
+          .email()
+          .optional()
+          .describe(
+            'Email of the host (if they have a Luma account, name will be ignored)'
+          ),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LumaClient(apiKey);
+          const result = await client.addHost(args.eventId, {
+            name: args.name,
+            email: args.email,
+          });
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to add host: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    LIST_PEOPLE: tool({
+      name: 'luma_list_people',
+      description: 'List all people (contacts) in a calendar',
+      schema: z.object({
+        calendarId: z
+          .string()
+          .describe('Calendar API ID (use your user api_id from luma_get_self)'),
+        pagination_limit: z
+          .number()
+          .optional()
+          .describe('Maximum number of people to return (default: 50)'),
+        pagination_cursor: z
+          .string()
+          .optional()
+          .describe('Cursor for pagination to get next page of results'),
+        tag: z.string().optional().describe('Filter people by tag'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LumaClient(apiKey);
+          const result = await client.listPeople(args.calendarId, {
+            pagination_limit: args.pagination_limit,
+            pagination_cursor: args.pagination_cursor,
+            tag: args.tag,
+          });
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to list people: ${error instanceof Error ? error.message : String(error)}`;
         }
       },
     }),

@@ -39,6 +39,7 @@ describe('#LumaConnector', () => {
         expect(actual).toContain('"api_id": "usr-abc123"');
         expect(actual).toContain('"name": "John Doe"');
         expect(actual).toContain('"email": "john@example.com"');
+        expect(actual).toContain('calendar_api_id');
 
         server.close();
       });
@@ -619,6 +620,445 @@ describe('#LumaConnector', () => {
 
         expect(actual).toContain('Failed to add guests');
         expect(actual).toContain('400');
+
+        server.close();
+      });
+    });
+  });
+
+  describe('.UPDATE_GUEST_STATUS', () => {
+    describe('when updating approval status', () => {
+      it('returns updated guest information', async () => {
+        const mockUpdatedGuest = {
+          api_id: 'gst-123',
+          name: 'Alice Smith',
+          email: 'alice@example.com',
+          approval_status: 'approved',
+          registration_status: 'registered',
+        };
+
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/update-guest-status', () => {
+            return HttpResponse.json(mockUpdatedGuest);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.UPDATE_GUEST_STATUS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          {
+            eventId: 'evt-xyz789',
+            guestId: 'gst-123',
+            approval_status: 'approved',
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('"approval_status": "approved"');
+        expect(actual).toContain('"api_id": "gst-123"');
+
+        server.close();
+      });
+    });
+
+    describe('when updating registration status', () => {
+      it('returns updated guest with new status', async () => {
+        const mockUpdatedGuest = {
+          api_id: 'gst-456',
+          name: 'Bob Johnson',
+          email: 'bob@example.com',
+          approval_status: 'approved',
+          registration_status: 'waitlisted',
+        };
+
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/update-guest-status', () => {
+            return HttpResponse.json(mockUpdatedGuest);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.UPDATE_GUEST_STATUS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          {
+            eventId: 'evt-xyz789',
+            guestId: 'gst-456',
+            registration_status: 'waitlisted',
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('"registration_status": "waitlisted"');
+
+        server.close();
+      });
+    });
+
+    describe('when guest does not exist', () => {
+      it('returns error message', async () => {
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/update-guest-status', () => {
+            return HttpResponse.json({ error: 'Guest not found' }, { status: 404 });
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.UPDATE_GUEST_STATUS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          { eventId: 'evt-xyz789', guestId: 'nonexistent', approval_status: 'approved' },
+          mockContext
+        );
+
+        expect(actual).toContain('Failed to update guest status');
+        expect(actual).toContain('404');
+
+        server.close();
+      });
+    });
+  });
+
+  describe('.SEND_INVITES', () => {
+    describe('when sending invites successfully', () => {
+      it('returns success response with count', async () => {
+        const mockResponse = {
+          success: true,
+          sent_invites: 3,
+        };
+
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/send-invites', () => {
+            return HttpResponse.json(mockResponse);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.SEND_INVITES as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          {
+            eventId: 'evt-xyz789',
+            guestIds: ['gst-123', 'gst-456', 'gst-789'],
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('"success": true');
+        expect(actual).toContain('"sent_invites": 3');
+
+        server.close();
+      });
+    });
+
+    describe('when event does not exist', () => {
+      it('returns error message', async () => {
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/send-invites', () => {
+            return HttpResponse.json({ error: 'Event not found' }, { status: 404 });
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.SEND_INVITES as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          { eventId: 'nonexistent', guestIds: ['gst-123'] },
+          mockContext
+        );
+
+        expect(actual).toContain('Failed to send invites');
+        expect(actual).toContain('404');
+
+        server.close();
+      });
+    });
+  });
+
+  describe('.ADD_HOST', () => {
+    describe('when adding host with email', () => {
+      it('returns success response', async () => {
+        const mockResponse = {
+          success: true,
+        };
+
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/add-host', () => {
+            return HttpResponse.json(mockResponse);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.ADD_HOST as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          {
+            eventId: 'evt-xyz789',
+            name: 'Jane Doe',
+            email: 'jane@example.com',
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('"success": true');
+
+        server.close();
+      });
+    });
+
+    describe('when adding host with only name', () => {
+      it('successfully adds host', async () => {
+        const mockResponse = {
+          success: true,
+        };
+
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/add-host', () => {
+            return HttpResponse.json(mockResponse);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.ADD_HOST as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          {
+            eventId: 'evt-xyz789',
+            name: 'John Smith',
+          },
+          mockContext
+        );
+
+        expect(actual).toContain('"success": true');
+
+        server.close();
+      });
+    });
+
+    describe('when event does not exist', () => {
+      it('returns error message', async () => {
+        server.use(
+          http.post('https://public-api.luma.com/v1/event/add-host', () => {
+            return HttpResponse.json({ error: 'Event not found' }, { status: 404 });
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.ADD_HOST as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          { eventId: 'nonexistent', email: 'host@example.com' },
+          mockContext
+        );
+
+        expect(actual).toContain('Failed to add host');
+        expect(actual).toContain('404');
+
+        server.close();
+      });
+    });
+  });
+
+  describe('.LIST_PEOPLE', () => {
+    describe('when request is successful', () => {
+      it('returns list of people in calendar', async () => {
+        const mockPeople = {
+          entries: [
+            {
+              api_id: 'per-111',
+              name: 'Alice Johnson',
+              email: 'alice@example.com',
+              avatar_url: 'https://example.com/alice.jpg',
+              tags: ['vip', 'member'],
+            },
+            {
+              api_id: 'per-222',
+              name: 'Bob Smith',
+              email: 'bob@example.com',
+              tags: ['member'],
+            },
+          ],
+          has_more: false,
+        };
+
+        server.use(
+          http.get('https://public-api.luma.com/v1/calendar/list-people', () => {
+            return HttpResponse.json(mockPeople);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.LIST_PEOPLE as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler({ calendarId: 'cal-123' }, mockContext);
+
+        expect(actual).toContain('"api_id": "per-111"');
+        expect(actual).toContain('"name": "Alice Johnson"');
+        expect(actual).toContain('"tags"');
+        expect(actual).toContain('"has_more": false');
+
+        server.close();
+      });
+    });
+
+    describe('when filtering by tag', () => {
+      it('returns people with specified tag', async () => {
+        const mockPeople = {
+          entries: [
+            {
+              api_id: 'per-333',
+              name: 'Charlie Brown',
+              email: 'charlie@example.com',
+              tags: ['vip'],
+            },
+          ],
+          has_more: false,
+        };
+
+        server.use(
+          http.get('https://public-api.luma.com/v1/calendar/list-people', () => {
+            return HttpResponse.json(mockPeople);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.LIST_PEOPLE as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          { calendarId: 'cal-123', tag: 'vip' },
+          mockContext
+        );
+
+        expect(actual).toContain('"tags"');
+        expect(actual).toContain('"name": "Charlie Brown"');
+
+        server.close();
+      });
+    });
+
+    describe('when pagination is needed', () => {
+      it('returns paginated results with cursor', async () => {
+        const mockPeople = {
+          entries: [
+            {
+              api_id: 'per-444',
+              name: 'David Lee',
+              email: 'david@example.com',
+            },
+          ],
+          has_more: true,
+          next_cursor: 'cursor-xyz123',
+        };
+
+        server.use(
+          http.get('https://public-api.luma.com/v1/calendar/list-people', () => {
+            return HttpResponse.json(mockPeople);
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.LIST_PEOPLE as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler(
+          { calendarId: 'cal-123', pagination_limit: 1 },
+          mockContext
+        );
+
+        expect(actual).toContain('"has_more": true');
+        expect(actual).toContain('"next_cursor": "cursor-xyz123"');
+
+        server.close();
+      });
+    });
+
+    describe('when calendar does not exist', () => {
+      it('returns error message', async () => {
+        server.use(
+          http.get('https://public-api.luma.com/v1/calendar/list-people', () => {
+            return HttpResponse.json({ error: 'Calendar not found' }, { status: 404 });
+          })
+        );
+
+        server.listen();
+
+        const tool = LumaConnectorConfig.tools.LIST_PEOPLE as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: {
+            apiKey: 'test-api-key',
+          },
+        });
+
+        const actual = await tool.handler({ calendarId: 'nonexistent' }, mockContext);
+
+        expect(actual).toContain('Failed to list people');
+        expect(actual).toContain('404');
 
         server.close();
       });
