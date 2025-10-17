@@ -4,7 +4,6 @@
     "": {
       "name": "mcp-connectors",
       "dependencies": {
-        "@stackone/mcp-config-types": "workspace:*",
         "@stackone/mcp-connectors": "workspace:*",
       },
       "devDependencies": {
@@ -24,7 +23,7 @@
     },
     "apps/mcp-test": {
       "name": "@stackone/mcp-test",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "bin": {
         "mcp-test": "./dist/index.js",
       },
@@ -52,7 +51,6 @@
       "version": "1.0.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.18.0",
-        "@stackone/mcp-config-types": "workspace:*",
         "@stackone/mcp-connectors": "workspace:*",
         "express": "^4.21.2",
         "winston": "^3.17.0",
@@ -62,26 +60,14 @@
         "@types/node": "^22.13.5",
       },
     },
-    "packages/mcp-config-types": {
-      "name": "@stackone/mcp-config-types",
-      "version": "0.0.11",
-      "devDependencies": {
-        "@modelcontextprotocol/sdk": "^1.18.0",
-        "zod": "^3.25",
-      },
-      "peerDependencies": {
-        "@modelcontextprotocol/sdk": "^1.18.0",
-        "zod": "^3.25",
-      },
-    },
     "packages/mcp-connectors": {
       "name": "@stackone/mcp-connectors",
-      "version": "0.0.18",
+      "version": "0.0.21",
       "dependencies": {
         "@1password/connect": "^1.4.2",
         "@linear/sdk": "^55.0.0",
+        "@modelcontextprotocol/sdk": "^1.0.4",
         "@orama/orama": "^3.1.11",
-        "@stackone/mcp-config-types": "^0.0.5",
         "modal": "^0.3.19",
         "node-html-parser": "^7.0.1",
         "openai": "^5.12.1",
@@ -353,8 +339,6 @@
     "@rollup/rollup-win32-ia32-msvc": ["@rollup/rollup-win32-ia32-msvc@4.50.1", "", { "os": "win32", "cpu": "ia32" }, "sha512-SXjv8JlbzKM0fTJidX4eVsH+Wmnp0/WcD8gJxIZyR6Gay5Qcsmdbi9zVtnbkGPG8v2vMR1AD06lGWy5FLMcG7A=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.50.1", "", { "os": "win32", "cpu": "x64" }, "sha512-StxAO/8ts62KZVRAm4JZYq9+NqNsV7RvimNK+YM7ry//zebEH6meuugqW/P5OFUCjyQgui+9fUxT6d5NShvMvA=="],
-
-    "@stackone/mcp-config-types": ["@stackone/mcp-config-types@workspace:packages/mcp-config-types"],
 
     "@stackone/mcp-connectors": ["@stackone/mcp-connectors@workspace:packages/mcp-connectors"],
 
@@ -1057,8 +1041,6 @@
     "@linear/sdk/graphql": ["graphql@15.10.1", "", {}, "sha512-BL/Xd/T9baO6NFzoMpiMD7YUZ62R6viR5tp/MULVEnbYJXZA//kRNW7J0j1w/wXArgL0sCxhDfK5dczSKn3+cg=="],
 
     "@modelcontextprotocol/sdk/express": ["express@5.1.0", "", { "dependencies": { "accepts": "^2.0.0", "body-parser": "^2.2.0", "content-disposition": "^1.0.0", "content-type": "^1.0.5", "cookie": "^0.7.1", "cookie-signature": "^1.2.1", "debug": "^4.4.0", "encodeurl": "^2.0.0", "escape-html": "^1.0.3", "etag": "^1.8.1", "finalhandler": "^2.1.0", "fresh": "^2.0.0", "http-errors": "^2.0.0", "merge-descriptors": "^2.0.0", "mime-types": "^3.0.0", "on-finished": "^2.4.1", "once": "^1.4.0", "parseurl": "^1.3.3", "proxy-addr": "^2.0.7", "qs": "^6.14.0", "range-parser": "^1.2.1", "router": "^2.2.0", "send": "^1.1.0", "serve-static": "^2.2.0", "statuses": "^2.0.1", "type-is": "^2.0.1", "vary": "^1.1.2" } }, "sha512-DT9ck5YIRU+8GYzzU5kT3eHGA5iL+1Zd0EutOmTE9Dtk+Tvuzd23VBU+ec7HPNSTxXYO55gPV/hq4pSBJDjFpA=="],
-
-    "@stackone/mcp-connectors/@stackone/mcp-config-types": ["@stackone/mcp-config-types@0.0.5", "", { "peerDependencies": { "zod": "^3.25" } }, "sha512-4Dh17d4KUNJBvFtwoba41MjO4DN4CGMtJPdWwDTZEkE90HSQbJ1O+P/ByctblHSTy5ABFeYNnqHOtaWbXkM0yg=="],
 
     "@stackone/mcp-test/@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.17.5", "", { "dependencies": { "ajv": "^6.12.6", "content-type": "^1.0.5", "cors": "^2.8.5", "cross-spawn": "^7.0.5", "eventsource": "^3.0.2", "eventsource-parser": "^3.0.0", "express": "^5.0.1", "express-rate-limit": "^7.5.0", "pkce-challenge": "^5.0.0", "raw-body": "^3.0.0", "zod": "^3.23.8", "zod-to-json-schema": "^3.24.1" } }, "sha512-QakrKIGniGuRVfWBdMsDea/dx1PNE739QJ7gCM41s9q+qaCYTHCdsIBXQVVXry3mfWAiaM9kT22Hyz53Uw8mfg=="],
 

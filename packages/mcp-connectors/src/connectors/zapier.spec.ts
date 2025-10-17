@@ -1,11 +1,17 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { ZapierConnectorConfig } from './zapier';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createZapierServer } from './zapier';
 
 const server = setupServer();
+
+function getToolOrThrow<T>(tool: T | undefined, name: string): T {
+  if (!tool) {
+    throw new Error(`Expected tool ${name} to be registered`);
+  }
+  return tool;
+}
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
@@ -42,12 +48,13 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.LIST_ACTIONS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler({}, mockContext);
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const zapierListActions = getToolOrThrow(
+          tools.zapier_list_actions,
+          'zapier_list_actions'
+        );
+        const actual = await zapierListActions.handler({});
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(2);
@@ -65,12 +72,9 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.LIST_ACTIONS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'invalid-key' },
-        });
-
-        const actual = await tool.handler({}, mockContext);
+        const mcpServer = createZapierServer({ apiKey: 'invalid-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.zapier_list_actions?.handler({});
 
         expect(actual).toContain('Failed to list actions');
         expect(actual).toContain('Unauthorized');
@@ -104,12 +108,13 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.SEARCH_ACTIONS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler({ query: 'gmail' }, mockContext);
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const zapierSearchActions = getToolOrThrow(
+          tools.zapier_search_actions,
+          'zapier_search_actions'
+        );
+        const actual = await zapierSearchActions.handler({ query: 'gmail' });
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(1);
@@ -126,12 +131,15 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.SEARCH_ACTIONS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const zapierSearchActions = getToolOrThrow(
+          tools.zapier_search_actions,
+          'zapier_search_actions'
+        );
+        const actual = await zapierSearchActions.handler({
+          query: 'nonexistent',
         });
-
-        const actual = await tool.handler({ query: 'nonexistent' }, mockContext);
         const parsed = JSON.parse(actual);
 
         expect(parsed.actions).toHaveLength(0);
@@ -160,22 +168,20 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.EXECUTE_ACTION as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler(
-          {
-            action_id: 'gmail-send',
-            parameters: {
-              to: 'test@example.com',
-              subject: 'Test Email',
-              body: 'This is a test email',
-            },
-          },
-          mockContext
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const zapierExecuteAction = getToolOrThrow(
+          tools.zapier_execute_action,
+          'zapier_execute_action'
         );
+        const actual = await zapierExecuteAction.handler({
+          action_id: 'gmail-send',
+          parameters: {
+            to: 'test@example.com',
+            subject: 'Test Email',
+            body: 'This is a test email',
+          },
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.status).toBe('success');
@@ -195,18 +201,12 @@ describe('#ZapierConnector', () => {
           )
         );
 
-        const tool = ZapierConnectorConfig.tools.EXECUTE_ACTION as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.zapier_execute_action?.handler({
+          action_id: 'invalid-action',
+          parameters: {},
         });
-
-        const actual = await tool.handler(
-          {
-            action_id: 'invalid-action',
-            parameters: {},
-          },
-          mockContext
-        );
 
         expect(actual).toContain('Failed to execute action');
         expect(actual).toContain('Not Found');
@@ -227,18 +227,16 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.EXECUTE_ACTION as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler(
-          {
-            action_id: 'gmail-send',
-            parameters: { subject: 'Test' },
-          },
-          mockContext
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const zapierExecuteAction = getToolOrThrow(
+          tools.zapier_execute_action,
+          'zapier_execute_action'
         );
+        const actual = await zapierExecuteAction.handler({
+          action_id: 'gmail-send',
+          parameters: { subject: 'Test' },
+        });
         const parsed = JSON.parse(actual);
 
         expect(parsed.status).toBe('error');
@@ -287,12 +285,15 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.GET_ACTION_DETAILS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const zapierGetActionDetails = getToolOrThrow(
+          tools.zapier_get_action_details,
+          'zapier_get_action_details'
+        );
+        const actual = await zapierGetActionDetails.handler({
+          action_id: 'gmail-send',
         });
-
-        const actual = await tool.handler({ action_id: 'gmail-send' }, mockContext);
         const parsed = JSON.parse(actual);
 
         expect(parsed.id).toBe('gmail-send');
@@ -311,12 +312,11 @@ describe('#ZapierConnector', () => {
           })
         );
 
-        const tool = ZapierConnectorConfig.tools.GET_ACTION_DETAILS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+        const mcpServer = createZapierServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.zapier_get_action_details?.handler({
+          action_id: 'nonexistent',
         });
-
-        const actual = await tool.handler({ action_id: 'nonexistent' }, mockContext);
 
         expect(actual).toContain('Failed to get action details');
         expect(actual).toContain('Not Found');

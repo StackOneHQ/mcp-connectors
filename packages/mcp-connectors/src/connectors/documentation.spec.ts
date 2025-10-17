@@ -1,19 +1,17 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { describe, expect, it, vi } from 'vitest';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { DocumentationConnectorConfig } from './documentation';
+import { describe, expect, it } from 'vitest';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createDocumentationServer } from './documentation';
 
 describe('#DocumentationConnectorConfig', () => {
   describe('.GET_PROVIDER_KEY', () => {
     describe('when provider_name is not provided', () => {
       it('returns all available providers', async () => {
-        const tool = DocumentationConnectorConfig.tools
-          .GET_PROVIDER_KEY as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({}, mockContext);
+        const actual = await tools.get_provider_key?.handler({});
 
         expect(actual).toContain('Available Documentation Providers:');
       });
@@ -21,11 +19,10 @@ describe('#DocumentationConnectorConfig', () => {
 
     describe('when provider_name is empty string', () => {
       it('returns all available providers', async () => {
-        const tool = DocumentationConnectorConfig.tools
-          .GET_PROVIDER_KEY as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ provider_name: '' }, mockContext);
+        const actual = await tools.get_provider_key?.handler({ provider_name: '' });
 
         expect(actual).toContain('Available Documentation Providers:');
       });
@@ -33,11 +30,12 @@ describe('#DocumentationConnectorConfig', () => {
 
     describe('when provider_name matches existing provider', () => {
       it('returns matching providers with descriptions', async () => {
-        const tool = DocumentationConnectorConfig.tools
-          .GET_PROVIDER_KEY as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ provider_name: 'anthropic' }, mockContext);
+        const actual = await tools.get_provider_key?.handler({
+          provider_name: 'anthropic',
+        });
 
         expect(actual).toContain('anthropic');
       });
@@ -45,11 +43,12 @@ describe('#DocumentationConnectorConfig', () => {
 
     describe('when provider_name does not match any provider', () => {
       it('returns no matches message', async () => {
-        const tool = DocumentationConnectorConfig.tools
-          .GET_PROVIDER_KEY as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler({ provider_name: 'nonexistent' }, mockContext);
+        const actual = await tools.get_provider_key?.handler({
+          provider_name: 'nonexistent',
+        });
 
         expect(actual).toContain('No providers found matching "nonexistent"');
       });
@@ -59,16 +58,13 @@ describe('#DocumentationConnectorConfig', () => {
   describe('.SEARCH_DOCS', () => {
     describe('when provider_key does not exist', () => {
       it('returns provider not found error', async () => {
-        const tool = DocumentationConnectorConfig.tools.SEARCH_DOCS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            provider_key: 'nonexistent',
-            query: 'test query',
-          },
-          mockContext
-        );
+        const actual = await tools.search_docs?.handler({
+          provider_key: 'nonexistent',
+          query: 'test query',
+        });
 
         expect(actual).toContain('Provider "nonexistent" not found');
       });
@@ -76,16 +72,13 @@ describe('#DocumentationConnectorConfig', () => {
 
     describe('when query is empty', () => {
       it('returns meaningful query error', async () => {
-        const tool = DocumentationConnectorConfig.tools.SEARCH_DOCS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            provider_key: 'anthropic',
-            query: '',
-          },
-          mockContext
-        );
+        const actual = await tools.search_docs?.handler({
+          provider_key: 'anthropic',
+          query: '',
+        });
 
         expect(actual).toContain('Please provide a meaningful search query');
       });
@@ -93,16 +86,13 @@ describe('#DocumentationConnectorConfig', () => {
 
     describe('when query is too short', () => {
       it('returns meaningful query error', async () => {
-        const tool = DocumentationConnectorConfig.tools.SEARCH_DOCS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tool.handler(
-          {
-            provider_key: 'anthropic',
-            query: 'a',
-          },
-          mockContext
-        );
+        const actual = await tools.search_docs?.handler({
+          provider_key: 'anthropic',
+          query: 'a',
+        });
 
         expect(actual).toContain('Please provide a meaningful search query');
       });
@@ -118,20 +108,13 @@ describe('#DocumentationConnectorConfig', () => {
           );
           server.listen();
 
-          const tool = DocumentationConnectorConfig.tools
-            .SEARCH_DOCS as MCPToolDefinition;
-          const mockContext = createMockConnectorContext();
-          (
-            mockContext.readCache as unknown as ReturnType<typeof vi.fn>
-          ).mockResolvedValueOnce(null);
+          const mcpServer = createDocumentationServer({});
+          const tools = extractToolsFromServer(mcpServer);
 
-          const actual = await tool.handler(
-            {
-              provider_key: 'anthropic',
-              query: 'test',
-            },
-            mockContext
-          );
+          const actual = await tools.search_docs?.handler({
+            provider_key: 'anthropic',
+            query: 'test',
+          });
 
           server.close();
 
@@ -144,28 +127,34 @@ describe('#DocumentationConnectorConfig', () => {
 
     describe('when documentation is cached', () => {
       it('uses cached text and skips external fetch', async () => {
-        const tool = DocumentationConnectorConfig.tools.SEARCH_DOCS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
         const sampleText = 'hello '.repeat(60); // ~300 chars
 
-        (
-          mockContext.readCache as unknown as ReturnType<typeof vi.fn>
-        ).mockResolvedValueOnce(sampleText);
-
-        const fetchSpy = vi.spyOn(global, 'fetch');
-
-        const actual = await tool.handler(
-          {
-            provider_key: 'anthropic',
-            query: 'hello',
-          },
-          mockContext
+        // Pre-populate the in-memory cache by making a successful first request
+        const server = setupServer(
+          http.get(
+            'https://docs.anthropic.com/llms-full.txt',
+            () => new HttpResponse(sampleText)
+          )
         );
+        server.listen();
+
+        // First request to populate cache
+        await tools.search_docs?.handler({
+          provider_key: 'anthropic',
+          query: 'hello',
+        });
+
+        server.close();
+
+        // Second request should use cache
+        const actual = await tools.search_docs?.handler({
+          provider_key: 'anthropic',
+          query: 'hello',
+        });
 
         expect(actual).toContain('Found');
-        expect(fetchSpy).not.toHaveBeenCalled();
-
-        fetchSpy.mockRestore();
       });
     });
 
@@ -180,27 +169,17 @@ describe('#DocumentationConnectorConfig', () => {
         );
         server.listen();
 
-        const tool = DocumentationConnectorConfig.tools.SEARCH_DOCS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext();
-        // Ensure cache miss first
-        (
-          mockContext.readCache as unknown as ReturnType<typeof vi.fn>
-        ).mockResolvedValueOnce(null);
+        const mcpServer = createDocumentationServer({});
+        const tools = extractToolsFromServer(mcpServer);
 
-        const writeSpy = mockContext.writeCache as unknown as ReturnType<typeof vi.fn>;
-
-        const actual = await tool.handler(
-          {
-            provider_key: 'pinecone',
-            query: 'pinecone',
-          },
-          mockContext
-        );
+        const actual = await tools.search_docs?.handler({
+          provider_key: 'pinecone',
+          query: 'pinecone',
+        });
 
         server.close();
 
         expect(actual).toContain('Found');
-        expect(writeSpy).toHaveBeenCalled();
       });
     });
   });

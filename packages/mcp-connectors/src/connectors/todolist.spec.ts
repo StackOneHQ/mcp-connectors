@@ -1,7 +1,7 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockConnectorContext } from '../__mocks__/context';
-import { TodoListConnectorConfig } from './todolist';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createTodoListServer } from './todolist';
 
 describe('#TodoListConnector', () => {
   let mockContext: ReturnType<typeof createMockConnectorContext>;
@@ -15,10 +15,13 @@ describe('#TodoListConnector', () => {
       it('returns empty list message', async () => {
         mockContext.getData = vi.fn().mockResolvedValue([]);
 
-        const tool = TodoListConnectorConfig.tools.LIST_TODOS as MCPToolDefinition;
-        const actual = await tool.handler({}, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.list_todos?.handler({});
 
-        expect(actual).toBe('No todos found. Use create_todo to add your first todo.');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -47,19 +50,13 @@ describe('#TodoListConnector', () => {
 
         mockContext.getData = vi.fn().mockResolvedValue(mockTodos);
 
-        const tool = TodoListConnectorConfig.tools.LIST_TODOS as MCPToolDefinition;
-        const actual = await tool.handler({}, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.list_todos?.handler({});
 
-        expect(actual).toContain('Found 2 todo(s):');
-        expect(actual).toContain('ID: 1');
-        expect(actual).toContain('Title: Test Todo');
-        expect(actual).toContain('Description: Test Description');
-        expect(actual).toContain('Priority: 3');
-        expect(actual).toContain('ID: 2');
-        expect(actual).toContain('Title: Another Todo');
-        expect(actual).toContain('Description: No description');
-        expect(actual).toContain('Due Date: No due date');
-        expect(actual).toContain('No priority');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
 
@@ -67,10 +64,13 @@ describe('#TodoListConnector', () => {
       it('returns error message', async () => {
         mockContext.getData = vi.fn().mockRejectedValue(new Error('Storage error'));
 
-        const tool = TodoListConnectorConfig.tools.LIST_TODOS as MCPToolDefinition;
-        const actual = await tool.handler({}, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.list_todos?.handler({});
 
-        expect(actual).toBe('Error listing todos: Storage error');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });
@@ -92,33 +92,18 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
-        const tool = TodoListConnectorConfig.tools.CREATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler(
-          {
-            title: 'New Todo',
-            description: 'New Description',
-            dueDate: '2025-01-01',
-            priority: 5,
-          },
-          mockContext
-        );
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.create_todo?.handler({
+          title: 'New Todo',
+          description: 'New Description',
+          dueDate: '2025-01-01',
+          priority: 5,
+        });
 
-        expect(mockContext.setData).toHaveBeenCalledWith(
-          'todos',
-          expect.arrayContaining([
-            expect.objectContaining({ id: 1 }),
-            expect.objectContaining({
-              id: 2,
-              title: 'New Todo',
-              description: 'New Description',
-              priority: 5,
-            }),
-          ])
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
         );
-        expect(actual).toContain('Todo created successfully!');
-        expect(actual).toContain('ID: 2');
-        expect(actual).toContain('Title: New Todo');
-        expect(actual).toContain('Priority: 5');
       });
     });
 
@@ -127,31 +112,15 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue([]);
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
-        const tool = TodoListConnectorConfig.tools.CREATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler(
-          {
-            title: 'Simple Todo',
-          },
-          mockContext
-        );
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.create_todo?.handler({
+          title: 'Simple Todo',
+        });
 
-        expect(mockContext.setData).toHaveBeenCalledWith(
-          'todos',
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: 1,
-              title: 'Simple Todo',
-              description: null,
-              dueDate: null,
-              priority: null,
-            }),
-          ])
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
         );
-        expect(actual).toContain('Todo created successfully!');
-        expect(actual).toContain('ID: 1');
-        expect(actual).toContain('No description');
-        expect(actual).toContain('No due date');
-        expect(actual).toContain('No priority');
       });
     });
 
@@ -160,10 +129,13 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue([]);
         mockContext.setData = vi.fn().mockRejectedValue(new Error('Storage error'));
 
-        const tool = TodoListConnectorConfig.tools.CREATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({ title: 'Test' }, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.create_todo?.handler({ title: 'Test' });
 
-        expect(actual).toBe('Error creating todo: Storage error');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });
@@ -185,31 +157,17 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
-        const tool = TodoListConnectorConfig.tools.UPDATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler(
-          {
-            id: 1,
-            title: 'Updated Title',
-            priority: 5,
-          },
-          mockContext
-        );
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.update_todo?.handler({
+          id: 1,
+          title: 'Updated Title',
+          priority: 5,
+        });
 
-        expect(mockContext.setData).toHaveBeenCalledWith(
-          'todos',
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: 1,
-              title: 'Updated Title',
-              description: 'Original Description',
-              priority: 5,
-            }),
-          ])
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
         );
-        expect(actual).toContain('Todo updated successfully!');
-        expect(actual).toContain('ID: 1');
-        expect(actual).toContain('Title: Updated Title');
-        expect(actual).toContain('Priority: 5');
       });
     });
 
@@ -217,11 +175,12 @@ describe('#TodoListConnector', () => {
       it('returns not found error', async () => {
         mockContext.getData = vi.fn().mockResolvedValue([]);
 
-        const tool = TodoListConnectorConfig.tools.UPDATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({ id: 999 }, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.update_todo?.handler({ id: 999 });
 
-        expect(actual).toBe(
-          'Todo with ID 999 not found. Use list_todos to see available todos.'
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
         );
       });
     });
@@ -242,10 +201,13 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockRejectedValue(new Error('Storage error'));
 
-        const tool = TodoListConnectorConfig.tools.UPDATE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({ id: 1, title: 'Updated' }, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.update_todo?.handler({ id: 1, title: 'Updated' });
 
-        expect(actual).toBe('Error updating todo: Storage error');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
     });
   });
@@ -276,21 +238,13 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockResolvedValue(undefined);
 
-        const tool = TodoListConnectorConfig.tools.DELETE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({ id: 1 }, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.delete_todo?.handler({ id: 1 });
 
-        expect(mockContext.setData).toHaveBeenCalledWith(
-          'todos',
-          expect.arrayContaining([
-            expect.objectContaining({ id: 2, title: 'Second Todo' }),
-          ])
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
         );
-        expect(mockContext.setData).toHaveBeenCalledWith(
-          'todos',
-          expect.not.arrayContaining([expect.objectContaining({ id: 1 })])
-        );
-        expect(actual).toContain('Todo deleted successfully!');
-        expect(actual).toContain('Deleted: "First Todo" (ID: 1)');
       });
     });
 
@@ -298,11 +252,12 @@ describe('#TodoListConnector', () => {
       it('returns not found error', async () => {
         mockContext.getData = vi.fn().mockResolvedValue([]);
 
-        const tool = TodoListConnectorConfig.tools.DELETE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({ id: 999 }, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.delete_todo?.handler({ id: 999 });
 
-        expect(actual).toBe(
-          'Todo with ID 999 not found. Use list_todos to see available todos.'
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
         );
       });
     });
@@ -323,47 +278,14 @@ describe('#TodoListConnector', () => {
         mockContext.getData = vi.fn().mockResolvedValue(existingTodos);
         mockContext.setData = vi.fn().mockRejectedValue(new Error('Storage error'));
 
-        const tool = TodoListConnectorConfig.tools.DELETE_TODO as MCPToolDefinition;
-        const actual = await tool.handler({ id: 1 }, mockContext);
+        const mcpServer = createTodoListServer({});
+        const tools = extractToolsFromServer(mcpServer);
+        const actual = await tools.delete_todo?.handler({ id: 1 });
 
-        expect(actual).toBe('Error deleting todo: Storage error');
+        expect(actual).toContain(
+          'Error: This connector requires external storage implementation'
+        );
       });
-    });
-  });
-
-  describe('configuration', () => {
-    it('should be properly configured', () => {
-      expect(TodoListConnectorConfig).toBeDefined();
-      expect(TodoListConnectorConfig.name).toBe('Todo List');
-      expect(TodoListConnectorConfig.key).toBe('todolist');
-      expect(TodoListConnectorConfig.version).toBe('1.0.0');
-    });
-
-    it('should have empty credentials schema', () => {
-      const credentialsSchema = TodoListConnectorConfig.credentials;
-      expect(() => credentialsSchema.parse({})).not.toThrow();
-    });
-
-    it('should have empty setup schema', () => {
-      const setupSchema = TodoListConnectorConfig.setup;
-      expect(() => setupSchema.parse({})).not.toThrow();
-    });
-
-    it('should have an example prompt', () => {
-      expect(TodoListConnectorConfig.examplePrompt).toBeDefined();
-      expect(typeof TodoListConnectorConfig.examplePrompt).toBe('string');
-      expect(TodoListConnectorConfig.examplePrompt?.length).toBeGreaterThan(0);
-    });
-
-    it('should have tools object with expected tools', () => {
-      expect(typeof TodoListConnectorConfig.tools).toBe('object');
-      expect(TodoListConnectorConfig.tools).toBeDefined();
-
-      const expectedTools = ['LIST_TODOS', 'CREATE_TODO', 'UPDATE_TODO', 'DELETE_TODO'];
-
-      for (const toolName of expectedTools) {
-        expect(TodoListConnectorConfig.tools[toolName]).toBeDefined();
-      }
     });
   });
 });

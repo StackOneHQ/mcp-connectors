@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface SlackChannel {
@@ -256,217 +256,303 @@ class SlackClient {
   }
 }
 
-export const SlackConnectorConfig = mcpConnectorConfig({
-  name: 'Slack',
-  key: 'slack',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/slack/filled/svg',
-  credentials: z.object({
-    botToken: z
-      .string()
-      .describe(
-        'Slack Bot Token from your Slack App :: xoxb-1234567890-1234567890123-abcdefghijklmnopqrstuvwx :: https://api.slack.com/tutorials/tracks/getting-a-token'
-      ),
-    teamId: z
-      .string()
-      .describe(
-        'Slack Team ID (also called Workspace ID) :: T1234567890 :: https://slack.com/intl/en-gb/help/articles/221769328-Locate-your-Slack-URL-or-ID'
-      ),
-  }),
-  setup: z.object({
-    channelIds: z
-      .string()
-      .optional()
-      .describe(
-        'Comma-separated list of channel IDs to use. If not provided, all channels will be used :: C1234567890,C0987654321'
-      ),
-  }),
-  examplePrompt:
-    'List all channels, post a message to #general, check the recent history of #engineering, and reply to a thread in #announcements.',
-  tools: (tool) => ({
-    POST_MESSAGE: tool({
-      name: 'slack_post_message',
-      description: 'Post a message to a Slack channel',
-      schema: z.object({
-        channel_id: z.string().describe('The ID of the channel to post to'),
-        text: z.string().describe('The message text to post'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.postMessage(args.channel_id, args.text);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to post message: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_CHANNEL_HISTORY: tool({
-      name: 'slack_get_channel_history',
-      description: 'Get message history from a Slack channel',
-      schema: z.object({
-        channel_id: z.string().describe('The ID of the channel'),
-        limit: z
-          .number()
-          .optional()
-          .describe('Number of messages to retrieve (default 10)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.getChannelHistory(args.channel_id, args.limit);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to get channel history: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_THREAD_REPLIES: tool({
-      name: 'slack_get_thread_replies',
-      description: 'Get replies in a message thread',
-      schema: z.object({
-        channel_id: z.string().describe('The ID of the channel containing the thread'),
-        thread_ts: z
-          .string()
-          .describe(
-            "The timestamp of the parent message in the format '1234567890.123456'. Timestamps in the format without the period can be converted by adding the period such that 6 numbers come after it."
-          ),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.getThreadReplies(args.channel_id, args.thread_ts);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to get thread replies: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    ADD_REACTION: tool({
-      name: 'slack_add_reaction',
-      description: 'Add a reaction to a message',
-      schema: z.object({
-        channel_id: z.string().describe('The ID of the channel containing the message'),
-        timestamp: z.string().describe('The timestamp of the message to react to'),
-        reaction: z.string().describe('The name of the emoji reaction (without ::)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.addReaction(
-            args.channel_id,
-            args.timestamp,
-            args.reaction
-          );
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to add reaction: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_CHANNELS: tool({
-      name: 'slack_list_channels',
-      description: 'List all channels in a Slack team',
-      schema: z.object({
-        limit: z
-          .number()
-          .optional()
-          .describe('Maximum number of channels to return (default 100, max 200)'),
-        cursor: z
-          .string()
-          .optional()
-          .describe('Pagination cursor for next page of results'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.getChannels(args.limit, args.cursor);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to list channels: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_USERS: tool({
-      name: 'slack_get_users',
-      description: 'Get a list of all users in a Slack team',
-      schema: z.object({
-        cursor: z
-          .string()
-          .optional()
-          .describe('Pagination cursor for next page of results'),
-        limit: z
-          .number()
-          .optional()
-          .describe('Maximum number of users to return (default 100, max 200)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.getUsers(args.limit, args.cursor);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to get users: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_USER_PROFILE: tool({
-      name: 'slack_get_user_profile',
-      description: 'Get a user profile from a Slack user ID',
-      schema: z.object({
-        user_id: z.string().describe('The ID of the user'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.getUserProfile(args.user_id);
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to get user profile: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    REPLY_TO_THREAD: tool({
-      name: 'slack_reply_to_thread',
-      description: 'Reply to a message in a thread',
-      schema: z.object({
-        channel_id: z.string().describe('The ID of the channel containing the thread'),
-        thread_ts: z
-          .string()
-          .describe(
-            "The timestamp of the parent message in the format '1234567890.123456'. Timestamps in the format without the period can be converted by adding the period such that 6 numbers come after it."
-          ),
-        text: z.string().describe('The reply text'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { botToken, teamId } = await context.getCredentials();
-          const { channelIds: setupChannelIds } = await context.getSetup();
-          const client = new SlackClient(botToken, teamId, setupChannelIds);
-          const response = await client.postReply(
-            args.channel_id,
-            args.thread_ts,
-            args.text
-          );
-          return JSON.stringify(response);
-        } catch (error) {
-          return `Failed to reply to thread: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+export interface SlackCredentials {
+  botToken: string;
+  teamId: string;
+  channelIds?: string;
+}
+
+export function createSlackServer(credentials: SlackCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Slack',
+    version: '1.0.0',
+  });
+
+  const client = new SlackClient(
+    credentials.botToken,
+    credentials.teamId,
+    credentials.channelIds
+  );
+
+  server.tool(
+    'slack_post_message',
+    'Post a message to a Slack channel',
+    {
+      channel_id: z.string().describe('The ID of the channel to post to'),
+      text: z.string().describe('The message text to post'),
+    },
+    async (args) => {
+      try {
+        const response = await client.postMessage(args.channel_id, args.text);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to post message: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_get_channel_history',
+    'Get message history from a Slack channel',
+    {
+      channel_id: z.string().describe('The ID of the channel'),
+      limit: z
+        .number()
+        .optional()
+        .describe('Number of messages to retrieve (default 10)'),
+    },
+    async (args) => {
+      try {
+        const response = await client.getChannelHistory(args.channel_id, args.limit);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get channel history: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_get_thread_replies',
+    'Get replies in a message thread',
+    {
+      channel_id: z.string().describe('The ID of the channel containing the thread'),
+      thread_ts: z
+        .string()
+        .describe(
+          "The timestamp of the parent message in the format '1234567890.123456'. Timestamps in the format without the period can be converted by adding the period such that 6 numbers come after it."
+        ),
+    },
+    async (args) => {
+      try {
+        const response = await client.getThreadReplies(args.channel_id, args.thread_ts);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get thread replies: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_add_reaction',
+    'Add a reaction to a message',
+    {
+      channel_id: z.string().describe('The ID of the channel containing the message'),
+      timestamp: z.string().describe('The timestamp of the message to react to'),
+      reaction: z.string().describe('The name of the emoji reaction (without ::)'),
+    },
+    async (args) => {
+      try {
+        const response = await client.addReaction(
+          args.channel_id,
+          args.timestamp,
+          args.reaction
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add reaction: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_list_channels',
+    'List all channels in a Slack team',
+    {
+      limit: z
+        .number()
+        .optional()
+        .describe('Maximum number of channels to return (default 100, max 200)'),
+      cursor: z
+        .string()
+        .optional()
+        .describe('Pagination cursor for next page of results'),
+    },
+    async (args) => {
+      try {
+        const response = await client.getChannels(args.limit, args.cursor);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list channels: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_get_users',
+    'Get a list of all users in a Slack team',
+    {
+      cursor: z
+        .string()
+        .optional()
+        .describe('Pagination cursor for next page of results'),
+      limit: z
+        .number()
+        .optional()
+        .describe('Maximum number of users to return (default 100, max 200)'),
+    },
+    async (args) => {
+      try {
+        const response = await client.getUsers(args.limit, args.cursor);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get users: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_get_user_profile',
+    'Get a user profile from a Slack user ID',
+    {
+      user_id: z.string().describe('The ID of the user'),
+    },
+    async (args) => {
+      try {
+        const response = await client.getUserProfile(args.user_id);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user profile: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'slack_reply_to_thread',
+    'Reply to a message in a thread',
+    {
+      channel_id: z.string().describe('The ID of the channel containing the thread'),
+      thread_ts: z
+        .string()
+        .describe(
+          "The timestamp of the parent message in the format '1234567890.123456'. Timestamps in the format without the period can be converted by adding the period such that 6 numbers come after it."
+        ),
+      text: z.string().describe('The reply text'),
+    },
+    async (args) => {
+      try {
+        const response = await client.postReply(
+          args.channel_id,
+          args.thread_ts,
+          args.text
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to reply to thread: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}

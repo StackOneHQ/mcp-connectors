@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface AttioList {
@@ -102,137 +102,184 @@ class AttioClient {
   }
 }
 
-export const AttioConnectorConfig = mcpConnectorConfig({
-  name: 'Attio',
-  key: 'attio',
-  logo: 'https://stackone-logos.com/api/attio/filled/svg',
-  version: '2.0.0',
-  credentials: z.object({
-    apiKey: z
-      .string()
-      .describe(
-        'Attio API Key from Workspace settings > Developers tab > New access token. :: sk_live_1234567890abcdefghijklmnopqrstuvwxyz :: https://attio.com/help/apps/other-apps/generating-an-api-key'
-      ),
-  }),
-  setup: z.object({}),
-  examplePrompt: 'Get all my lists on Attio',
-  tools: (tool) => ({
-    GET_LIST: tool({
-      name: 'attio_get_list',
-      description:
-        'Get lists filtered by keyword to avoid context overflow. Defaults to customer_success list.',
-      schema: z.object({
-        keyword: z
-          .string()
-          .default('customer_success')
-          .describe('Keyword to filter lists by (e.g., "customer_success", "sales")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new AttioClient(apiKey);
-          const lists = await client.getFilteredLists(args.keyword);
+export interface AttioCredentials {
+  apiKey: string;
+}
 
-          if (lists.length === 0) {
-            return `No lists found matching keyword: "${args.keyword}"`;
-          }
+export function createAttioServer(credentials: AttioCredentials): McpServer {
+  const server = new McpServer({
+    name: 'Attio',
+    version: '2.0.0',
+  });
 
-          // Return basic info to avoid context overflow
-          const listSummary = lists.map((list) => ({
-            id: list.id,
-            name: list.name,
-            parent_object: list.parent_object,
-            created_at: list.created_at,
-          }));
+  server.tool(
+    'attio_get_list',
+    'Get lists filtered by keyword to avoid context overflow. Defaults to customer_success list.',
+    {
+      keyword: z
+        .string()
+        .default('customer_success')
+        .describe('Keyword to filter lists by (e.g., "customer_success", "sales")'),
+    },
+    async (args) => {
+      try {
+        const client = new AttioClient(credentials.apiKey);
+        const lists = await client.getFilteredLists(args.keyword);
 
-          return JSON.stringify(
-            {
-              keyword_used: args.keyword,
-              total_matches: lists.length,
-              lists: listSummary,
-            },
-            null,
-            2
-          );
-        } catch (error) {
-          return `Failed to get filtered lists: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-
-    GET_LIST_FIELDS: tool({
-      name: 'attio_get_list_fields',
-      description: 'Get all fields or attributes within a specific list',
-      schema: z.object({
-        listSlug: z.string().describe('List slug or ID (e.g., "customer_success_list")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new AttioClient(apiKey);
-          const listDetails = await client.getListDetails(args.listSlug);
-
-          // Return structured field information
-          const fieldInfo = {
-            list_id: listDetails.id,
-            list_name: listDetails.name,
-            parent_object: listDetails.parent_object,
-            attributes: listDetails.attributes || [],
-            created_at: listDetails.created_at,
+        if (lists.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `No lists found matching keyword: "${args.keyword}"`,
+              },
+            ],
           };
-
-          return JSON.stringify(fieldInfo, null, 2);
-        } catch (error) {
-          return `Failed to get list fields: ${error instanceof Error ? error.message : String(error)}`;
         }
-      },
-    }),
 
-    GET_LIST_ENTRIES: tool({
-      name: 'attio_get_list_entries',
-      description:
-        'Get all entries found within a specific list, with limited results to avoid context overflow',
-      schema: z.object({
-        listSlug: z.string().describe('List slug or ID'),
-        limit: z
-          .number()
-          .default(50)
-          .describe(
-            'Maximum number of entries to return (default 50 to avoid context overflow)'
-          ),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { apiKey } = await context.getCredentials();
-          const client = new AttioClient(apiKey);
-          const entries = await client.getListEntries(args.listSlug, args.limit);
+        // Return basic info to avoid context overflow
+        const listSummary = lists.map((list) => ({
+          id: list.id,
+          name: list.name,
+          parent_object: list.parent_object,
+          created_at: list.created_at,
+        }));
 
-          if (entries.length === 0) {
-            return `No entries found in list: "${args.listSlug}"`;
-          }
-
-          // Return summarized entry information to avoid context overflow
-          const entrySummary = entries.map((entry) => ({
-            id: entry.id,
-            parent_record_id: entry.parent_record_id,
-            created_at: entry.created_at,
-            values: entry.values,
-          }));
-
-          return JSON.stringify(
+        return {
+          content: [
             {
-              list_slug: args.listSlug,
-              total_entries: entries.length,
-              limit_applied: args.limit,
-              entries: entrySummary,
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  keyword_used: args.keyword,
+                  total_matches: lists.length,
+                  lists: listSummary,
+                },
+                null,
+                2
+              ),
             },
-            null,
-            2
-          );
-        } catch (error) {
-          return `Failed to get list entries: ${error instanceof Error ? error.message : String(error)}`;
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get filtered lists: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'attio_get_list_fields',
+    'Get all fields or attributes within a specific list',
+    {
+      listSlug: z.string().describe('List slug or ID (e.g., "customer_success_list")'),
+    },
+    async (args) => {
+      try {
+        const client = new AttioClient(credentials.apiKey);
+        const listDetails = await client.getListDetails(args.listSlug);
+
+        // Return structured field information
+        const fieldInfo = {
+          list_id: listDetails.id,
+          list_name: listDetails.name,
+          parent_object: listDetails.parent_object,
+          attributes: listDetails.attributes || [],
+          created_at: listDetails.created_at,
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(fieldInfo, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get list fields: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'attio_get_list_entries',
+    'Get all entries found within a specific list, with limited results to avoid context overflow',
+    {
+      listSlug: z.string().describe('List slug or ID'),
+      limit: z
+        .number()
+        .default(50)
+        .describe(
+          'Maximum number of entries to return (default 50 to avoid context overflow)'
+        ),
+    },
+    async (args) => {
+      try {
+        const client = new AttioClient(credentials.apiKey);
+        const entries = await client.getListEntries(args.listSlug, args.limit);
+
+        if (entries.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `No entries found in list: "${args.listSlug}"`,
+              },
+            ],
+          };
         }
-      },
-    }),
-  }),
-});
+
+        // Return summarized entry information to avoid context overflow
+        const entrySummary = entries.map((entry) => ({
+          id: entry.id,
+          parent_record_id: entry.parent_record_id,
+          created_at: entry.created_at,
+          values: entry.values,
+        }));
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  list_slug: args.listSlug,
+                  total_entries: entries.length,
+                  limit_applied: args.limit,
+                  entries: entrySummary,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get list entries: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}

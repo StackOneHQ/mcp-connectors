@@ -1,11 +1,17 @@
-import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { createMockConnectorContext } from '../__mocks__/context';
-import { HubSpotConnectorConfig } from './hubspot';
+import { extractToolsFromServer } from '../__mocks__/server-tools';
+import { createHubSpotServer } from './hubspot';
 
 const HUBSPOT_API_BASE = 'https://api.hubapi.com';
+
+function getToolOrThrow<T>(tool: T | undefined, name: string): T {
+  if (!tool) {
+    throw new Error(`Expected tool ${name} to be registered`);
+  }
+  return tool;
+}
 
 describe('#HubSpotConnector', () => {
   const server = setupServer();
@@ -41,12 +47,13 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.GET_CONTACTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler({ limit: 10 }, mockContext);
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const hubspotGetContacts = getToolOrThrow(
+          tools.hubspot_get_contacts,
+          'hubspot_get_contacts'
+        );
+        const actual = await hubspotGetContacts.handler({ limit: 10 });
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -65,12 +72,9 @@ describe('#HubSpotConnector', () => {
             })
           );
 
-          const tool = HubSpotConnectorConfig.tools.GET_CONTACTS as MCPToolDefinition;
-          const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
-          });
-
-          await tool.handler({ limit: 20, after: 'cursor123' }, mockContext);
+          const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+          const tools = extractToolsFromServer(mcpServer);
+          await tools.hubspot_get_contacts?.handler({ limit: 20, after: 'cursor123' });
 
           expect(capturedUrl?.searchParams.get('limit')).toBe('20');
           expect(capturedUrl?.searchParams.get('after')).toBe('cursor123');
@@ -89,15 +93,11 @@ describe('#HubSpotConnector', () => {
             })
           );
 
-          const tool = HubSpotConnectorConfig.tools.GET_CONTACTS as MCPToolDefinition;
-          const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
+          const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+          const tools = extractToolsFromServer(mcpServer);
+          await tools.hubspot_get_contacts?.handler({
+            properties: ['email', 'firstname', 'company'],
           });
-
-          await tool.handler(
-            { properties: ['email', 'firstname', 'company'] },
-            mockContext
-          );
 
           const properties = capturedUrl?.searchParams.getAll('properties');
           expect(properties).toEqual(['email', 'firstname', 'company']);
@@ -113,12 +113,10 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.GET_CONTACTS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'invalid-key' },
-        });
+        const mcpServer = createHubSpotServer({ apiKey: 'invalid-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const result = await tools.hubspot_get_contacts?.handler({});
 
-        const result = await tool.handler({}, mockContext);
         expect(result).toContain('Failed to fetch contacts');
         expect(result).toContain('401');
       });
@@ -148,12 +146,13 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.GET_DEALS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler({ limit: 10 }, mockContext);
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const hubspotGetDeals = getToolOrThrow(
+          tools.hubspot_get_deals,
+          'hubspot_get_deals'
+        );
+        const actual = await hubspotGetDeals.handler({ limit: 10 });
 
         const content = JSON.parse(actual);
         expect(content.results).toHaveLength(1);
@@ -172,12 +171,9 @@ describe('#HubSpotConnector', () => {
             })
           );
 
-          const tool = HubSpotConnectorConfig.tools.GET_DEALS as MCPToolDefinition;
-          const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
-          });
-
-          await tool.handler({ limit: 50, after: 'next-page' }, mockContext);
+          const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+          const tools = extractToolsFromServer(mcpServer);
+          await tools.hubspot_get_deals?.handler({ limit: 50, after: 'next-page' });
 
           expect(capturedUrl?.searchParams.get('limit')).toBe('50');
           expect(capturedUrl?.searchParams.get('after')).toBe('next-page');
@@ -193,12 +189,10 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.GET_DEALS as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const result = await tools.hubspot_get_deals?.handler({});
 
-        const result = await tool.handler({}, mockContext);
         expect(result).toContain('Failed to fetch deals');
         expect(result).toContain('403');
       });
@@ -223,19 +217,17 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.CREATE_CONTACT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler(
-          {
-            email: 'new@example.com',
-            firstname: 'Jane',
-            lastname: 'Smith',
-          },
-          mockContext
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const hubspotCreateContact = getToolOrThrow(
+          tools.hubspot_create_contact,
+          'hubspot_create_contact'
         );
+        const actual = await hubspotCreateContact.handler({
+          email: 'new@example.com',
+          firstname: 'Jane',
+          lastname: 'Smith',
+        });
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('123');
@@ -255,23 +247,17 @@ describe('#HubSpotConnector', () => {
             )
           );
 
-          const tool = HubSpotConnectorConfig.tools.CREATE_CONTACT as MCPToolDefinition;
-          const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
-          });
-
-          await tool.handler(
-            {
-              email: 'test@example.com',
-              company: 'Test Corp',
-              phone: '555-1234',
-              website: 'https://example.com',
-              additionalProperties: {
-                custom_field: 'value',
-              },
+          const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+          const tools = extractToolsFromServer(mcpServer);
+          await tools.hubspot_create_contact?.handler({
+            email: 'test@example.com',
+            company: 'Test Corp',
+            phone: '555-1234',
+            website: 'https://example.com',
+            additionalProperties: {
+              custom_field: 'value',
             },
-            mockContext
-          );
+          });
 
           const properties = capturedBody.properties as Record<string, unknown>;
           expect(properties.email).toBe('test@example.com');
@@ -291,15 +277,12 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.CREATE_CONTACT as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const result = await tools.hubspot_create_contact?.handler({
+          email: 'duplicate@example.com',
         });
 
-        const result = await tool.handler(
-          { email: 'duplicate@example.com' },
-          mockContext
-        );
         expect(result).toContain('Failed to create contact');
         expect(result).toContain('409');
       });
@@ -324,19 +307,17 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.CREATE_DEAL as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
-        });
-
-        const actual = await tool.handler(
-          {
-            dealname: 'New Deal',
-            amount: '50000',
-            dealstage: 'presentationscheduled',
-          },
-          mockContext
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const hubspotCreateDeal = getToolOrThrow(
+          tools.hubspot_create_deal,
+          'hubspot_create_deal'
         );
+        const actual = await hubspotCreateDeal.handler({
+          dealname: 'New Deal',
+          amount: '50000',
+          dealstage: 'presentationscheduled',
+        });
 
         const content = JSON.parse(actual);
         expect(content.id).toBe('456');
@@ -353,25 +334,19 @@ describe('#HubSpotConnector', () => {
             })
           );
 
-          const tool = HubSpotConnectorConfig.tools.CREATE_DEAL as MCPToolDefinition;
-          const mockContext = createMockConnectorContext({
-            credentials: { apiKey: 'test-api-key' },
-          });
-
-          await tool.handler(
-            {
-              dealname: 'Big Deal',
-              amount: '100000',
-              dealstage: 'qualifiedtobuy',
-              pipeline: 'default',
-              closedate: '2024-12-31',
-              hubspot_owner_id: 'owner123',
-              additionalProperties: {
-                custom_property: 'custom_value',
-              },
+          const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+          const tools = extractToolsFromServer(mcpServer);
+          await tools.hubspot_create_deal?.handler({
+            dealname: 'Big Deal',
+            amount: '100000',
+            dealstage: 'qualifiedtobuy',
+            pipeline: 'default',
+            closedate: '2024-12-31',
+            hubspot_owner_id: 'owner123',
+            additionalProperties: {
+              custom_property: 'custom_value',
             },
-            mockContext
-          );
+          });
 
           const properties = capturedBody.properties as Record<string, unknown>;
           expect(properties.dealname).toBe('Big Deal');
@@ -393,12 +368,12 @@ describe('#HubSpotConnector', () => {
           })
         );
 
-        const tool = HubSpotConnectorConfig.tools.CREATE_DEAL as MCPToolDefinition;
-        const mockContext = createMockConnectorContext({
-          credentials: { apiKey: 'test-api-key' },
+        const mcpServer = createHubSpotServer({ apiKey: 'test-api-key' });
+        const tools = extractToolsFromServer(mcpServer);
+        const result = await tools.hubspot_create_deal?.handler({
+          dealname: 'Test Deal',
         });
 
-        const result = await tool.handler({ dealname: 'Test Deal' }, mockContext);
         expect(result).toContain('Failed to create deal');
         expect(result).toContain('400');
       });

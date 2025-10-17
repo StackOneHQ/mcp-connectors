@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 const searchDocumentation = async (keywords: string): Promise<string> => {
@@ -98,36 +98,47 @@ const scoreChunk = (chunk: string, searchTerms: string[]): number => {
   return score;
 };
 
-export const StackOneConnectorConfig = mcpConnectorConfig({
-  name: 'StackOne',
-  key: 'stackone',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/stackone/filled/svg',
-  credentials: z.object({}),
-  setup: z.object({}),
-  description:
-    'StackOne is an integrations platform for building AI agents. It allows you to read and write to various APIs and third party services with a single unified interface.',
-  examplePrompt:
-    'Search the StackOne documentation for information about authentication methods, API endpoints, and integration best practices.',
-  tools: (tool) => ({
-    SEARCH_STACKONE_DOCS: tool({
-      name: 'stackone_search_docs',
-      description:
-        'Search StackOne documentation using fuzzy search over keywords. Returns relevant large chunks of documentation.',
-      schema: z.object({
-        keywords: z
-          .string()
-          .describe('Keywords or search terms to find in the StackOne documentation'),
-      }),
-      handler: async (args, _context) => {
-        try {
-          return await searchDocumentation(args.keywords);
-        } catch (error) {
-          return `Error searching StackOne documentation: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`;
-        }
-      },
-    }),
-  }),
-});
+export type StackOneCredentials = Record<string, never>;
+
+export function createStackOneServer(_credentials: StackOneCredentials): McpServer {
+  const server = new McpServer({
+    name: 'StackOne',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'stackone_search_docs',
+    'Search StackOne documentation using fuzzy search over keywords. Returns relevant large chunks of documentation.',
+    {
+      keywords: z
+        .string()
+        .describe('Keywords or search terms to find in the StackOne documentation'),
+    },
+    async (args) => {
+      try {
+        const result = await searchDocumentation(args.keywords);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: result,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error searching StackOne documentation: ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}

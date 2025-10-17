@@ -1,4 +1,4 @@
-import { mcpConnectorConfig } from '@stackone/mcp-config-types';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 interface GitLabProject {
@@ -308,259 +308,403 @@ class GitLabClient {
   }
 }
 
-export const GitLabConnectorConfig = mcpConnectorConfig({
-  name: 'GitLab',
-  key: 'gitlab',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/gitlab/filled/svg',
-  credentials: z.object({
-    token: z.string().describe('GitLab Personal Access Token'),
-    baseUrl: z
-      .string()
-      .url()
-      .default('https://gitlab.com/api/v4')
-      .describe('GitLab API base URL (for self-hosted instances)'),
-  }),
-  setup: z.object({}),
-  examplePrompt:
-    'List all open issues in my main project, create a new feature request issue, and check the latest merge requests that need review.',
-  tools: (tool) => ({
-    GET_PROJECT: tool({
-      name: 'gitlab_get_project',
-      description: 'Get information about a specific GitLab project',
-      schema: z.object({
-        projectId: z
-          .string()
-          .describe('Project ID or path (e.g., "123" or "group/project")'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const project = await client.getProject(args.projectId);
-          return JSON.stringify(project, null, 2);
-        } catch (error) {
-          return `Failed to get project: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_PROJECTS: tool({
-      name: 'gitlab_list_projects',
-      description: 'List projects for the authenticated user',
-      schema: z.object({
-        owned: z.boolean().default(false).describe('Only show owned projects'),
-        limit: z.number().default(30).describe('Maximum number of projects to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const projects = await client.listProjects(args.owned, args.limit);
-          return JSON.stringify(projects, null, 2);
-        } catch (error) {
-          return `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_ISSUES: tool({
-      name: 'gitlab_list_issues',
-      description: 'List issues for a project',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        state: z
-          .enum(['opened', 'closed', 'all'])
-          .default('opened')
-          .describe('Issue state filter'),
-        limit: z.number().default(30).describe('Maximum number of issues to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const issues = await client.listIssues(args.projectId, args.state, args.limit);
-          return JSON.stringify(issues, null, 2);
-        } catch (error) {
-          return `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_ISSUE: tool({
-      name: 'gitlab_get_issue',
-      description: 'Get details of a specific issue',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        issueIid: z.number().describe('Issue IID (internal ID)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const issue = await client.getIssue(args.projectId, args.issueIid);
-          return JSON.stringify(issue, null, 2);
-        } catch (error) {
-          return `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    CREATE_ISSUE: tool({
-      name: 'gitlab_create_issue',
-      description: 'Create a new issue in a project',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        title: z.string().describe('Issue title'),
-        description: z.string().optional().describe('Issue description'),
-        labels: z.array(z.string()).optional().describe('Labels to apply to the issue'),
-        assigneeIds: z
-          .array(z.number())
-          .optional()
-          .describe('User IDs to assign to the issue'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const issue = await client.createIssue(
-            args.projectId,
-            args.title,
-            args.description,
-            args.labels,
-            args.assigneeIds
-          );
-          return JSON.stringify(issue, null, 2);
-        } catch (error) {
-          return `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_MERGE_REQUESTS: tool({
-      name: 'gitlab_list_merge_requests',
-      description: 'List merge requests for a project',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        state: z
-          .enum(['opened', 'closed', 'merged', 'all'])
-          .default('opened')
-          .describe('Merge request state filter'),
-        limit: z
-          .number()
-          .default(30)
-          .describe('Maximum number of merge requests to return'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const mergeRequests = await client.listMergeRequests(
-            args.projectId,
-            args.state,
-            args.limit
-          );
-          return JSON.stringify(mergeRequests, null, 2);
-        } catch (error) {
-          return `Failed to list merge requests: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_MERGE_REQUEST: tool({
-      name: 'gitlab_get_merge_request',
-      description: 'Get details of a specific merge request',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        mergeRequestIid: z.number().describe('Merge request IID (internal ID)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const mergeRequest = await client.getMergeRequest(
-            args.projectId,
-            args.mergeRequestIid
-          );
-          return JSON.stringify(mergeRequest, null, 2);
-        } catch (error) {
-          return `Failed to get merge request: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_CURRENT_USER: tool({
-      name: 'gitlab_get_current_user',
-      description: 'Get information about the authenticated user',
-      schema: z.object({}),
-      handler: async (_args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const user = await client.getCurrentUser();
-          return JSON.stringify(user, null, 2);
-        } catch (error) {
-          return `Failed to get current user: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_USER: tool({
-      name: 'gitlab_get_user',
-      description: 'Get information about a specific user',
-      schema: z.object({
-        userId: z.number().describe('User ID'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const user = await client.getUser(args.userId);
-          return JSON.stringify(user, null, 2);
-        } catch (error) {
-          return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    LIST_FILES: tool({
-      name: 'gitlab_list_files',
-      description: 'List files and directories in a project path',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        path: z.string().default('').describe('Path to list (empty for root)'),
-        ref: z
-          .string()
-          .optional()
-          .describe('Branch, tag, or commit SHA (default: default branch)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const files = await client.listFiles(args.projectId, args.path, args.ref);
-          return JSON.stringify(files, null, 2);
-        } catch (error) {
-          return `Failed to list files: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-    GET_FILE_CONTENT: tool({
-      name: 'gitlab_get_file_content',
-      description: 'Get the content of a file from a project',
-      schema: z.object({
-        projectId: z.string().describe('Project ID or path'),
-        path: z.string().describe('File path'),
-        ref: z
-          .string()
-          .optional()
-          .describe('Branch, tag, or commit SHA (default: default branch)'),
-      }),
-      handler: async (args, context) => {
-        try {
-          const { token, baseUrl } = await context.getCredentials();
-          const client = new GitLabClient(token, baseUrl);
-          const content = await client.getFileContent(
-            args.projectId,
-            args.path,
-            args.ref
-          );
-          return content;
-        } catch (error) {
-          return `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      },
-    }),
-  }),
-});
+export interface GitLabCredentials {
+  token: string;
+  baseUrl?: string;
+}
+
+export function createGitLabServer(credentials: GitLabCredentials): McpServer {
+  const server = new McpServer({
+    name: 'GitLab',
+    version: '1.0.0',
+  });
+
+  server.tool(
+    'gitlab_get_project',
+    'Get information about a specific GitLab project',
+    {
+      projectId: z
+        .string()
+        .describe('Project ID or path (e.g., "123" or "group/project")'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const project = await client.getProject(args.projectId);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(project, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_list_projects',
+    'List projects for the authenticated user',
+    {
+      owned: z.boolean().default(false).describe('Only show owned projects'),
+      limit: z.number().default(30).describe('Maximum number of projects to return'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const projects = await client.listProjects(args.owned, args.limit);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(projects, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_list_issues',
+    'List issues for a project',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      state: z
+        .enum(['opened', 'closed', 'all'])
+        .default('opened')
+        .describe('Issue state filter'),
+      limit: z.number().default(30).describe('Maximum number of issues to return'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const issues = await client.listIssues(args.projectId, args.state, args.limit);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issues, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_get_issue',
+    'Get details of a specific issue',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      issueIid: z.number().describe('Issue IID (internal ID)'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const issue = await client.getIssue(args.projectId, args.issueIid);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_create_issue',
+    'Create a new issue in a project',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      title: z.string().describe('Issue title'),
+      description: z.string().optional().describe('Issue description'),
+      labels: z.array(z.string()).optional().describe('Labels to apply to the issue'),
+      assigneeIds: z
+        .array(z.number())
+        .optional()
+        .describe('User IDs to assign to the issue'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const issue = await client.createIssue(
+          args.projectId,
+          args.title,
+          args.description,
+          args.labels,
+          args.assigneeIds
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(issue, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_list_merge_requests',
+    'List merge requests for a project',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      state: z
+        .enum(['opened', 'closed', 'merged', 'all'])
+        .default('opened')
+        .describe('Merge request state filter'),
+      limit: z
+        .number()
+        .default(30)
+        .describe('Maximum number of merge requests to return'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const mergeRequests = await client.listMergeRequests(
+          args.projectId,
+          args.state,
+          args.limit
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(mergeRequests, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list merge requests: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_get_merge_request',
+    'Get details of a specific merge request',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      mergeRequestIid: z.number().describe('Merge request IID (internal ID)'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const mergeRequest = await client.getMergeRequest(
+          args.projectId,
+          args.mergeRequestIid
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(mergeRequest, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get merge request: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_get_current_user',
+    'Get information about the authenticated user',
+    {},
+    async (_args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const user = await client.getCurrentUser();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get current user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_get_user',
+    'Get information about a specific user',
+    {
+      userId: z.number().describe('User ID'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const user = await client.getUser(args.userId);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(user, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_list_files',
+    'List files and directories in a project path',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      path: z.string().default('').describe('Path to list (empty for root)'),
+      ref: z
+        .string()
+        .optional()
+        .describe('Branch, tag, or commit SHA (default: default branch)'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const files = await client.listFiles(args.projectId, args.path, args.ref);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(files, null, 2),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  server.tool(
+    'gitlab_get_file_content',
+    'Get the content of a file from a project',
+    {
+      projectId: z.string().describe('Project ID or path'),
+      path: z.string().describe('File path'),
+      ref: z
+        .string()
+        .optional()
+        .describe('Branch, tag, or commit SHA (default: default branch)'),
+    },
+    async (args) => {
+      try {
+        const client = new GitLabClient(credentials.token, credentials.baseUrl);
+        const content = await client.getFileContent(args.projectId, args.path, args.ref);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: content,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  return server;
+}
