@@ -18,6 +18,7 @@
         "typecheck": "turbo typecheck"
     },
     "dependencies": {
+        "@stackone/mcp-config-types": "workspace:*",
         "@stackone/mcp-connectors": "workspace:*"
     },
     "devDependencies": {

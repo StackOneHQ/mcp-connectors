@@ -4,78 +4,11 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import type { ConnectorContext, MCPConnectorConfig } from '@stackone/mcp-config-types';
+import { Connectors as allConnectors } from '@stackone/mcp-connectors';
 import express, { type Request, type Response } from 'express';
 import winston from 'winston';
 
-// Import all connector factories
-import * as Connectors from '@stackone/mcp-connectors';
-
-// Connector registry mapping connector keys to their factory functions
-const CONNECTOR_REGISTRY: Record<
-  string,
-  {
-    name: string;
-    factory: string;
-    description?: string;
-  }
-> = {
-  asana: { name: 'Asana', factory: 'createAsanaServer' },
-  attio: { name: 'Attio', factory: 'createAttioServer' },
-  aws: { name: 'AWS', factory: 'createAWSServer' },
-  datadog: { name: 'Datadog', factory: 'createDatadogServer' },
-  duckduckgo: { name: 'DuckDuckGo', factory: 'createDuckDuckGoServer' },
-  deel: { name: 'Deel', factory: 'createDeelServer' },
-  deepseek: { name: 'DeepSeek', factory: 'createDeepSeekServer' },
-  documentation: { name: 'Documentation', factory: 'createDocumentationServer' },
-  elevenlabs: { name: 'ElevenLabs', factory: 'createElevenLabsServer' },
-  exa: { name: 'Exa', factory: 'createExaServer' },
-  fal: { name: 'Fal.ai', factory: 'createFalServer' },
-  fireflies: { name: 'Fireflies.ai', factory: 'createFirefliesServer' },
-  github: { name: 'GitHub', factory: 'createGitHubServer' },
-  gitlab: { name: 'GitLab', factory: 'createGitLabServer' },
-  'google-drive': { name: 'Google Drive', factory: 'createGoogleDriveServer' },
-  'google-maps': { name: 'Google Maps', factory: 'createGoogleMapsServer' },
-  graphy: { name: 'Graphy', factory: 'createGraphyServer' },
-  hibob: { name: 'HiBob', factory: 'createHiBobServer' },
-  hubspot: { name: 'HubSpot', factory: 'createHubSpotServer' },
-  incident: { name: 'Incident.io', factory: 'createIncidentServer' },
-  jira: { name: 'Jira', factory: 'createJiraServer' },
-  langsmith: { name: 'LangSmith', factory: 'createLangSmithServer' },
-  linear: { name: 'Linear', factory: 'createLinearServer' },
-  linkedin: { name: 'LinkedIn', factory: 'createLinkedInServer' },
-  modal: { name: 'Modal', factory: 'createModalServer' },
-  notion: { name: 'Notion', factory: 'createNotionServer' },
-  onepassword: { name: '1Password', factory: 'createOnePasswordServer' },
-  parallel: { name: 'Parallel', factory: 'createParallelServer' },
-  perplexity: { name: 'Perplexity', factory: 'createPerplexityServer' },
-  posthog: { name: 'PostHog', factory: 'createPostHogServer' },
-  producthunt: { name: 'Product Hunt', factory: 'createProductHuntServer' },
-  'pydantic-logfire': {
-    name: 'Pydantic Logfire',
-    factory: 'createPydanticLogfireServer',
-  },
-  pylon: { name: 'Pylon', factory: 'createPylonServer' },
-  replicate: { name: 'Replicate', factory: 'createReplicateServer' },
-  retool: { name: 'Retool', factory: 'createRetoolServer' },
-  ridewithgps: { name: 'Ride with GPS', factory: 'createRideWithGPSServer' },
-  'sequential-thinking': {
-    name: 'Sequential Thinking',
-    factory: 'createSequentialThinkingServer',
-  },
-  slack: { name: 'Slack', factory: 'createSlackServer' },
-  stackone: { name: 'StackOne', factory: 'createStackOneServer' },
-  strava: { name: 'Strava', factory: 'createStravaServer' },
-  supabase: { name: 'Supabase', factory: 'createSupabaseServer' },
-  tfl: { name: 'TFL (Transport for London)', factory: 'createTFLServer' },
-  tinybird: { name: 'Tinybird', factory: 'createTinybirdServer' },
-  todoist: { name: 'Todoist', factory: 'createTodoistServer' },
-  todolist: { name: 'Todo List', factory: 'createTodoListServer' },
-  test: { name: 'Test', factory: 'createTestServer' },
-  turbopuffer: { name: 'Turbopuffer', factory: 'createTurbopufferServer' },
-  wandb: { name: 'Weights & Biases', factory: 'createWandbServer' },
-  xero: { name: 'Xero', factory: 'createXeroServer' },
-  zapier: { name: 'Zapier', factory: 'createZapierServer' },
-};
 
 // Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
@@ -124,8 +57,48 @@ const customLogger = (
   fileLogger.log(level, message, { ...meta, timestamp });
 };
 
-const getConnectorByKey = (connectorKey: string) => {
-  return CONNECTOR_REGISTRY[connectorKey] || null;
+const getConnectorByKey = (connectorKey: string): MCPConnectorConfig | null => {
+  const connector = allConnectors.find(
+    (c) => c.key === connectorKey
+  ) as MCPConnectorConfig;
+  return connector || null;
+};
+
+const createRuntimeConnectorContext = (
+  credentials: Record<string, unknown> = {},
+  setup: Record<string, unknown> = {}
+): ConnectorContext => {
+  const dataStore = new Map<string, unknown>();
+  const cacheStore = new Map<string, string>();
+
+  return {
+    getCredentials: async () => credentials,
+    getSetup: async () => setup,
+    getData: async <T = unknown>(key?: string): Promise<T | null> => {
+      if (key === undefined) {
+        return Object.fromEntries(dataStore) as T;
+      }
+      return (dataStore.get(key) as T) || null;
+    },
+    setData: async (
+      keyOrData: string | Record<string, unknown>,
+      value?: unknown
+    ): Promise<void> => {
+      if (typeof keyOrData === 'string') {
+        dataStore.set(keyOrData, value);
+      } else {
+        for (const [k, v] of Object.entries(keyOrData)) {
+          dataStore.set(k, v);
+        }
+      }
+    },
+    readCache: async (key: string): Promise<string | null> => {
+      return cacheStore.get(key) || null;
+    },
+    writeCache: async (key: string, value: string): Promise<void> => {
+      cacheStore.set(key, value);
+    },
+  };
 };
 
 const printUsage = () => {
@@ -136,16 +109,20 @@ const printUsage = () => {
   console.log('Options:');
   console.log('  --connector    Connector key (required)');
   console.log('  --credentials  JSON string with connector credentials');
+  console.log('  --setup        JSON string with connector setup configuration');
   console.log('  --port         Port to run server on (default: 3000)');
   console.log('  --help         Show this help message');
   console.log('');
-  const connectorKeys = Object.keys(CONNECTOR_REGISTRY).sort();
-  console.log(`Available connectors (${connectorKeys.length}):`);
-  console.log(connectorKeys.join(', '));
+  console.log(`Available connectors (${allConnectors.length}):`);
+  const sortedConnectors = allConnectors.map((c) => c.key).sort();
+  console.log(sortedConnectors.join(', '));
   console.log('');
   console.log('Examples:');
+  console.log('  npm start -- --connector test');
   console.log('  npm start -- --connector asana --credentials \'{"apiKey":"sk-xxx"}\'');
-  console.log('  npm start -- --connector github --credentials \'{"token":"ghp_xxx"}\'');
+  console.log(
+    '  npm start -- --connector github --credentials \'{"token":"ghp_xxx"}\' --setup \'{"org":"myorg"}\''
+  );
 };
 
 export const startServer = async (): Promise<{
@@ -161,6 +138,9 @@ export const startServer = async (): Promise<{
         short: 'c',
       },
       credentials: {
+        type: 'string',
+      },
+      setup: {
         type: 'string',
       },
       port: {
@@ -195,14 +175,18 @@ export const startServer = async (): Promise<{
   if (!connectorConfig) {
     console.error(`❌ Connector "${connectorKey}" not found`);
     console.log('');
-    const connectorKeys = Object.keys(CONNECTOR_REGISTRY).sort();
-    console.log(`Available connectors (${connectorKeys.length}):`);
-    console.log(connectorKeys.join(', '));
+    console.log(`Available connectors (${allConnectors.length}):`);
+    console.log(
+      allConnectors
+        .map((c) => c.key)
+        .sort()
+        .join(', ')
+    );
     process.exit(1);
   }
 
-  // Parse credentials
-  let credentials: Record<string, unknown> = {};
+  let credentials = {};
+  let setup = {};
 
   if (values.credentials) {
     try {
@@ -216,19 +200,117 @@ export const startServer = async (): Promise<{
     }
   }
 
-  // Function to create a new MCP server instance using the connector factory
-  const getServer = (): McpServer => {
-    const factoryName = connectorConfig.factory;
-    const factory = (Connectors as Record<string, unknown>)[factoryName];
+  if (values.setup) {
+    try {
+      setup = JSON.parse(values.setup);
+    } catch (error) {
+      console.error(
+        '❌ Invalid setup JSON:',
+        error instanceof Error ? error.message : String(error)
+      );
+      process.exit(1);
+    }
+  }
 
-    if (typeof factory !== 'function') {
-      throw new Error(
-        `Factory function "${factoryName}" not found in @stackone/mcp-connectors`
+  const context = createRuntimeConnectorContext(credentials, setup);
+
+  // Function to create a new MCP server instance with configured tools/resources
+  const getServer = (): McpServer => {
+    const server = new McpServer({
+      name: `${connectorConfig.name} MCP Server (disco.dev)`,
+      version: connectorConfig.version,
+    });
+
+    // Register tools
+    for (const tool of Object.values(connectorConfig.tools)) {
+      server.tool(
+        tool.name,
+        tool.description,
+        // @ts-expect-error - TODO: fix this
+        tool.schema.shape,
+        async (args: unknown) => {
+          const startTime = Date.now();
+          customLogger(`Tool invoked: ${tool.name}`, 'info', { tool: tool.name, args });
+
+          try {
+            const result = await tool.handler(args, context);
+            const duration = Date.now() - startTime;
+            customLogger(`Tool completed: ${tool.name} (${duration}ms)`, 'info', {
+              tool: tool.name,
+              duration,
+            });
+
+            return {
+              content: [{ type: 'text' as const, text: String(result) }],
+            };
+          } catch (error) {
+            const duration = Date.now() - startTime;
+            customLogger(`Tool failed: ${tool.name} (${duration}ms)`, 'error', {
+              tool: tool.name,
+              duration,
+              error: error instanceof Error ? error.message : String(error),
+            });
+
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                },
+              ],
+            };
+          }
+        }
       );
     }
 
-    // Call the factory function with credentials to get the server instance
-    const server = factory(credentials) as McpServer;
+    // Register resources
+    for (const resource of Object.values(connectorConfig.resources)) {
+      server.resource(resource.name, resource.uri, async (uri: URL) => {
+        const startTime = Date.now();
+        customLogger(`Resource accessed: ${resource.name}`, 'info', {
+          resource: resource.name,
+          uri: uri.toString(),
+        });
+
+        try {
+          const result = await resource.handler(context);
+          const duration = Date.now() - startTime;
+          customLogger(`Resource fetched: ${resource.name} (${duration}ms)`, 'info', {
+            resource: resource.name,
+            duration,
+          });
+
+          return {
+            contents: [
+              {
+                type: 'text' as const,
+                text: String(result),
+                uri: uri.toString(),
+              },
+            ],
+          };
+        } catch (error) {
+          const duration = Date.now() - startTime;
+          customLogger(`Resource failed: ${resource.name} (${duration}ms)`, 'error', {
+            resource: resource.name,
+            duration,
+            error: error instanceof Error ? error.message : String(error),
+          });
+
+          return {
+            contents: [
+              {
+                type: 'text' as const,
+                text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                uri: uri.toString(),
+              },
+            ],
+          };
+        }
+      });
+    }
+
     return server;
   };
 
@@ -325,15 +407,23 @@ export const startServer = async (): Promise<{
   const url = `http://localhost:${port}/mcp`;
 
   customLogger('Starting MCP Connector Server (Stateless Mode)...', 'info');
-  customLogger(`Connector: ${connectorConfig.name} (${connectorKey})`, 'info');
-  customLogger(`Factory: ${connectorConfig.factory}`, 'info');
+  customLogger(`Connector: ${connectorConfig.name} (${connectorConfig.key})`, 'info');
+  customLogger(`Version: ${connectorConfig.version}`, 'info');
+  customLogger(`Tools: ${Object.keys(connectorConfig.tools).length}`, 'info');
+  customLogger(`Resources: ${Object.keys(connectorConfig.resources).length}`, 'info');
   customLogger(`Port: ${port}`, 'info');
   customLogger(`Log file: ${path.join(logsDir, 'server.log')}`, 'info');
 
   if (Object.keys(credentials).length > 0) {
     customLogger(`Credentials: ${Object.keys(credentials).length} keys provided`, 'info');
-  } else {
-    customLogger('Warning: No credentials provided', 'warn');
+  }
+
+  if (Object.keys(setup).length > 0) {
+    customLogger(`Setup: ${Object.keys(setup).length} config keys provided`, 'info');
+  }
+
+  if (connectorConfig.examplePrompt) {
+    customLogger(`Example: ${connectorConfig.examplePrompt}`, 'info');
   }
 
   customLogger(`MCP endpoint: ${url}`, 'info');

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.0",
+    "@stackone/mcp-config-types": "workspace:*",
     "@stackone/mcp-connectors": "workspace:*",
     "express": "^4.21.2",
     "winston": "^3.17.0"

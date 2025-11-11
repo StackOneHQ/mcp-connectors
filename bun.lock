@@ -4,6 +4,7 @@
     "": {
       "name": "mcp-connectors",
       "dependencies": {
+        "@stackone/mcp-config-types": "workspace:*",
         "@stackone/mcp-connectors": "workspace:*",
       },
       "devDependencies": {
@@ -51,6 +52,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.18.0",
+        "@stackone/mcp-config-types": "workspace:*",
         "@stackone/mcp-connectors": "workspace:*",
         "express": "^4.21.2",
         "winston": "^3.17.0",
@@ -58,6 +60,18 @@
       "devDependencies": {
         "@types/express": "^5.0.0",
         "@types/node": "^22.13.5",
+      },
+    },
+    "packages/mcp-config-types": {
+      "name": "@stackone/mcp-config-types",
+      "version": "0.0.12",
+      "devDependencies": {
+        "@modelcontextprotocol/sdk": "^1.18.0",
+        "zod": "^3.25",
+      },
+      "peerDependencies": {
+        "@modelcontextprotocol/sdk": "^1.18.0",
+        "zod": "^3.25",
       },
     },
     "packages/mcp-connectors": {
@@ -339,6 +353,8 @@
     "@rollup/rollup-win32-ia32-msvc": ["@rollup/rollup-win32-ia32-msvc@4.50.1", "", { "os": "win32", "cpu": "ia32" }, "sha512-SXjv8JlbzKM0fTJidX4eVsH+Wmnp0/WcD8gJxIZyR6Gay5Qcsmdbi9zVtnbkGPG8v2vMR1AD06lGWy5FLMcG7A=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.50.1", "", { "os": "win32", "cpu": "x64" }, "sha512-StxAO/8ts62KZVRAm4JZYq9+NqNsV7RvimNK+YM7ry//zebEH6meuugqW/P5OFUCjyQgui+9fUxT6d5NShvMvA=="],
+
+    "@stackone/mcp-config-types": ["@stackone/mcp-config-types@workspace:packages/mcp-config-types"],
 
     "@stackone/mcp-connectors": ["@stackone/mcp-connectors@workspace:packages/mcp-connectors"],
 
