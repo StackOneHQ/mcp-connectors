@@ -52,6 +52,7 @@ import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
 import { ZapierConnectorConfig } from './connectors/zapier';
 
+// Export Connectors array for platforms like disco
 export const Connectors: readonly MCPConnectorConfig[] = [
   TestConnectorConfig,
   StackOneConnectorConfig,
@@ -105,55 +106,54 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ZapierConnectorConfig,
 ] as const;
 
-export {
-  TestConnectorConfig,
-  StackOneConnectorConfig,
-  AsanaConnectorConfig,
-  AttioConnectorConfig,
-  AwsConnectorConfig,
-  DatadogConnectorConfig,
-  DeelConnectorConfig,
-  DeepseekConnectorConfig,
-  DocumentationConnectorConfig,
-  DuckDuckGoConnectorConfig,
-  ElevenLabsConnectorConfig,
-  ExaConnectorConfig,
-  FalConnectorConfig,
-  GitHubConnectorConfig,
-  GitLabConnectorConfig,
-  GoogleDriveConnectorConfig,
-  GoogleMapsConnectorConfig,
-  GraphyConnectorConfig,
-  HiBobConnectorConfig,
-  HubSpotConnectorConfig,
-  IncidentConnectorConfig,
-  FirefliesConnectorConfig,
-  JiraConnectorConfig,
-  LangsmithConnectorConfig,
-  LinearConnectorConfig,
-  LinkedInConnectorConfig,
-  LogfireConnectorConfig,
-  ModalConnectorConfig,
-  NotionConnectorConfig,
-  OnePasswordConnectorConfig,
-  ParallelConnectorConfig,
-  PerplexityConnectorConfig,
-  PostHogConnectorConfig,
-  ProducthuntConnectorConfig,
-  PylonConnectorConfig,
-  ReplicateConnectorConfig,
-  RetoolConnectorConfig,
-  RideWithGPSConnectorConfig,
-  SequentialThinkingConnectorConfig,
-  SlackConnectorConfig,
-  StravaConnectorConfig,
-  SupabaseConnectorConfig,
-  TFLConnectorConfig,
-  TinybirdConnectorConfig,
-  TodoistConnectorConfig,
-  TodoListConnectorConfig,
-  TurbopufferConnectorConfig,
-  WandbConnectorConfig,
-  XeroConnectorConfig,
-  ZapierConnectorConfig,
-};
+// Re-export all individual connectors
+export * from './connectors/asana';
+export * from './connectors/attio';
+export * from './connectors/aws';
+export * from './connectors/datadog';
+export * from './connectors/duckduckgo';
+export * from './connectors/deel';
+export * from './connectors/deepseek';
+export * from './connectors/documentation';
+export * from './connectors/elevenlabs';
+export * from './connectors/exa';
+export * from './connectors/fal';
+export * from './connectors/fireflies';
+export * from './connectors/github';
+export * from './connectors/gitlab';
+export * from './connectors/google-drive';
+export * from './connectors/google-maps';
+export * from './connectors/graphy';
+export * from './connectors/hibob';
+export * from './connectors/hubspot';
+export * from './connectors/incident';
+export * from './connectors/jira';
+export * from './connectors/langsmith';
+export * from './connectors/linear';
+export * from './connectors/linkedin';
+export * from './connectors/modal';
+export * from './connectors/notion';
+export * from './connectors/onepassword';
+export * from './connectors/perplexity';
+export * from './connectors/parallel';
+export * from './connectors/posthog';
+export * from './connectors/producthunt';
+export * from './connectors/pydantic-logfire';
+export * from './connectors/pylon';
+export * from './connectors/replicate';
+export * from './connectors/retool';
+export * from './connectors/ridewithgps';
+export * from './connectors/stackone';
+export * from './connectors/slack';
+export * from './connectors/sequential-thinking';
+export * from './connectors/strava';
+export * from './connectors/supabase';
+export * from './connectors/tfl';
+export * from './connectors/tinybird';
+export * from './connectors/todoist';
+export * from './connectors/todolist';
+export * from './connectors/test';
+export * from './connectors/turbopuffer';
+export * from './connectors/wandb';
+export * from './connectors/xero';
+export * from './connectors/zapier';
