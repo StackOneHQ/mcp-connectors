@@ -9,7 +9,6 @@ import { Connectors as allConnectors } from '@stackone/mcp-connectors';
 import express, { type Request, type Response } from 'express';
 import winston from 'winston';
 
-
 // Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
 if (!fs.existsSync(logsDir)) {

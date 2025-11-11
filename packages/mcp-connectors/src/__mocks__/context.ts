@@ -1,7 +1,6 @@
 import type { ConnectorContext } from '@stackone/mcp-config-types';
 import { vi } from 'vitest';
 
-
 export interface MockContextOptions {
   credentials?: Record<string, unknown>;
   oauth2Credentials?: Record<string, unknown>;
