@@ -1,4 +1,4 @@
 {
-    "packages/mcp-connectors": "0.0.22",
+    "packages/mcp-connectors": "0.0.23",
     "apps/mcp-test": "0.0.7"
 }

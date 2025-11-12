@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.23](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.22...mcp-connectors-v0.0.23) (2025-11-12)
+
+
+### Features
+
+* add connector metadata exports ([#182](https://github.com/StackOneHQ/mcp-connectors/issues/182)) ([91e4834](https://github.com/StackOneHQ/mcp-connectors/commit/91e48349f0e71d4e651927dca2f046be918fd841))
+
 ## [0.0.22](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.21...mcp-connectors-v0.0.22) (2025-10-17)
 
 
