@@ -19,7 +19,7 @@ jobs:
           bun-version: latest
 
       - name: 💫 Install dependencies
-        run: bun i
+        run: bun ci
 
       - name: 🏡 Build package
         run: bun run build
