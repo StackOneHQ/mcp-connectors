@@ -1,9 +1,19 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // Note: This connector relies on context.getData/setData which doesn't exist in native SDK
 // It would need to be reimplemented with external storage (e.g., file system, database)
 // This is a placeholder that shows the structure but won't function without storage
+
+export const TodolistConnectorMetadata = {
+  key: 'todolist',
+  name: 'Todo List',
+  description: 'Simple todo list management',
+  version: '1.0.0',
+  examplePrompt: 'Manage my todo list',
+  categories: ['productivity', 'task-management'],
+} as const satisfies ConnectorMetadata;
 
 export type TodoListCredentials = Record<string, never>;
 

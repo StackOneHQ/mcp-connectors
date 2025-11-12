@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 const GRAPHY_API_BASE = 'https://api.graphy.app/rest/v1';
 
@@ -236,6 +237,16 @@ const handleGraphyError = (error: unknown): string => {
   }
   return String(error);
 };
+
+export const GraphyConnectorMetadata = {
+  key: 'graphy',
+  name: 'Graphy',
+  description: 'Data visualization and analytics',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/graphy/filled/svg',
+  examplePrompt: 'Create visualizations with Graphy',
+  categories: ['analytics', 'visualization'],
+} as const satisfies ConnectorMetadata;
 
 export interface GraphyCredentials {
   apiKey: string;

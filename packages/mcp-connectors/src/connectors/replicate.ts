@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface ReplicatePrediction {
   id: string;
@@ -82,6 +83,16 @@ class SimpleReplicateClient implements ReplicateClient {
     },
   };
 }
+
+export const ReplicateConnectorMetadata = {
+  key: 'replicate',
+  name: 'Replicate',
+  description: 'AI model deployment',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/replicate/filled/svg',
+  examplePrompt: 'Run AI models on Replicate',
+  categories: ['ai', 'ml'],
+} as const satisfies ConnectorMetadata;
 
 export interface ReplicateCredentials {
   apiToken: string;

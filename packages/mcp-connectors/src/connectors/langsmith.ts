@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface LangsmithRun {
   id: string;
@@ -216,6 +217,16 @@ class LangsmithClient {
     return result.runs || [];
   }
 }
+
+export const LangsmithConnectorMetadata = {
+  key: 'langsmith',
+  name: 'LangSmith',
+  description: 'LLM application monitoring',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/langsmith/filled/svg',
+  examplePrompt: 'View LangSmith traces',
+  categories: ['ai', 'monitoring'],
+} as const satisfies ConnectorMetadata;
 
 export interface LangsmithCredentials {
   apiKey: string;

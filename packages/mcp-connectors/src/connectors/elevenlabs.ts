@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 const ELEVENLABS_API_BASE = 'https://api.elevenlabs.io/v1';
 
@@ -91,6 +92,16 @@ const streamToBase64 = async (stream: ReadableStream): Promise<string> => {
   const binary = String.fromCharCode(...combined);
   return btoa(binary);
 };
+
+export const ElevenlabsConnectorMetadata = {
+  key: 'elevenlabs',
+  name: 'ElevenLabs',
+  description: 'AI voice generation',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/elevenlabs/filled/svg',
+  examplePrompt: 'Generate speech with ElevenLabs',
+  categories: ['ai', 'audio'],
+} as const satisfies ConnectorMetadata;
 
 export interface ElevenLabsCredentials {
   apiKey: string;

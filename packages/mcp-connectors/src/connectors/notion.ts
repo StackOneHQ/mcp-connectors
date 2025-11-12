@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 const NOTION_API_VERSION = '2022-06-28';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
@@ -85,6 +86,16 @@ const handleNotionError = (error: unknown): string => {
 
   return `Error: ${String(error)}`;
 };
+
+export const NotionConnectorMetadata = {
+  key: 'notion',
+  name: 'Notion',
+  description: 'Workspace and knowledge management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/notion/filled/svg',
+  examplePrompt: 'Search my Notion workspace',
+  categories: ['productivity', 'knowledge'],
+} as const satisfies ConnectorMetadata;
 
 export interface NotionCredentials {
   token: string;

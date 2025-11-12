@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 const searchDocumentation = async (keywords: string): Promise<string> => {
   const res = await fetch('https://docs.stackone.com/llms-full.txt');
@@ -97,6 +98,16 @@ const scoreChunk = (chunk: string, searchTerms: string[]): number => {
 
   return score;
 };
+
+export const StackoneConnectorMetadata = {
+  key: 'stackone',
+  name: 'StackOne',
+  description: 'Unified API platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/stackone/filled/svg',
+  examplePrompt: 'Query StackOne APIs',
+  categories: ['integration', 'api'],
+} as const satisfies ConnectorMetadata;
 
 export type StackOneCredentials = Record<string, never>;
 

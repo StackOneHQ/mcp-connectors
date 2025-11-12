@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface ZapierAction {
   id: string;
@@ -106,6 +107,16 @@ class ZapierClient {
     return response.json() as Promise<ZapierActionDetailsResponse>;
   }
 }
+
+export const ZapierConnectorMetadata = {
+  key: 'zapier',
+  name: 'Zapier',
+  description: 'Automation platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/zapier/filled/svg',
+  examplePrompt: 'Trigger Zapier zaps',
+  categories: ['automation', 'integration'],
+} as const satisfies ConnectorMetadata;
 
 export interface ZapierCredentials {
   apiKey: string;

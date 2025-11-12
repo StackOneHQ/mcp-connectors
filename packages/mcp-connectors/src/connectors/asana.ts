@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface AsanaTask {
   gid: string;
@@ -397,6 +398,16 @@ class AsanaClient {
     return result.data;
   }
 }
+
+export const AsanaConnectorMetadata = {
+  key: 'asana',
+  name: 'Asana',
+  description: 'Project management and team collaboration',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/asana/filled/svg',
+  examplePrompt: 'List my Asana tasks',
+  categories: ['productivity', 'project-management'],
+} as const satisfies ConnectorMetadata;
 
 export interface AsanaCredentials {
   accessToken: string;

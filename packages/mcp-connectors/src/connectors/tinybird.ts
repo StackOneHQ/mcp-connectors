@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // Prompt template for Tinybird
 const PROMPT_TEMPLATE = `
@@ -192,6 +193,16 @@ class TinybirdClient {
     return response.text();
   }
 }
+
+export const TinybirdConnectorMetadata = {
+  key: 'tinybird',
+  name: 'Tinybird',
+  description: 'Real-time data analytics',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/tinybird/filled/svg',
+  examplePrompt: 'Query Tinybird data',
+  categories: ['analytics', 'real-time'],
+} as const satisfies ConnectorMetadata;
 
 export interface TinybirdCredentials {
   apiUrl: string;

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 class EmbeddingsClient {
   private baseUrl = 'https://api.openai.com/v1/embeddings';
@@ -129,6 +130,16 @@ class TurbopufferClient {
     );
   }
 }
+
+export const TurbopufferConnectorMetadata = {
+  key: 'turbopuffer',
+  name: 'Turbopuffer',
+  description: 'Vector database',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/turbopuffer/filled/svg',
+  examplePrompt: 'Query Turbopuffer vectors',
+  categories: ['database', 'vector-search'],
+} as const satisfies ConnectorMetadata;
 
 export interface TurbopufferCredentials {
   apiKey: string;

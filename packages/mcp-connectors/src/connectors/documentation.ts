@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 import { type AnySearchableObject, createIndex, search } from '../utils/lexical-search';
 import { splitTextIntoSmartChunks } from '../utils/text-chunking';
@@ -286,6 +287,15 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
 
 // Simple in-memory cache for documentation
 const documentationCache = new Map<string, string>();
+
+export const DocumentationConnectorMetadata = {
+  key: 'documentation',
+  name: 'Documentation',
+  description: 'Documentation management',
+  version: '1.0.0',
+  examplePrompt: 'Search documentation',
+  categories: ['documentation', 'knowledge'],
+} as const satisfies ConnectorMetadata;
 
 export type DocumentationCredentials = Record<string, never>;
 

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface ParallelSearchResult {
   url: string;
@@ -88,6 +89,16 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
 
   return output.join('\n');
 };
+
+export const ParallelConnectorMetadata = {
+  key: 'parallel',
+  name: 'Parallel',
+  description: 'Parallel processing',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/parallel/filled/svg',
+  examplePrompt: 'Process tasks in parallel',
+  categories: ['compute', 'processing'],
+} as const satisfies ConnectorMetadata;
 
 export interface ParallelCredentials {
   apiKey: string;

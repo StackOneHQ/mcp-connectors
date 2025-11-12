@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface LogfireException {
   file_path: string;
@@ -241,6 +242,16 @@ class LogfireClient {
     return this.arbitraryQuery(query);
   }
 }
+
+export const PydanticLogfireConnectorMetadata = {
+  key: 'pydantic-logfire',
+  name: 'Pydantic Logfire',
+  description: 'Python application monitoring',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/pydanticlogfire/filled/svg',
+  examplePrompt: 'View Logfire traces',
+  categories: ['monitoring', 'python'],
+} as const satisfies ConnectorMetadata;
 
 export interface PydanticLogfireCredentials {
   readToken: string;

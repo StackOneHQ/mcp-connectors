@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface FirefliesTranscript {
   id: string;
@@ -214,6 +215,16 @@ class FirefliesClient {
     return data.transcripts || [];
   }
 }
+
+export const FirefliesConnectorMetadata = {
+  key: 'fireflies',
+  name: 'Fireflies',
+  description: 'Meeting transcription and notes',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/fireflies/filled/svg',
+  examplePrompt: 'Get meeting transcripts from Fireflies',
+  categories: ['productivity', 'meetings'],
+} as const satisfies ConnectorMetadata;
 
 export interface FirefliesCredentials {
   apiKey: string;

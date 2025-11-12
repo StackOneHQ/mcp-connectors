@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface RideWithGPSSearchResult {
   type?: string;
@@ -259,6 +260,16 @@ class RideWithGPSClient {
     return response.results;
   }
 }
+
+export const RidewithgpsConnectorMetadata = {
+  key: 'ridewithgps',
+  name: 'Ride with GPS',
+  description: 'Cycling route planning',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/ridewithgps/filled/svg',
+  examplePrompt: 'Get my Ride with GPS routes',
+  categories: ['fitness', 'cycling'],
+} as const satisfies ConnectorMetadata;
 
 export interface RideWithGPSCredentials {
   apiKey: string;

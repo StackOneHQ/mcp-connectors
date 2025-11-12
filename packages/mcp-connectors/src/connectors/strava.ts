@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface StravaTokenResponse {
   access_token: string;
@@ -444,6 +445,17 @@ const STRAVA_OAUTH2_CONFIG = {
 };
 
 // OAuth2 credentials interface for Strava
+
+export const StravaConnectorMetadata = {
+  key: 'strava',
+  name: 'Strava',
+  description: 'Fitness tracking and social network',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/strava/filled/svg',
+  examplePrompt: 'Get my Strava activities',
+  categories: ['fitness', 'social'],
+} as const satisfies ConnectorMetadata;
+
 export interface StravaCredentials {
   accessToken: string;
   refreshToken: string;

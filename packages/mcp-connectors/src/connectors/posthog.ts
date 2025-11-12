@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface PostHogEvent {
   event: string;
@@ -482,6 +483,16 @@ class PostHogClient {
     return response.json() as Promise<Record<string, unknown>>;
   }
 }
+
+export const PosthogConnectorMetadata = {
+  key: 'posthog',
+  name: 'PostHog',
+  description: 'Product analytics platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/posthog/filled/svg',
+  examplePrompt: 'Query PostHog analytics',
+  categories: ['analytics', 'product'],
+} as const satisfies ConnectorMetadata;
 
 export interface PostHogCredentials {
   apiKey?: string;

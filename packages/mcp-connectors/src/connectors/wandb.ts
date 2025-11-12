@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface WandbProject {
   id: string;
@@ -306,6 +307,16 @@ class WandbClient {
     return (await this.makeRequest(endpoint)) as WandbUserResponse;
   }
 }
+
+export const WandbConnectorMetadata = {
+  key: 'wandb',
+  name: 'Wandb',
+  description: 'ML experiment tracking',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/wandb/filled/svg',
+  examplePrompt: 'View Wandb experiments',
+  categories: ['ml', 'experiment-tracking'],
+} as const satisfies ConnectorMetadata;
 
 export interface WandbCredentials {
   api_key: string;

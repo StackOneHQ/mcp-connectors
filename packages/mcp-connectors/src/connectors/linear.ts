@@ -1,6 +1,7 @@
 import { type Issue, type IssueLabel, LinearClient } from '@linear/sdk';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 class LinearClientWrapper {
   private client: LinearClient;
@@ -275,6 +276,16 @@ class LinearClientWrapper {
     };
   }
 }
+
+export const LinearConnectorMetadata = {
+  key: 'linear',
+  name: 'Linear',
+  description: 'Issue tracking and project management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/linear/filled/svg',
+  examplePrompt: 'List my Linear issues',
+  categories: ['project-management', 'issue-tracking'],
+} as const satisfies ConnectorMetadata;
 
 export interface LinearCredentials {
   apiKey: string;

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface IncidentIoIncident {
   id: string;
@@ -383,6 +384,16 @@ class IncidentIoClient {
     return result.schedule_entries || [];
   }
 }
+
+export const IncidentConnectorMetadata = {
+  key: 'incident',
+  name: 'Incident',
+  description: 'Incident management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/incident/filled/svg',
+  examplePrompt: 'List incidents',
+  categories: ['incident-management', 'operations'],
+} as const satisfies ConnectorMetadata;
 
 export interface IncidentCredentials {
   apiKey: string;

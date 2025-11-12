@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface FalResult {
   images: Array<{
@@ -44,6 +45,16 @@ class SimpleFalClient implements FalClient {
     return response.json() as Promise<FalResult>;
   }
 }
+
+export const FalConnectorMetadata = {
+  key: 'fal',
+  name: 'Fal',
+  description: 'AI model inference platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/fal/filled/svg',
+  examplePrompt: 'Run AI models with Fal',
+  categories: ['ai', 'ml'],
+} as const satisfies ConnectorMetadata;
 
 export interface FalCredentials {
   apiKey: string;

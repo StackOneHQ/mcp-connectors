@@ -1,5 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
+
+export const AwsConnectorMetadata = {
+  key: 'aws',
+  name: 'AWS',
+  description: 'Amazon Web Services cloud platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/aws/filled/svg',
+  examplePrompt: 'List my AWS resources',
+  categories: ['cloud', 'infrastructure'],
+} as const satisfies ConnectorMetadata;
 
 export interface AwsCredentials {
   accessKeyId: string;

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface PerplexityResponse {
   id: string;
@@ -138,6 +139,16 @@ class PerplexityClient {
     return response.choices[0]?.message?.content || 'No response generated';
   }
 }
+
+export const PerplexityConnectorMetadata = {
+  key: 'perplexity',
+  name: 'Perplexity',
+  description: 'AI-powered search',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/perplexity/filled/svg',
+  examplePrompt: 'Search with Perplexity',
+  categories: ['search', 'ai'],
+} as const satisfies ConnectorMetadata;
 
 export interface PerplexityCredentials {
   apiKey: string;
