@@ -1,5 +1,15 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
+
+export const TestConnectorMetadata = {
+  key: 'test',
+  name: 'Test',
+  description: 'Test connector for development',
+  version: '1.0.0',
+  examplePrompt: 'Test the connector',
+  categories: ['testing', 'development'],
+} as const satisfies ConnectorMetadata;
 
 export interface TestCredentials {
   apiKey: string;

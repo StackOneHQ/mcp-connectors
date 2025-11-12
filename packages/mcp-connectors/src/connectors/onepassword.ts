@@ -1,7 +1,18 @@
 import { ItemBuilder, OnePasswordConnect } from '@1password/connect';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 import { createIndex, search } from '../utils/lexical-search';
+
+export const OnepasswordConnectorMetadata = {
+  key: 'onepassword',
+  name: '1Password',
+  description: 'Password management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/onepassword/filled/svg',
+  examplePrompt: 'Get passwords from 1Password',
+  categories: ['security', 'password-management'],
+} as const satisfies ConnectorMetadata;
 
 export interface OnePasswordCredentials {
   serverUrl: string;

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface SupabaseProject {
   id: string;
@@ -369,6 +370,16 @@ class SupabaseClient {
     return response.json();
   }
 }
+
+export const SupabaseConnectorMetadata = {
+  key: 'supabase',
+  name: 'Supabase',
+  description: 'Open source Firebase alternative',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/supabase/filled/svg',
+  examplePrompt: 'Query Supabase database',
+  categories: ['database', 'backend'],
+} as const satisfies ConnectorMetadata;
 
 export interface SupabaseCredentials {
   accessToken: string;

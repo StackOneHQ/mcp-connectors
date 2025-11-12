@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface GitLabProject {
   id: number;
@@ -307,6 +308,16 @@ class GitLabClient {
     return response.text();
   }
 }
+
+export const GitlabConnectorMetadata = {
+  key: 'gitlab',
+  name: 'GitLab',
+  description: 'DevOps platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/gitlab/filled/svg',
+  examplePrompt: 'List my GitLab projects',
+  categories: ['development', 'devops'],
+} as const satisfies ConnectorMetadata;
 
 export interface GitLabCredentials {
   token: string;

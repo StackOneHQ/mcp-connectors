@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface GitHubRepository {
   id: number;
@@ -309,6 +310,16 @@ class GitHubClient {
     throw new Error('Not a file or content not available');
   }
 }
+
+export const GithubConnectorMetadata = {
+  key: 'github',
+  name: 'GitHub',
+  description: 'Repository and issue management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/github/filled/svg',
+  examplePrompt: 'List my GitHub repositories',
+  categories: ['development', 'version-control'],
+} as const satisfies ConnectorMetadata;
 
 export interface GitHubCredentials {
   token: string;

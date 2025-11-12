@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface RetoolUser {
   id: string;
@@ -515,6 +516,16 @@ class RetoolClient {
     return result.data;
   }
 }
+
+export const RetoolConnectorMetadata = {
+  key: 'retool',
+  name: 'Retool',
+  description: 'Internal tool builder',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/retool/filled/svg',
+  examplePrompt: 'Query Retool resources',
+  categories: ['internal-tools', 'development'],
+} as const satisfies ConnectorMetadata;
 
 export interface RetoolCredentials {
   apiToken: string;

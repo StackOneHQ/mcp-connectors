@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface ExaSearchResult {
   id: string;
@@ -189,6 +190,16 @@ const formatSearchResultsForLLM = (
 
   return output.join('\n');
 };
+
+export const ExaConnectorMetadata = {
+  key: 'exa',
+  name: 'Exa',
+  description: 'Neural search engine',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/exa/filled/svg',
+  examplePrompt: 'Search with Exa',
+  categories: ['search', 'ai'],
+} as const satisfies ConnectorMetadata;
 
 export interface ExaCredentials {
   apiKey: string;

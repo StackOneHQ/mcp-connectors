@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface SlackChannel {
   id: string;
@@ -255,6 +256,16 @@ class SlackClient {
     return response.json() as Promise<SlackUserProfileResponse>;
   }
 }
+
+export const SlackConnectorMetadata = {
+  key: 'slack',
+  name: 'Slack',
+  description: 'Team communication platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/slack/filled/svg',
+  examplePrompt: 'Send a Slack message',
+  categories: ['communication', 'collaboration'],
+} as const satisfies ConnectorMetadata;
 
 export interface SlackCredentials {
   botToken: string;

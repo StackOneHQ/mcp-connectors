@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // Product Hunt API types - simplified to single interface
 interface ProductHuntProduct {
@@ -429,6 +430,16 @@ class ProductHuntAPI {
     }));
   }
 }
+
+export const ProducthuntConnectorMetadata = {
+  key: 'producthunt',
+  name: 'Product Hunt',
+  description: 'Product discovery platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/producthunt/filled/svg',
+  examplePrompt: 'Get Product Hunt posts',
+  categories: ['product', 'discovery'],
+} as const satisfies ConnectorMetadata;
 
 export interface ProductHuntCredentials {
   access_token: string;

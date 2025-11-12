@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface DeelEmployee {
   id: string;
@@ -301,6 +302,16 @@ class DeelClient {
     )) as DeelContract;
   }
 }
+
+export const DeelConnectorMetadata = {
+  key: 'deel',
+  name: 'Deel',
+  description: 'Global payroll and compliance',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/deel/filled/svg',
+  examplePrompt: 'List my Deel contracts',
+  categories: ['hr', 'payroll'],
+} as const satisfies ConnectorMetadata;
 
 export interface DeelCredentials {
   apiKey: string;

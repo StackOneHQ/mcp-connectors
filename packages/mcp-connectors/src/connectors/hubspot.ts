@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 class HubSpotClient {
   private baseUrl = 'https://api.hubapi.com';
@@ -108,6 +109,16 @@ class HubSpotClient {
     return response.json();
   }
 }
+
+export const HubspotConnectorMetadata = {
+  key: 'hubspot',
+  name: 'HubSpot',
+  description: 'CRM and marketing automation',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/hubspot/filled/svg',
+  examplePrompt: 'List my HubSpot contacts',
+  categories: ['crm', 'marketing'],
+} as const satisfies ConnectorMetadata;
 
 export interface HubSpotCredentials {
   apiKey: string;

@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 const GOOGLE_MAPS_API_BASE = 'https://maps.googleapis.com/maps/api';
 
@@ -323,6 +324,16 @@ class GoogleMapsClient {
     return (await this.makeRequest('/elevation/json', params)) as ElevationResponse;
   }
 }
+
+export const GoogleMapsConnectorMetadata = {
+  key: 'google-maps',
+  name: 'Google Maps',
+  description: 'Maps and location services',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/googlemaps/filled/svg',
+  examplePrompt: 'Search for locations with Google Maps',
+  categories: ['maps', 'location'],
+} as const satisfies ConnectorMetadata;
 
 export interface GoogleMapsCredentials {
   apiKey: string;

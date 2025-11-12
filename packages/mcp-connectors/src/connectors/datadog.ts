@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface DatadogIncident {
   id: string;
@@ -248,6 +249,16 @@ class DatadogClient {
     return result.host_list || [];
   }
 }
+
+export const DatadogConnectorMetadata = {
+  key: 'datadog',
+  name: 'Datadog',
+  description: 'Monitoring and analytics platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/datadog/filled/svg',
+  examplePrompt: 'Check my Datadog monitors',
+  categories: ['monitoring', 'observability'],
+} as const satisfies ConnectorMetadata;
 
 export interface DatadogCredentials {
   apiKey: string;

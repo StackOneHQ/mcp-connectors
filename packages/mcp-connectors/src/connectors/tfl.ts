@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 import { type AnySearchableObject, createIndex, search } from '../utils/lexical-search';
 
 interface TFLLine {
@@ -888,6 +889,16 @@ class TFLClient {
     return response.json() as Promise<TFLPlace[]>;
   }
 }
+
+export const TflConnectorMetadata = {
+  key: 'tfl',
+  name: 'TfL',
+  description: 'Transport for London',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/tfl/filled/svg',
+  examplePrompt: 'Check London transport status',
+  categories: ['transport', 'travel'],
+} as const satisfies ConnectorMetadata;
 
 export interface TFLCredentials {
   appKey?: string;
