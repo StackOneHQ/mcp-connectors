@@ -19,7 +19,7 @@ jobs:
           bun-version: latest
 
       - name: 💫 Install dependencies
-        run: bun i --frozen-lockfile
+        run: bun ci
 
       - name: Run build
         run: bun run build
