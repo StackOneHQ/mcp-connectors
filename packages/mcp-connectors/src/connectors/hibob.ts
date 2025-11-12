@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface HiBobEmployee {
   id: string;
@@ -140,6 +141,16 @@ class HiBobClient {
     };
   }
 }
+
+export const HibobConnectorMetadata = {
+  key: 'hibob',
+  name: 'HiBob',
+  description: 'HR management platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/hibob/filled/svg',
+  examplePrompt: 'View employee data from HiBob',
+  categories: ['hr', 'people-management'],
+} as const satisfies ConnectorMetadata;
 
 export interface HiBobCredentials {
   serviceUserId: string;

@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { parse as parseHTML } from 'node-html-parser';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface SearchResult {
   title: string;
@@ -137,6 +138,16 @@ const fetchAndParse = async (url: string): Promise<string> => {
     throw error;
   }
 };
+
+export const DuckduckgoConnectorMetadata = {
+  key: 'duckduckgo',
+  name: 'DuckDuckGo',
+  description: 'Privacy-focused web search',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/duckduckgo/filled/svg',
+  examplePrompt: 'Search the web with DuckDuckGo',
+  categories: ['search', 'web'],
+} as const satisfies ConnectorMetadata;
 
 export type DuckDuckGoCredentials = Record<string, never>;
 

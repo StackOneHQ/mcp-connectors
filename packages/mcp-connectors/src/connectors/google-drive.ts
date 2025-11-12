@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface GoogleDriveFile {
   id: string;
@@ -400,6 +401,16 @@ class GoogleDriveClient {
     return { success: true };
   }
 }
+
+export const GoogleDriveConnectorMetadata = {
+  key: 'google-drive',
+  name: 'Google Drive',
+  description: 'Cloud file storage and collaboration',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/googledrive/filled/svg',
+  examplePrompt: 'List my Google Drive files',
+  categories: ['storage', 'productivity'],
+} as const satisfies ConnectorMetadata;
 
 export interface GoogleDriveCredentials {
   accessToken: string;

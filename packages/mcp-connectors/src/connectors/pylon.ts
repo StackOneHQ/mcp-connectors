@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // String similarity utility functions
 function levenshteinDistance(str1: string, str2: string): number {
@@ -283,6 +284,16 @@ class PylonClient {
     return (await response.json()) as PylonSearchResult;
   }
 }
+
+export const PylonConnectorMetadata = {
+  key: 'pylon',
+  name: 'Pylon',
+  description: 'Customer support platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/pylon/filled/svg',
+  examplePrompt: 'List Pylon tickets',
+  categories: ['support', 'customer-service'],
+} as const satisfies ConnectorMetadata;
 
 export interface PylonCredentials {
   apiToken: string;

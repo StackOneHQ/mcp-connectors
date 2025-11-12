@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface TodoistTask {
   id: string;
@@ -307,6 +308,16 @@ class TodoistClient {
     });
   }
 }
+
+export const TodoistConnectorMetadata = {
+  key: 'todoist',
+  name: 'Todoist',
+  description: 'Task management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/todoist/filled/svg',
+  examplePrompt: 'List my Todoist tasks',
+  categories: ['productivity', 'task-management'],
+} as const satisfies ConnectorMetadata;
 
 export interface TodoistCredentials {
   apiToken: string;

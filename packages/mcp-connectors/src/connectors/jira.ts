@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // Jira API types
 interface JiraUser {
@@ -714,6 +715,16 @@ class JiraClient {
     };
   }
 }
+
+export const JiraConnectorMetadata = {
+  key: 'jira',
+  name: 'Jira',
+  description: 'Issue tracking and project management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/jira/filled/svg',
+  examplePrompt: 'List my Jira issues',
+  categories: ['project-management', 'issue-tracking'],
+} as const satisfies ConnectorMetadata;
 
 export interface JiraCredentials {
   baseUrl: string;

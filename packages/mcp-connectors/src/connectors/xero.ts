@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // Xero API Base URLs
 const XERO_API_BASE_URL = 'https://api.xero.com/api.xro/2.0';
@@ -319,6 +320,16 @@ class XeroClient {
     return (response as XeroOrganisationsResponse).Organisations?.[0] || {};
   }
 }
+
+export const XeroConnectorMetadata = {
+  key: 'xero',
+  name: 'Xero',
+  description: 'Accounting software',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/xero/filled/svg',
+  examplePrompt: 'View Xero invoices',
+  categories: ['accounting', 'finance'],
+} as const satisfies ConnectorMetadata;
 
 export interface XeroCredentials {
   accessToken: string;

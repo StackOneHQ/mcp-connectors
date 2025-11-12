@@ -1,3 +1,6 @@
+// Export metadata types
+export type { ConnectorMetadata as ConnectorMetadataType } from './types/metadata';
+
 // Export all connector modules
 export * from './connectors/asana';
 export * from './connectors/attio';
@@ -49,3 +52,6 @@ export * from './connectors/turbopuffer';
 export * from './connectors/wandb';
 export * from './connectors/xero';
 export * from './connectors/zapier';
+
+// Export aggregated metadata
+export { ConnectorMetadata, AllConnectorMetadata, type ConnectorKey } from './metadata';

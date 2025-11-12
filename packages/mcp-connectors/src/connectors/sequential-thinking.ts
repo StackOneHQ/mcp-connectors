@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 const SEQUENTIAL_STAGES = [
   'Problem Definition',
@@ -118,6 +119,15 @@ const validateThoughtNumber = (
 
   return null;
 };
+
+export const SequentialThinkingConnectorMetadata = {
+  key: 'sequential-thinking',
+  name: 'Sequential Thinking',
+  description: 'Structured reasoning',
+  version: '1.0.0',
+  examplePrompt: 'Think through a problem step by step',
+  categories: ['thinking', 'reasoning'],
+} as const satisfies ConnectorMetadata;
 
 export type SequentialThinkingCredentials = Record<string, never>;
 

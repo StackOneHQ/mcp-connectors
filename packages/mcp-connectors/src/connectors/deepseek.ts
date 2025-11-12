@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 type DeepSeekRole = 'system' | 'user' | 'assistant' | 'tool';
 
@@ -164,6 +165,16 @@ const formatChatResponse = (response: DeepSeekChatResponse): string => {
 
 ${rawContent || 'No response content returned.'}${reasoningSection}${usage}`;
 };
+
+export const DeepseekConnectorMetadata = {
+  key: 'deepseek',
+  name: 'DeepSeek',
+  description: 'AI-powered code understanding',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/deepseek/filled/svg',
+  examplePrompt: 'Analyze code with DeepSeek',
+  categories: ['ai', 'development'],
+} as const satisfies ConnectorMetadata;
 
 export interface DeepSeekCredentials {
   apiKey: string;

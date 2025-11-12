@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface Secret {
   name?: string;
@@ -56,6 +57,16 @@ async function formatProcessInfo(process: {
     2
   );
 }
+
+export const ModalConnectorMetadata = {
+  key: 'modal',
+  name: 'Modal',
+  description: 'Serverless compute platform',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/modal/filled/svg',
+  examplePrompt: 'Run Modal functions',
+  categories: ['compute', 'serverless'],
+} as const satisfies ConnectorMetadata;
 
 export interface ModalCredentials {
   tokenId: string;

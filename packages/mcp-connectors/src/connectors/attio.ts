@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 interface AttioList {
   id: {
@@ -101,6 +102,16 @@ class AttioClient {
     return result.data || [];
   }
 }
+
+export const AttioConnectorMetadata = {
+  key: 'attio',
+  name: 'Attio',
+  description: 'Customer relationship management',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/attio/filled/svg',
+  examplePrompt: 'List my Attio contacts',
+  categories: ['crm', 'sales'],
+} as const satisfies ConnectorMetadata;
 
 export interface AttioCredentials {
   apiKey: string;

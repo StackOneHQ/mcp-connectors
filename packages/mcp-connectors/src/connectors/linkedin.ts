@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ConnectorMetadata } from '../types/metadata';
 
 // LinkedIn API interfaces
 interface LinkedInCompany {
@@ -129,6 +130,16 @@ class LinkedInClient {
     };
   }
 }
+
+export const LinkedinConnectorMetadata = {
+  key: 'linkedin',
+  name: 'LinkedIn',
+  description: 'Professional networking',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/linkedin/filled/svg',
+  examplePrompt: 'Post to LinkedIn',
+  categories: ['social', 'professional'],
+} as const satisfies ConnectorMetadata;
 
 export interface LinkedInCredentials {
   clientId: string;
