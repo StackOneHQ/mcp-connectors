@@ -44,7 +44,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: 💫 Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun ci
 
       - name: 🏡 Build packages
         run: bun run build
