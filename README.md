@@ -14,7 +14,7 @@ This monorepo contains two packages built with TypeScript and Zod:
 
 **@stackone/mcp-connectors** - Pre-built connectors for popular SaaS tools
 
-- 35+ production-ready MCP connectors
+- 50+ production-ready MCP connectors
 - Typesafe wrapper around MCP capabilities
 - Local development with auto-reload
 - No dependencies on server runtime or transport
