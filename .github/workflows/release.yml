@@ -55,6 +55,6 @@ jobs:
           for package_path in $(echo '${{ needs.release-please.outputs.paths_released }}' | jq -r '.[]'); do
             echo "Publishing package: $package_path"
             cd "$package_path"
-            npm publish --access public
+            bun publish --access public
             cd "$GITHUB_WORKSPACE"
           done

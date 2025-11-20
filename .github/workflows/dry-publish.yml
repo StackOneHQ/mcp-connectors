@@ -16,8 +16,5 @@ jobs:
       - name: Install dependencies
         run: bun ci
 
-      - name: Build packages
-        run: bun run build
-
       - name: 🚀 Dry Run Publish Package
-        run: npx pkg-pr-new publish './packages/*'
+        run: bunx pkg-pr-new publish './packages/*'
