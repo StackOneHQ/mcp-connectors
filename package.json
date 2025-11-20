@@ -14,16 +14,15 @@
     "LICENSE"
   ],
   "scripts": {
-    "start": "turbo run start",
-    "server": "turbo run spawn",
-    "dev": "turbo run dev",
-    "prepare": "husky",
-    "build": "turbo build",
-    "test": "turbo test",
+    "start": "bun run --filter '*' start",
+    "server": "bun run --filter '*' spawn",
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build",
+    "test": "bun run --filter '*' test",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
     "format": "bun check:fix",
-    "typecheck": "turbo typecheck"
+    "typecheck": "bun run --filter '*' typecheck"
   },
   "dependencies": {
     "@stackone/mcp-connectors": "workspace:*"
