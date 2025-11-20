@@ -20,4 +20,4 @@ jobs:
         run: bun run build
 
       - name: 🚀 Dry Run Publish Package
-        run: bun x pkg-pr-new publish './packages/*'
+        run: npx pkg-pr-new publish './packages/*'
