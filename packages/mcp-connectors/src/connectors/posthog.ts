@@ -484,6 +484,18 @@ class PostHogClient {
   }
 }
 
+export interface PostHogCredentials {
+  apiKey?: string;
+  projectApiKey?: string;
+  host?: string;
+}
+
+export const PostHogCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication').optional(),
+  projectApiKey: z.string().describe('projectApiKey value').optional(),
+  host: z.string().describe('Host address').optional(),
+});
+
 export const PosthogConnectorMetadata = {
   key: 'posthog',
   name: 'PostHog',
@@ -492,13 +504,8 @@ export const PosthogConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/posthog/filled/svg',
   examplePrompt: 'Query PostHog analytics',
   categories: ['analytics', 'product'],
+  credentialsSchema: PostHogCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface PostHogCredentials {
-  apiKey?: string;
-  projectApiKey?: string;
-  host?: string;
-}
 
 export function createPostHogServer(credentials: PostHogCredentials): McpServer {
   const server = new McpServer({

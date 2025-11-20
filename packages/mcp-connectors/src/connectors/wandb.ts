@@ -308,6 +308,16 @@ class WandbClient {
   }
 }
 
+export interface WandbCredentials {
+  api_key: string;
+  base_url?: string;
+}
+
+export const WandbCredentialsSchema = z.object({
+  api_key: z.string().describe('api_key value'),
+  base_url: z.string().describe('base_url value').optional(),
+});
+
 export const WandbConnectorMetadata = {
   key: 'wandb',
   name: 'Wandb',
@@ -316,12 +326,8 @@ export const WandbConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/wandb/filled/svg',
   examplePrompt: 'View Wandb experiments',
   categories: ['ml', 'experiment-tracking'],
+  credentialsSchema: WandbCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface WandbCredentials {
-  api_key: string;
-  base_url?: string;
-}
 
 export function createWandbServer(credentials: WandbCredentials): McpServer {
   const server = new McpServer({

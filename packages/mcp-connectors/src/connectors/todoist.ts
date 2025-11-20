@@ -309,6 +309,14 @@ class TodoistClient {
   }
 }
 
+export interface TodoistCredentials {
+  apiToken: string;
+}
+
+export const TodoistCredentialsSchema = z.object({
+  apiToken: z.string().describe('API token for authentication'),
+});
+
 export const TodoistConnectorMetadata = {
   key: 'todoist',
   name: 'Todoist',
@@ -317,11 +325,8 @@ export const TodoistConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/todoist/filled/svg',
   examplePrompt: 'List my Todoist tasks',
   categories: ['productivity', 'task-management'],
+  credentialsSchema: TodoistCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface TodoistCredentials {
-  apiToken: string;
-}
 
 export function createTodoistServer(credentials: TodoistCredentials): McpServer {
   const server = new McpServer({

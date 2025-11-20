@@ -309,6 +309,16 @@ class GitLabClient {
   }
 }
 
+export interface GitLabCredentials {
+  token: string;
+  baseUrl?: string;
+}
+
+export const GitLabCredentialsSchema = z.object({
+  token: z.string().describe('API token for authentication'),
+  baseUrl: z.string().describe('Base URL of the instance').optional(),
+});
+
 export const GitlabConnectorMetadata = {
   key: 'gitlab',
   name: 'GitLab',
@@ -317,12 +327,8 @@ export const GitlabConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/gitlab/filled/svg',
   examplePrompt: 'List my GitLab projects',
   categories: ['development', 'devops'],
+  credentialsSchema: GitLabCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface GitLabCredentials {
-  token: string;
-  baseUrl?: string;
-}
 
 export function createGitLabServer(credentials: GitLabCredentials): McpServer {
   const server = new McpServer({

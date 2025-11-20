@@ -140,6 +140,14 @@ class PerplexityClient {
   }
 }
 
+export interface PerplexityCredentials {
+  apiKey: string;
+}
+
+export const PerplexityCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const PerplexityConnectorMetadata = {
   key: 'perplexity',
   name: 'Perplexity',
@@ -148,11 +156,8 @@ export const PerplexityConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/perplexity/filled/svg',
   examplePrompt: 'Search with Perplexity',
   categories: ['search', 'ai'],
+  credentialsSchema: PerplexityCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface PerplexityCredentials {
-  apiKey: string;
-}
 
 export function createPerplexityServer(credentials: PerplexityCredentials): McpServer {
   const server = new McpServer({

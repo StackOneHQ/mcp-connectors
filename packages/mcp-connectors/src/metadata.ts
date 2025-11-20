@@ -1,4 +1,3 @@
-// Import all connector metadata using namespace imports
 import * as asana from './connectors/asana';
 import * as attio from './connectors/attio';
 import * as aws from './connectors/aws';
@@ -49,9 +48,11 @@ import * as turbopuffer from './connectors/turbopuffer';
 import * as wandb from './connectors/wandb';
 import * as xero from './connectors/xero';
 import * as zapier from './connectors/zapier';
+// Import all connector metadata using namespace imports
+import type { ConnectorMetadata as ConnectorMetadataType } from './types/metadata';
 
 // Aggregate all connector metadata
-export const ConnectorMetadata = {
+export const ConnectorMetadata: Record<string, ConnectorMetadataType> = {
   asana: asana.AsanaConnectorMetadata,
   attio: attio.AttioConnectorMetadata,
   aws: aws.AwsConnectorMetadata,
@@ -107,4 +108,5 @@ export const ConnectorMetadata = {
 export type ConnectorKey = keyof typeof ConnectorMetadata;
 
 // Export as array for easy iteration
-export const AllConnectorMetadata = Object.values(ConnectorMetadata);
+export const AllConnectorMetadata: ConnectorMetadataType[] =
+  Object.values(ConnectorMetadata);

@@ -277,6 +277,14 @@ class LinearClientWrapper {
   }
 }
 
+export interface LinearCredentials {
+  apiKey: string;
+}
+
+export const LinearCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const LinearConnectorMetadata = {
   key: 'linear',
   name: 'Linear',
@@ -285,11 +293,8 @@ export const LinearConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/linear/filled/svg',
   examplePrompt: 'List my Linear issues',
   categories: ['project-management', 'issue-tracking'],
+  credentialsSchema: LinearCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface LinearCredentials {
-  apiKey: string;
-}
 
 export function createLinearServer(credentials: LinearCredentials): McpServer {
   const server = new McpServer({

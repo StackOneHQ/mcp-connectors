@@ -46,6 +46,14 @@ class SimpleFalClient implements FalClient {
   }
 }
 
+export interface FalCredentials {
+  apiKey: string;
+}
+
+export const FalCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const FalConnectorMetadata = {
   key: 'fal',
   name: 'Fal',
@@ -54,11 +62,8 @@ export const FalConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/fal/filled/svg',
   examplePrompt: 'Run AI models with Fal',
   categories: ['ai', 'ml'],
+  credentialsSchema: FalCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface FalCredentials {
-  apiKey: string;
-}
 
 export function createFalServer(credentials: FalCredentials): McpServer {
   const server = new McpServer({

@@ -191,6 +191,14 @@ const formatSearchResultsForLLM = (
   return output.join('\n');
 };
 
+export interface ExaCredentials {
+  apiKey: string;
+}
+
+export const ExaCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const ExaConnectorMetadata = {
   key: 'exa',
   name: 'Exa',
@@ -199,11 +207,8 @@ export const ExaConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/exa/filled/svg',
   examplePrompt: 'Search with Exa',
   categories: ['search', 'ai'],
+  credentialsSchema: ExaCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ExaCredentials {
-  apiKey: string;
-}
 
 export function createExaServer(credentials: ExaCredentials): McpServer {
   const server = new McpServer({

@@ -1,3 +1,5 @@
+import type { ZodType } from 'zod';
+
 /**
  * Metadata for a connector, used by platforms like Disco to display information
  * about the connector to users.
@@ -37,4 +39,15 @@ export interface ConnectorMetadata {
    * Categories for filtering connectors (optional)
    */
   categories?: readonly string[];
+
+  /**
+   * Zod schema for validating connector credentials (optional)
+   * If not provided, platforms will need to infer the schema
+   */
+  credentialsSchema?: ZodType;
+
+  /**
+   * Zod schema for validating connector setup configuration (optional)
+   */
+  setupSchema?: ZodType;
 }

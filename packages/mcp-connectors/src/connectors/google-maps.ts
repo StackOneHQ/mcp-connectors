@@ -325,6 +325,14 @@ class GoogleMapsClient {
   }
 }
 
+export interface GoogleMapsCredentials {
+  apiKey: string;
+}
+
+export const GoogleMapsCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const GoogleMapsConnectorMetadata = {
   key: 'google-maps',
   name: 'Google Maps',
@@ -333,11 +341,8 @@ export const GoogleMapsConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/googlemaps/filled/svg',
   examplePrompt: 'Search for locations with Google Maps',
   categories: ['maps', 'location'],
+  credentialsSchema: GoogleMapsCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface GoogleMapsCredentials {
-  apiKey: string;
-}
 
 export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpServer {
   const server = new McpServer({

@@ -238,6 +238,14 @@ const handleGraphyError = (error: unknown): string => {
   return String(error);
 };
 
+export interface GraphyCredentials {
+  apiKey: string;
+}
+
+export const GraphyCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const GraphyConnectorMetadata = {
   key: 'graphy',
   name: 'Graphy',
@@ -246,11 +254,8 @@ export const GraphyConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/graphy/filled/svg',
   examplePrompt: 'Create visualizations with Graphy',
   categories: ['analytics', 'visualization'],
+  credentialsSchema: GraphyCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface GraphyCredentials {
-  apiKey: string;
-}
 
 export function createGraphyServer(credentials: GraphyCredentials): McpServer {
   const server = new McpServer({

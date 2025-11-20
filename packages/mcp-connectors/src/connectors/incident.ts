@@ -385,6 +385,14 @@ class IncidentIoClient {
   }
 }
 
+export interface IncidentCredentials {
+  apiKey: string;
+}
+
+export const IncidentCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const IncidentConnectorMetadata = {
   key: 'incident',
   name: 'Incident',
@@ -393,11 +401,8 @@ export const IncidentConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/incident/filled/svg',
   examplePrompt: 'List incidents',
   categories: ['incident-management', 'operations'],
+  credentialsSchema: IncidentCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface IncidentCredentials {
-  apiKey: string;
-}
 
 export function createIncidentServer(credentials: IncidentCredentials): McpServer {
   const server = new McpServer({

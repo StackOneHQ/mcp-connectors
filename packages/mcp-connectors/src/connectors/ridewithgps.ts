@@ -261,6 +261,16 @@ class RideWithGPSClient {
   }
 }
 
+export interface RideWithGPSCredentials {
+  apiKey: string;
+  authToken: string;
+}
+
+export const RideWithGPSCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+  authToken: z.string().describe('authToken value'),
+});
+
 export const RidewithgpsConnectorMetadata = {
   key: 'ridewithgps',
   name: 'Ride with GPS',
@@ -269,12 +279,8 @@ export const RidewithgpsConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/ridewithgps/filled/svg',
   examplePrompt: 'Get my Ride with GPS routes',
   categories: ['fitness', 'cycling'],
+  credentialsSchema: RideWithGPSCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface RideWithGPSCredentials {
-  apiKey: string;
-  authToken: string;
-}
 
 export function createRideWithGPSServer(credentials: RideWithGPSCredentials): McpServer {
   const server = new McpServer({

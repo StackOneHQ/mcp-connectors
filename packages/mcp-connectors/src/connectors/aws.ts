@@ -2,6 +2,20 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ConnectorMetadata } from '../types/metadata';
 
+export interface AwsCredentials {
+  accessKeyId: string;
+  secretAccessKey: string;
+  region: string;
+  sessionToken?: string;
+}
+
+export const AwsCredentialsSchema = z.object({
+  accessKeyId: z.string().describe('AWS access key ID'),
+  secretAccessKey: z.string().describe('AWS secret access key'),
+  region: z.string().describe('AWS region'),
+  sessionToken: z.string().describe('AWS session token').optional(),
+});
+
 export const AwsConnectorMetadata = {
   key: 'aws',
   name: 'AWS',
@@ -10,14 +24,8 @@ export const AwsConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/aws/filled/svg',
   examplePrompt: 'List my AWS resources',
   categories: ['cloud', 'infrastructure'],
+  credentialsSchema: AwsCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface AwsCredentials {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-  sessionToken?: string;
-}
 
 interface EC2Response {
   reservationSet?: Array<{

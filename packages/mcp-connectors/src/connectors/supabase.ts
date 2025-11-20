@@ -371,6 +371,14 @@ class SupabaseClient {
   }
 }
 
+export interface SupabaseCredentials {
+  accessToken: string;
+}
+
+export const SupabaseCredentialsSchema = z.object({
+  accessToken: z.string().describe('OAuth access token'),
+});
+
 export const SupabaseConnectorMetadata = {
   key: 'supabase',
   name: 'Supabase',
@@ -379,11 +387,8 @@ export const SupabaseConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/supabase/filled/svg',
   examplePrompt: 'Query Supabase database',
   categories: ['database', 'backend'],
+  credentialsSchema: SupabaseCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface SupabaseCredentials {
-  accessToken: string;
-}
 
 export function createSupabaseServer(credentials: SupabaseCredentials): McpServer {
   const server = new McpServer({

@@ -311,6 +311,14 @@ class GitHubClient {
   }
 }
 
+export interface GitHubCredentials {
+  token: string;
+}
+
+export const GitHubCredentialsSchema = z.object({
+  token: z.string().describe('API token for authentication'),
+});
+
 export const GithubConnectorMetadata = {
   key: 'github',
   name: 'GitHub',
@@ -319,11 +327,8 @@ export const GithubConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/github/filled/svg',
   examplePrompt: 'List my GitHub repositories',
   categories: ['development', 'version-control'],
+  credentialsSchema: GitHubCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface GitHubCredentials {
-  token: string;
-}
 
 export function createGitHubServer(credentials: GitHubCredentials): McpServer {
   const server = new McpServer({

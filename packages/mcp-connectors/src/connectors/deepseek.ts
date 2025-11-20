@@ -166,6 +166,14 @@ const formatChatResponse = (response: DeepSeekChatResponse): string => {
 ${rawContent || 'No response content returned.'}${reasoningSection}${usage}`;
 };
 
+export interface DeepSeekCredentials {
+  apiKey: string;
+}
+
+export const DeepSeekCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const DeepseekConnectorMetadata = {
   key: 'deepseek',
   name: 'DeepSeek',
@@ -174,11 +182,8 @@ export const DeepseekConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/deepseek/filled/svg',
   examplePrompt: 'Analyze code with DeepSeek',
   categories: ['ai', 'development'],
+  credentialsSchema: DeepSeekCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface DeepSeekCredentials {
-  apiKey: string;
-}
 
 export function createDeepSeekServer(credentials: DeepSeekCredentials): McpServer {
   const server = new McpServer({

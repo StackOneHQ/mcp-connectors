@@ -285,6 +285,14 @@ class PylonClient {
   }
 }
 
+export interface PylonCredentials {
+  apiToken: string;
+}
+
+export const PylonCredentialsSchema = z.object({
+  apiToken: z.string().describe('API token for authentication'),
+});
+
 export const PylonConnectorMetadata = {
   key: 'pylon',
   name: 'Pylon',
@@ -293,11 +301,8 @@ export const PylonConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/pylon/filled/svg',
   examplePrompt: 'List Pylon tickets',
   categories: ['support', 'customer-service'],
+  credentialsSchema: PylonCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface PylonCredentials {
-  apiToken: string;
-}
 
 export function createPylonServer(credentials: PylonCredentials): McpServer {
   const server = new McpServer({

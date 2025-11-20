@@ -142,6 +142,16 @@ class HiBobClient {
   }
 }
 
+export interface HiBobCredentials {
+  serviceUserId: string;
+  serviceUserToken: string;
+}
+
+export const HiBobCredentialsSchema = z.object({
+  serviceUserId: z.string().describe('serviceUserId value'),
+  serviceUserToken: z.string().describe('serviceUserToken value'),
+});
+
 export const HibobConnectorMetadata = {
   key: 'hibob',
   name: 'HiBob',
@@ -150,12 +160,8 @@ export const HibobConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/hibob/filled/svg',
   examplePrompt: 'View employee data from HiBob',
   categories: ['hr', 'people-management'],
+  credentialsSchema: HiBobCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface HiBobCredentials {
-  serviceUserId: string;
-  serviceUserToken: string;
-}
 
 export function createHiBobServer(credentials: HiBobCredentials): McpServer {
   const server = new McpServer({

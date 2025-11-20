@@ -90,6 +90,16 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
   return output.join('\n');
 };
 
+export interface ParallelCredentials {
+  apiKey: string;
+  processor?: 'base' | 'pro';
+}
+
+export const ParallelCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+  processor: z.string().describe('processor value').optional(),
+});
+
 export const ParallelConnectorMetadata = {
   key: 'parallel',
   name: 'Parallel',
@@ -98,12 +108,8 @@ export const ParallelConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/parallel/filled/svg',
   examplePrompt: 'Process tasks in parallel',
   categories: ['compute', 'processing'],
+  credentialsSchema: ParallelCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ParallelCredentials {
-  apiKey: string;
-  processor?: 'base' | 'pro';
-}
 
 export function createParallelServer(credentials: ParallelCredentials): McpServer {
   const server = new McpServer({

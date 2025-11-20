@@ -303,6 +303,14 @@ class DeelClient {
   }
 }
 
+export interface DeelCredentials {
+  apiKey: string;
+}
+
+export const DeelCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const DeelConnectorMetadata = {
   key: 'deel',
   name: 'Deel',
@@ -311,11 +319,8 @@ export const DeelConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/deel/filled/svg',
   examplePrompt: 'List my Deel contracts',
   categories: ['hr', 'payroll'],
+  credentialsSchema: DeelCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface DeelCredentials {
-  apiKey: string;
-}
 
 export function createDeelServer(credentials: DeelCredentials): McpServer {
   const server = new McpServer({

@@ -93,6 +93,14 @@ const streamToBase64 = async (stream: ReadableStream): Promise<string> => {
   return btoa(binary);
 };
 
+export interface ElevenLabsCredentials {
+  apiKey: string;
+}
+
+export const ElevenLabsCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
 export const ElevenlabsConnectorMetadata = {
   key: 'elevenlabs',
   name: 'ElevenLabs',
@@ -101,11 +109,8 @@ export const ElevenlabsConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/elevenlabs/filled/svg',
   examplePrompt: 'Generate speech with ElevenLabs',
   categories: ['ai', 'audio'],
+  credentialsSchema: ElevenLabsCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ElevenLabsCredentials {
-  apiKey: string;
-}
 
 export function createElevenLabsServer(credentials: ElevenLabsCredentials): McpServer {
   const server = new McpServer({

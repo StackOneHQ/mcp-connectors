@@ -402,6 +402,14 @@ class GoogleDriveClient {
   }
 }
 
+export interface GoogleDriveCredentials {
+  accessToken: string;
+}
+
+export const GoogleDriveCredentialsSchema = z.object({
+  accessToken: z.string().describe('OAuth access token'),
+});
+
 export const GoogleDriveConnectorMetadata = {
   key: 'google-drive',
   name: 'Google Drive',
@@ -410,11 +418,8 @@ export const GoogleDriveConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/googledrive/filled/svg',
   examplePrompt: 'List my Google Drive files',
   categories: ['storage', 'productivity'],
+  credentialsSchema: GoogleDriveCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface GoogleDriveCredentials {
-  accessToken: string;
-}
 
 export function createGoogleDriveServer(credentials: GoogleDriveCredentials): McpServer {
   const server = new McpServer({
