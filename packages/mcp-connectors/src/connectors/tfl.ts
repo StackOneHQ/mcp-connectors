@@ -890,6 +890,12 @@ class TFLClient {
   }
 }
 
+export const TFLCredentialsSchema = z.object({
+  appKey: z.string().describe('Application key').optional(),
+});
+
+export type TFLCredentials = z.infer<typeof TFLCredentialsSchema>;
+
 export const TflConnectorMetadata = {
   key: 'tfl',
   name: 'TfL',
@@ -898,11 +904,8 @@ export const TflConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/tfl/filled/svg',
   examplePrompt: 'Check London transport status',
   categories: ['transport', 'travel'],
+  credentialsSchema: TFLCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface TFLCredentials {
-  appKey?: string;
-}
 
 export function createTFLServer(credentials: TFLCredentials): McpServer {
   const server = new McpServer({

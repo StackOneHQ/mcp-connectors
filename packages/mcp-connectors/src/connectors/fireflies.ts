@@ -216,6 +216,12 @@ class FirefliesClient {
   }
 }
 
+export const FirefliesCredentialsSchema = z.object({
+  apiKey: z.string().describe('Fireflies API Key'),
+});
+
+export type FirefliesCredentials = z.infer<typeof FirefliesCredentialsSchema>;
+
 export const FirefliesConnectorMetadata = {
   key: 'fireflies',
   name: 'Fireflies',
@@ -224,11 +230,8 @@ export const FirefliesConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/fireflies/filled/svg',
   examplePrompt: 'Get meeting transcripts from Fireflies',
   categories: ['productivity', 'meetings'],
+  credentialsSchema: FirefliesCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface FirefliesCredentials {
-  apiKey: string;
-}
 
 export function createFirefliesServer(credentials: FirefliesCredentials): McpServer {
   const server = new McpServer({

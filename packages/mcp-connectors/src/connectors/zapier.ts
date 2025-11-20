@@ -108,6 +108,12 @@ class ZapierClient {
   }
 }
 
+export const ZapierCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
+export type ZapierCredentials = z.infer<typeof ZapierCredentialsSchema>;
+
 export const ZapierConnectorMetadata = {
   key: 'zapier',
   name: 'Zapier',
@@ -116,11 +122,8 @@ export const ZapierConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/zapier/filled/svg',
   examplePrompt: 'Trigger Zapier zaps',
   categories: ['automation', 'integration'],
+  credentialsSchema: ZapierCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ZapierCredentials {
-  apiKey: string;
-}
 
 export function createZapierServer(credentials: ZapierCredentials): McpServer {
   const server = new McpServer({

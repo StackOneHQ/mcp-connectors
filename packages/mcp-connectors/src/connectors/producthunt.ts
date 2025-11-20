@@ -431,6 +431,12 @@ class ProductHuntAPI {
   }
 }
 
+export const ProductHuntCredentialsSchema = z.object({
+  access_token: z.string().describe('access_token value'),
+});
+
+export type ProductHuntCredentials = z.infer<typeof ProductHuntCredentialsSchema>;
+
 export const ProducthuntConnectorMetadata = {
   key: 'producthunt',
   name: 'Product Hunt',
@@ -439,11 +445,8 @@ export const ProducthuntConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/producthunt/filled/svg',
   examplePrompt: 'Get Product Hunt posts',
   categories: ['product', 'discovery'],
+  credentialsSchema: ProductHuntCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ProductHuntCredentials {
-  access_token: string;
-}
 
 export function createProductHuntServer(credentials: ProductHuntCredentials): McpServer {
   const server = new McpServer({

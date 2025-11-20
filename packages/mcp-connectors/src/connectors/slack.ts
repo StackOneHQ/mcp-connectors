@@ -257,6 +257,14 @@ class SlackClient {
   }
 }
 
+export const SlackCredentialsSchema = z.object({
+  botToken: z.string().describe('Slack bot token'),
+  teamId: z.string().describe('Team identifier'),
+  channelIds: z.string().describe('Channel identifiers (comma-separated)').optional(),
+});
+
+export type SlackCredentials = z.infer<typeof SlackCredentialsSchema>;
+
 export const SlackConnectorMetadata = {
   key: 'slack',
   name: 'Slack',
@@ -265,13 +273,8 @@ export const SlackConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/slack/filled/svg',
   examplePrompt: 'Send a Slack message',
   categories: ['communication', 'collaboration'],
+  credentialsSchema: SlackCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface SlackCredentials {
-  botToken: string;
-  teamId: string;
-  channelIds?: string;
-}
 
 export function createSlackServer(credentials: SlackCredentials): McpServer {
   const server = new McpServer({

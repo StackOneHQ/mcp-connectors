@@ -87,6 +87,12 @@ const handleNotionError = (error: unknown): string => {
   return `Error: ${String(error)}`;
 };
 
+export const NotionCredentialsSchema = z.object({
+  token: z.string().describe('API token for authentication'),
+});
+
+export type NotionCredentials = z.infer<typeof NotionCredentialsSchema>;
+
 export const NotionConnectorMetadata = {
   key: 'notion',
   name: 'Notion',
@@ -95,11 +101,8 @@ export const NotionConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/notion/filled/svg',
   examplePrompt: 'Search my Notion workspace',
   categories: ['productivity', 'knowledge'],
+  credentialsSchema: NotionCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface NotionCredentials {
-  token: string;
-}
 
 export function createNotionServer(credentials: NotionCredentials): McpServer {
   const server = new McpServer({

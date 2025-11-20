@@ -110,6 +110,12 @@ class HubSpotClient {
   }
 }
 
+export const HubSpotCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
+export type HubSpotCredentials = z.infer<typeof HubSpotCredentialsSchema>;
+
 export const HubspotConnectorMetadata = {
   key: 'hubspot',
   name: 'HubSpot',
@@ -118,11 +124,8 @@ export const HubspotConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/hubspot/filled/svg',
   examplePrompt: 'List my HubSpot contacts',
   categories: ['crm', 'marketing'],
+  credentialsSchema: HubSpotCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface HubSpotCredentials {
-  apiKey: string;
-}
 
 export function createHubSpotServer(credentials: HubSpotCredentials): McpServer {
   const server = new McpServer({

@@ -218,6 +218,12 @@ class LangsmithClient {
   }
 }
 
+export const LangsmithCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
+export type LangsmithCredentials = z.infer<typeof LangsmithCredentialsSchema>;
+
 export const LangsmithConnectorMetadata = {
   key: 'langsmith',
   name: 'LangSmith',
@@ -226,11 +232,8 @@ export const LangsmithConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/langsmith/filled/svg',
   examplePrompt: 'View LangSmith traces',
   categories: ['ai', 'monitoring'],
+  credentialsSchema: LangsmithCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface LangsmithCredentials {
-  apiKey: string;
-}
 
 export function createLangsmithServer(credentials: LangsmithCredentials): McpServer {
   const server = new McpServer({

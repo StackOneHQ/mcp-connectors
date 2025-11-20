@@ -58,6 +58,13 @@ async function formatProcessInfo(process: {
   );
 }
 
+export const ModalCredentialsSchema = z.object({
+  tokenId: z.string().describe('tokenId value'),
+  tokenSecret: z.string().describe('tokenSecret value'),
+});
+
+export type ModalCredentials = z.infer<typeof ModalCredentialsSchema>;
+
 export const ModalConnectorMetadata = {
   key: 'modal',
   name: 'Modal',
@@ -66,12 +73,8 @@ export const ModalConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/modal/filled/svg',
   examplePrompt: 'Run Modal functions',
   categories: ['compute', 'serverless'],
+  credentialsSchema: ModalCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ModalCredentials {
-  tokenId: string;
-  tokenSecret: string;
-}
 
 export function createModalServer(credentials: ModalCredentials): McpServer {
   const server = new McpServer({

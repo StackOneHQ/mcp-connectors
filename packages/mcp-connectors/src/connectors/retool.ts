@@ -517,6 +517,13 @@ class RetoolClient {
   }
 }
 
+export const RetoolCredentialsSchema = z.object({
+  apiToken: z.string().describe('API token for authentication'),
+  baseUrl: z.string().describe('Base URL of the instance').optional(),
+});
+
+export type RetoolCredentials = z.infer<typeof RetoolCredentialsSchema>;
+
 export const RetoolConnectorMetadata = {
   key: 'retool',
   name: 'Retool',
@@ -525,12 +532,8 @@ export const RetoolConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/retool/filled/svg',
   examplePrompt: 'Query Retool resources',
   categories: ['internal-tools', 'development'],
+  credentialsSchema: RetoolCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface RetoolCredentials {
-  apiToken: string;
-  baseUrl?: string;
-}
 
 export function createRetoolServer(credentials: RetoolCredentials): McpServer {
   const server = new McpServer({

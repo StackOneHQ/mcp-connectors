@@ -250,6 +250,14 @@ class DatadogClient {
   }
 }
 
+export const DatadogCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+  appKey: z.string().describe('Application key'),
+  site: z.string().describe('Site URL').optional(),
+});
+
+export type DatadogCredentials = z.infer<typeof DatadogCredentialsSchema>;
+
 export const DatadogConnectorMetadata = {
   key: 'datadog',
   name: 'Datadog',
@@ -258,13 +266,8 @@ export const DatadogConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/datadog/filled/svg',
   examplePrompt: 'Check my Datadog monitors',
   categories: ['monitoring', 'observability'],
+  credentialsSchema: DatadogCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface DatadogCredentials {
-  apiKey: string;
-  appKey: string;
-  site?: string;
-}
 
 export function createDatadogServer(credentials: DatadogCredentials): McpServer {
   const server = new McpServer({

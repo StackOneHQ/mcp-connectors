@@ -103,6 +103,12 @@ class AttioClient {
   }
 }
 
+export const AttioCredentialsSchema = z.object({
+  apiKey: z.string().describe('API key for authentication'),
+});
+
+export type AttioCredentials = z.infer<typeof AttioCredentialsSchema>;
+
 export const AttioConnectorMetadata = {
   key: 'attio',
   name: 'Attio',
@@ -111,11 +117,8 @@ export const AttioConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/attio/filled/svg',
   examplePrompt: 'List my Attio contacts',
   categories: ['crm', 'sales'],
+  credentialsSchema: AttioCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface AttioCredentials {
-  apiKey: string;
-}
 
 export function createAttioServer(credentials: AttioCredentials): McpServer {
   const server = new McpServer({

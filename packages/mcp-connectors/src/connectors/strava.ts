@@ -446,6 +446,17 @@ const STRAVA_OAUTH2_CONFIG = {
 
 // OAuth2 credentials interface for Strava
 
+export const StravaCredentialsSchema = z.object({
+  accessToken: z.string().describe('OAuth access token'),
+  refreshToken: z.string().describe('refreshToken value'),
+  expiresAt: z.string().describe('expiresAt value'),
+  tokenType: z.string().describe('tokenType value'),
+  clientId: z.string().describe('OAuth client ID'),
+  clientSecret: z.string().describe('OAuth client secret'),
+});
+
+export type StravaCredentials = z.infer<typeof StravaCredentialsSchema>;
+
 export const StravaConnectorMetadata = {
   key: 'strava',
   name: 'Strava',
@@ -454,16 +465,8 @@ export const StravaConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/strava/filled/svg',
   examplePrompt: 'Get my Strava activities',
   categories: ['fitness', 'social'],
+  credentialsSchema: StravaCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface StravaCredentials {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: string;
-  tokenType: string;
-  clientId: string;
-  clientSecret: string;
-}
 
 export function createStravaServer(credentials: StravaCredentials): McpServer {
   const server = new McpServer({

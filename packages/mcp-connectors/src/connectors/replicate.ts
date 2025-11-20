@@ -84,6 +84,12 @@ class SimpleReplicateClient implements ReplicateClient {
   };
 }
 
+export const ReplicateCredentialsSchema = z.object({
+  apiToken: z.string().describe('API token for authentication'),
+});
+
+export type ReplicateCredentials = z.infer<typeof ReplicateCredentialsSchema>;
+
 export const ReplicateConnectorMetadata = {
   key: 'replicate',
   name: 'Replicate',
@@ -92,11 +98,8 @@ export const ReplicateConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/replicate/filled/svg',
   examplePrompt: 'Run AI models on Replicate',
   categories: ['ai', 'ml'],
+  credentialsSchema: ReplicateCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface ReplicateCredentials {
-  apiToken: string;
-}
 
 export function createReplicateServer(credentials: ReplicateCredentials): McpServer {
   const server = new McpServer({

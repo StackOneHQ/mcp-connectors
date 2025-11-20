@@ -321,6 +321,13 @@ class XeroClient {
   }
 }
 
+export const XeroCredentialsSchema = z.object({
+  accessToken: z.string().describe('OAuth access token'),
+  tenantId: z.string().describe('tenantId value'),
+});
+
+export type XeroCredentials = z.infer<typeof XeroCredentialsSchema>;
+
 export const XeroConnectorMetadata = {
   key: 'xero',
   name: 'Xero',
@@ -329,12 +336,8 @@ export const XeroConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/xero/filled/svg',
   examplePrompt: 'View Xero invoices',
   categories: ['accounting', 'finance'],
+  credentialsSchema: XeroCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface XeroCredentials {
-  accessToken: string;
-  tenantId: string;
-}
 
 export function createXeroServer(credentials: XeroCredentials): McpServer {
   const server = new McpServer({

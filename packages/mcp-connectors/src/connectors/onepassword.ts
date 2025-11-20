@@ -4,6 +4,13 @@ import { z } from 'zod';
 import type { ConnectorMetadata } from '../types/metadata';
 import { createIndex, search } from '../utils/lexical-search';
 
+export const OnePasswordCredentialsSchema = z.object({
+  serverUrl: z.string().describe('serverUrl value'),
+  token: z.string().describe('API token for authentication'),
+});
+
+export type OnePasswordCredentials = z.infer<typeof OnePasswordCredentialsSchema>;
+
 export const OnepasswordConnectorMetadata = {
   key: 'onepassword',
   name: '1Password',
@@ -12,12 +19,8 @@ export const OnepasswordConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/onepassword/filled/svg',
   examplePrompt: 'Get passwords from 1Password',
   categories: ['security', 'password-management'],
+  credentialsSchema: OnePasswordCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface OnePasswordCredentials {
-  serverUrl: string;
-  token: string;
-}
 
 export function createOnePasswordServer(credentials: OnePasswordCredentials): McpServer {
   const server = new McpServer({

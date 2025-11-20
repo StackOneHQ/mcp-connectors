@@ -194,6 +194,13 @@ class TinybirdClient {
   }
 }
 
+export const TinybirdCredentialsSchema = z.object({
+  apiUrl: z.string().describe('apiUrl value'),
+  adminToken: z.string().describe('adminToken value'),
+});
+
+export type TinybirdCredentials = z.infer<typeof TinybirdCredentialsSchema>;
+
 export const TinybirdConnectorMetadata = {
   key: 'tinybird',
   name: 'Tinybird',
@@ -202,12 +209,8 @@ export const TinybirdConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/tinybird/filled/svg',
   examplePrompt: 'Query Tinybird data',
   categories: ['analytics', 'real-time'],
+  credentialsSchema: TinybirdCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface TinybirdCredentials {
-  apiUrl: string;
-  adminToken: string;
-}
 
 export function createTinybirdServer(credentials: TinybirdCredentials): McpServer {
   const server = new McpServer({

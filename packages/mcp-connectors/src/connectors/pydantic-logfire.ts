@@ -243,6 +243,12 @@ class LogfireClient {
   }
 }
 
+export const PydanticLogfireCredentialsSchema = z.object({
+  readToken: z.string().describe('readToken value'),
+});
+
+export type PydanticLogfireCredentials = z.infer<typeof PydanticLogfireCredentialsSchema>;
+
 export const PydanticLogfireConnectorMetadata = {
   key: 'pydantic-logfire',
   name: 'Pydantic Logfire',
@@ -251,11 +257,8 @@ export const PydanticLogfireConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/pydanticlogfire/filled/svg',
   examplePrompt: 'View Logfire traces',
   categories: ['monitoring', 'python'],
+  credentialsSchema: PydanticLogfireCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface PydanticLogfireCredentials {
-  readToken: string;
-}
 
 export function createPydanticLogfireServer(
   credentials: PydanticLogfireCredentials

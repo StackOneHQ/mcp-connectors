@@ -399,6 +399,12 @@ class AsanaClient {
   }
 }
 
+export const AsanaCredentialsSchema = z.object({
+  accessToken: z.string().describe('OAuth access token'),
+});
+
+export type AsanaCredentials = z.infer<typeof AsanaCredentialsSchema>;
+
 export const AsanaConnectorMetadata = {
   key: 'asana',
   name: 'Asana',
@@ -407,11 +413,8 @@ export const AsanaConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/asana/filled/svg',
   examplePrompt: 'List my Asana tasks',
   categories: ['productivity', 'project-management'],
+  credentialsSchema: AsanaCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface AsanaCredentials {
-  accessToken: string;
-}
 
 export function createAsanaServer(credentials: AsanaCredentials): McpServer {
   const server = new McpServer({

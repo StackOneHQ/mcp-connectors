@@ -716,6 +716,14 @@ class JiraClient {
   }
 }
 
+export const JiraCredentialsSchema = z.object({
+  baseUrl: z.string().describe('Base URL of the instance'),
+  email: z.string().describe('Email address for authentication'),
+  apiToken: z.string().describe('API token for authentication'),
+});
+
+export type JiraCredentials = z.infer<typeof JiraCredentialsSchema>;
+
 export const JiraConnectorMetadata = {
   key: 'jira',
   name: 'Jira',
@@ -724,13 +732,8 @@ export const JiraConnectorMetadata = {
   logo: 'https://stackone-logos.com/api/jira/filled/svg',
   examplePrompt: 'List my Jira issues',
   categories: ['project-management', 'issue-tracking'],
+  credentialsSchema: JiraCredentialsSchema,
 } as const satisfies ConnectorMetadata;
-
-export interface JiraCredentials {
-  baseUrl: string;
-  email: string;
-  apiToken: string;
-}
 
 export function createJiraServer(credentials: JiraCredentials): McpServer {
   const server = new McpServer({
