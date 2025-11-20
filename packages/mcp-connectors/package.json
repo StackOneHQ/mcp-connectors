@@ -1,50 +1,56 @@
 {
-    "name": "@stackone/mcp-connectors",
-    "version": "0.0.23",
-    "description": "MCP connectors for disco.dev",
-    "module": "./dist/index.js",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+  "name": "@stackone/mcp-connectors",
+  "version": "0.0.23",
+  "description": "MCP connectors for disco.dev",
+  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun -b tsdown",
+    "prepublishOnly": "bun run build",
+    "test": "vitest --run",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@1password/connect": "^1.4.2",
+    "@linear/sdk": "^55.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@orama/orama": "^3.1.11",
+    "node-html-parser": "^7.0.1",
+    "openai": "^5.12.1",
+    "zod": "^3.25",
+    "modal": "^0.3.19"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "connectors",
+    "stackone",
+    "saas",
+    "integrations",
+    "disco"
+  ],
+  "author": "StackOne",
+  "license": "Apache-2.0",
+  "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
+  "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme",
+  "publishConfig": {
     "exports": {
-        ".": "./dist/index.js",
-        "./package.json": "./package.json"
-    },
-    "type": "module",
-    "files": [
-        "dist",
-        "LICENSE"
-    ],
-    "scripts": {
-        "build": "bun -b tsdown",
-        "prepublishOnly": "bun run build",
-        "test": "vitest --run",
-        "typecheck": "tsgo --noEmit"
-    },
-    "dependencies": {
-        "@1password/connect": "^1.4.2",
-        "@linear/sdk": "^55.0.0",
-        "@modelcontextprotocol/sdk": "^1.0.4",
-        "@orama/orama": "^3.1.11",
-        "node-html-parser": "^7.0.1",
-        "openai": "^5.12.1",
-        "zod": "^3.25",
-        "modal": "^0.3.19"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
-    },
-    "keywords": [
-        "mcp",
-        "model-context-protocol",
-        "connectors",
-        "stackone",
-        "saas",
-        "integrations",
-        "disco"
-    ],
-    "author": "StackOne",
-    "license": "Apache-2.0",
-    "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
-    "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme"
+      ".": "./dist/index.js",
+      "./package.json": "./package.json"
+    }
+  }
 }

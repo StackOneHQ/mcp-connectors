@@ -1,49 +1,60 @@
 {
-    "name": "mcp-connectors",
-    "version": "0.1.0",
-    "private": true,
-    "description": "monorepo for mcp connectors for disco.dev",
-    "workspaces": ["packages/*", "apps/*"],
-    "type": "module",
-    "files": ["dist", "README.md", "LICENSE"],
-    "scripts": {
-        "start": "turbo run start",
-        "server": "turbo run spawn",
-        "dev": "turbo run dev",
-        "prepare": "husky",
-        "build": "turbo build",
-        "test": "turbo test",
-        "check": "biome check .",
-        "check:fix": "biome check --fix .",
-        "typecheck": "turbo typecheck"
-    },
-    "dependencies": {
-        "@stackone/mcp-connectors": "workspace:*"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "^1.5.3",
-        "@types/node": "^22.13.5",
-        "@typescript/native-preview": "^7.0.0-dev.20250815.1",
-        "husky": "^9.1.7",
-        "lint-staged": "^15.2.0",
-        "msw": "^2.10.4",
-        "tsdown": "^0.14.0",
-        "turbo": "latest",
-        "typescript": "^5.9.0",
-        "unplugin-unused": "^0.5.1",
-        "vitest": "^3.2.4",
-        "vitest-mock-extended": "^3.1.0"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
-    },
-    "author": "StackOne",
-    "license": "Apache-2.0",
-    "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
-    "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme",
-    "lint-staged": {
-        "*": ["biome check --fix --no-errors-on-unmatched"]
-    },
-    "packageManager": "bun@1.2.18"
+  "name": "mcp-connectors",
+  "version": "0.1.0",
+  "private": true,
+  "description": "monorepo for mcp connectors for disco.dev",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "turbo run start",
+    "server": "turbo run spawn",
+    "dev": "turbo run dev",
+    "prepare": "husky",
+    "build": "turbo build",
+    "test": "turbo test",
+    "check": "biome check .",
+    "check:fix": "biome check --fix .",
+    "format": "bun check:fix",
+    "typecheck": "turbo typecheck"
+  },
+  "dependencies": {
+    "@stackone/mcp-connectors": "workspace:*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
+    "@types/node": "^22.13.5",
+    "@typescript/native-preview": "^7.0.0-dev.20250815.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.0",
+    "msw": "^2.10.4",
+    "publint": "^0.3.15",
+    "tsdown": "^0.14.0",
+    "turbo": "latest",
+    "typescript": "^5.9.0",
+    "unplugin-unused": "^0.5.1",
+    "vitest": "^3.2.4",
+    "vitest-mock-extended": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StackOneHQ/mcp-connectors.git"
+  },
+  "author": "StackOne",
+  "license": "Apache-2.0",
+  "bugs": "https://github.com/StackOneHQ/mcp-connectors/issues",
+  "homepage": "https://github.com/StackOneHQ/mcp-connectors#readme",
+  "lint-staged": {
+    "*": [
+      "biome check --fix --no-errors-on-unmatched"
+    ]
+  },
+  "packageManager": "bun@1.2.18"
 }
