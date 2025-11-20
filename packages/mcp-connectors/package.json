@@ -6,11 +6,15 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "bun": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json"
   },
   "type": "module",
   "files": [
+    "src",
     "dist",
     "LICENSE"
   ],

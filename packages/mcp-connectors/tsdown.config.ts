@@ -10,7 +10,7 @@ export default defineConfig({
   sourcemap: true,
   unbundle: true,
   exports: {
-    devExports: true,
+    devExports: 'bun',
   },
   publint: true,
   unused: true,
