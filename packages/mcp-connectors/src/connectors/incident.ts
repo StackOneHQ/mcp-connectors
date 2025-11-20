@@ -385,13 +385,11 @@ class IncidentIoClient {
   }
 }
 
-export interface IncidentCredentials {
-  apiKey: string;
-}
-
 export const IncidentCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type IncidentCredentials = z.infer<typeof IncidentCredentialsSchema>;
 
 export const IncidentConnectorMetadata = {
   key: 'incident',

@@ -250,17 +250,13 @@ class DatadogClient {
   }
 }
 
-export interface DatadogCredentials {
-  apiKey: string;
-  appKey: string;
-  site?: string;
-}
-
 export const DatadogCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
   appKey: z.string().describe('Application key'),
   site: z.string().describe('Site URL').optional(),
 });
+
+export type DatadogCredentials = z.infer<typeof DatadogCredentialsSchema>;
 
 export const DatadogConnectorMetadata = {
   key: 'datadog',

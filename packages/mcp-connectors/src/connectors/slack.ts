@@ -257,17 +257,13 @@ class SlackClient {
   }
 }
 
-export interface SlackCredentials {
-  botToken: string;
-  teamId: string;
-  channelIds?: string;
-}
-
 export const SlackCredentialsSchema = z.object({
   botToken: z.string().describe('Slack bot token'),
   teamId: z.string().describe('Team identifier'),
   channelIds: z.string().describe('Channel identifiers (comma-separated)').optional(),
 });
+
+export type SlackCredentials = z.infer<typeof SlackCredentialsSchema>;
 
 export const SlackConnectorMetadata = {
   key: 'slack',

@@ -93,13 +93,11 @@ const streamToBase64 = async (stream: ReadableStream): Promise<string> => {
   return btoa(binary);
 };
 
-export interface ElevenLabsCredentials {
-  apiKey: string;
-}
-
 export const ElevenLabsCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type ElevenLabsCredentials = z.infer<typeof ElevenLabsCredentialsSchema>;
 
 export const ElevenlabsConnectorMetadata = {
   key: 'elevenlabs',

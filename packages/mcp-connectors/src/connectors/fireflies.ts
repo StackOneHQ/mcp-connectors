@@ -216,13 +216,11 @@ class FirefliesClient {
   }
 }
 
-export interface FirefliesCredentials {
-  apiKey: string;
-}
-
 export const FirefliesCredentialsSchema = z.object({
   apiKey: z.string().describe('Fireflies API Key'),
 });
+
+export type FirefliesCredentials = z.infer<typeof FirefliesCredentialsSchema>;
 
 export const FirefliesConnectorMetadata = {
   key: 'fireflies',

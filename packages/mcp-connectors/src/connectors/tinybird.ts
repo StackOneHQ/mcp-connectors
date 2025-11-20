@@ -194,15 +194,12 @@ class TinybirdClient {
   }
 }
 
-export interface TinybirdCredentials {
-  apiUrl: string;
-  adminToken: string;
-}
-
 export const TinybirdCredentialsSchema = z.object({
   apiUrl: z.string().describe('apiUrl value'),
   adminToken: z.string().describe('adminToken value'),
 });
+
+export type TinybirdCredentials = z.infer<typeof TinybirdCredentialsSchema>;
 
 export const TinybirdConnectorMetadata = {
   key: 'tinybird',

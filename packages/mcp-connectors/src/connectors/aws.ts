@@ -2,19 +2,14 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ConnectorMetadata } from '../types/metadata';
 
-export interface AwsCredentials {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
-  sessionToken?: string;
-}
-
 export const AwsCredentialsSchema = z.object({
   accessKeyId: z.string().describe('AWS access key ID'),
   secretAccessKey: z.string().describe('AWS secret access key'),
   region: z.string().describe('AWS region'),
   sessionToken: z.string().describe('AWS session token').optional(),
 });
+
+export type AwsCredentials = z.infer<typeof AwsCredentialsSchema>;
 
 export const AwsConnectorMetadata = {
   key: 'aws',

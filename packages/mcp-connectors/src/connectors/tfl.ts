@@ -890,13 +890,11 @@ class TFLClient {
   }
 }
 
-export interface TFLCredentials {
-  appKey?: string;
-}
-
 export const TFLCredentialsSchema = z.object({
   appKey: z.string().describe('Application key').optional(),
 });
+
+export type TFLCredentials = z.infer<typeof TFLCredentialsSchema>;
 
 export const TflConnectorMetadata = {
   key: 'tfl',

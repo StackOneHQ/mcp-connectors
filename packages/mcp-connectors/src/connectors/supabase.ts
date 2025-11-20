@@ -371,13 +371,11 @@ class SupabaseClient {
   }
 }
 
-export interface SupabaseCredentials {
-  accessToken: string;
-}
-
 export const SupabaseCredentialsSchema = z.object({
   accessToken: z.string().describe('OAuth access token'),
 });
+
+export type SupabaseCredentials = z.infer<typeof SupabaseCredentialsSchema>;
 
 export const SupabaseConnectorMetadata = {
   key: 'supabase',

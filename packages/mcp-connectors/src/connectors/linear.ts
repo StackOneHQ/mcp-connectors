@@ -277,13 +277,11 @@ class LinearClientWrapper {
   }
 }
 
-export interface LinearCredentials {
-  apiKey: string;
-}
-
 export const LinearCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type LinearCredentials = z.infer<typeof LinearCredentialsSchema>;
 
 export const LinearConnectorMetadata = {
   key: 'linear',

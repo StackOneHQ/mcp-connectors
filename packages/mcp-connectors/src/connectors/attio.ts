@@ -103,13 +103,11 @@ class AttioClient {
   }
 }
 
-export interface AttioCredentials {
-  apiKey: string;
-}
-
 export const AttioCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type AttioCredentials = z.infer<typeof AttioCredentialsSchema>;
 
 export const AttioConnectorMetadata = {
   key: 'attio',

@@ -110,13 +110,11 @@ class HubSpotClient {
   }
 }
 
-export interface HubSpotCredentials {
-  apiKey: string;
-}
-
 export const HubSpotCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type HubSpotCredentials = z.infer<typeof HubSpotCredentialsSchema>;
 
 export const HubspotConnectorMetadata = {
   key: 'hubspot',

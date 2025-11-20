@@ -243,13 +243,11 @@ class LogfireClient {
   }
 }
 
-export interface PydanticLogfireCredentials {
-  readToken: string;
-}
-
 export const PydanticLogfireCredentialsSchema = z.object({
   readToken: z.string().describe('readToken value'),
 });
+
+export type PydanticLogfireCredentials = z.infer<typeof PydanticLogfireCredentialsSchema>;
 
 export const PydanticLogfireConnectorMetadata = {
   key: 'pydantic-logfire',

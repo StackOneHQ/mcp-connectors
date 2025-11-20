@@ -84,13 +84,11 @@ class SimpleReplicateClient implements ReplicateClient {
   };
 }
 
-export interface ReplicateCredentials {
-  apiToken: string;
-}
-
 export const ReplicateCredentialsSchema = z.object({
   apiToken: z.string().describe('API token for authentication'),
 });
+
+export type ReplicateCredentials = z.infer<typeof ReplicateCredentialsSchema>;
 
 export const ReplicateConnectorMetadata = {
   key: 'replicate',

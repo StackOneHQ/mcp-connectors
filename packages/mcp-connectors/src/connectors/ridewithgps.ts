@@ -261,15 +261,12 @@ class RideWithGPSClient {
   }
 }
 
-export interface RideWithGPSCredentials {
-  apiKey: string;
-  authToken: string;
-}
-
 export const RideWithGPSCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
   authToken: z.string().describe('authToken value'),
 });
+
+export type RideWithGPSCredentials = z.infer<typeof RideWithGPSCredentialsSchema>;
 
 export const RidewithgpsConnectorMetadata = {
   key: 'ridewithgps',

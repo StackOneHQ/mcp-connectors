@@ -716,17 +716,13 @@ class JiraClient {
   }
 }
 
-export interface JiraCredentials {
-  baseUrl: string;
-  email: string;
-  apiToken: string;
-}
-
 export const JiraCredentialsSchema = z.object({
   baseUrl: z.string().describe('Base URL of the instance'),
   email: z.string().describe('Email address for authentication'),
   apiToken: z.string().describe('API token for authentication'),
 });
+
+export type JiraCredentials = z.infer<typeof JiraCredentialsSchema>;
 
 export const JiraConnectorMetadata = {
   key: 'jira',

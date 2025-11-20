@@ -446,15 +446,6 @@ const STRAVA_OAUTH2_CONFIG = {
 
 // OAuth2 credentials interface for Strava
 
-export interface StravaCredentials {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: string;
-  tokenType: string;
-  clientId: string;
-  clientSecret: string;
-}
-
 export const StravaCredentialsSchema = z.object({
   accessToken: z.string().describe('OAuth access token'),
   refreshToken: z.string().describe('refreshToken value'),
@@ -463,6 +454,8 @@ export const StravaCredentialsSchema = z.object({
   clientId: z.string().describe('OAuth client ID'),
   clientSecret: z.string().describe('OAuth client secret'),
 });
+
+export type StravaCredentials = z.infer<typeof StravaCredentialsSchema>;
 
 export const StravaConnectorMetadata = {
   key: 'strava',

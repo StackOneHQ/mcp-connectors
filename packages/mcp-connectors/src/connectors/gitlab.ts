@@ -309,15 +309,12 @@ class GitLabClient {
   }
 }
 
-export interface GitLabCredentials {
-  token: string;
-  baseUrl?: string;
-}
-
 export const GitLabCredentialsSchema = z.object({
   token: z.string().describe('API token for authentication'),
   baseUrl: z.string().describe('Base URL of the instance').optional(),
 });
+
+export type GitLabCredentials = z.infer<typeof GitLabCredentialsSchema>;
 
 export const GitlabConnectorMetadata = {
   key: 'gitlab',

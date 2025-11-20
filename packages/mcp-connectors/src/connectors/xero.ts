@@ -321,15 +321,12 @@ class XeroClient {
   }
 }
 
-export interface XeroCredentials {
-  accessToken: string;
-  tenantId: string;
-}
-
 export const XeroCredentialsSchema = z.object({
   accessToken: z.string().describe('OAuth access token'),
   tenantId: z.string().describe('tenantId value'),
 });
+
+export type XeroCredentials = z.infer<typeof XeroCredentialsSchema>;
 
 export const XeroConnectorMetadata = {
   key: 'xero',

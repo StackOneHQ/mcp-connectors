@@ -402,13 +402,11 @@ class GoogleDriveClient {
   }
 }
 
-export interface GoogleDriveCredentials {
-  accessToken: string;
-}
-
 export const GoogleDriveCredentialsSchema = z.object({
   accessToken: z.string().describe('OAuth access token'),
 });
+
+export type GoogleDriveCredentials = z.infer<typeof GoogleDriveCredentialsSchema>;
 
 export const GoogleDriveConnectorMetadata = {
   key: 'google-drive',

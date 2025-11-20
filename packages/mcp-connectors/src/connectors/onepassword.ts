@@ -4,15 +4,12 @@ import { z } from 'zod';
 import type { ConnectorMetadata } from '../types/metadata';
 import { createIndex, search } from '../utils/lexical-search';
 
-export interface OnePasswordCredentials {
-  serverUrl: string;
-  token: string;
-}
-
 export const OnePasswordCredentialsSchema = z.object({
   serverUrl: z.string().describe('serverUrl value'),
   token: z.string().describe('API token for authentication'),
 });
+
+export type OnePasswordCredentials = z.infer<typeof OnePasswordCredentialsSchema>;
 
 export const OnepasswordConnectorMetadata = {
   key: 'onepassword',

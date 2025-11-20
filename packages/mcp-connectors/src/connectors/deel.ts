@@ -303,13 +303,11 @@ class DeelClient {
   }
 }
 
-export interface DeelCredentials {
-  apiKey: string;
-}
-
 export const DeelCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type DeelCredentials = z.infer<typeof DeelCredentialsSchema>;
 
 export const DeelConnectorMetadata = {
   key: 'deel',

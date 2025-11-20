@@ -140,13 +140,11 @@ class PerplexityClient {
   }
 }
 
-export interface PerplexityCredentials {
-  apiKey: string;
-}
-
 export const PerplexityCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type PerplexityCredentials = z.infer<typeof PerplexityCredentialsSchema>;
 
 export const PerplexityConnectorMetadata = {
   key: 'perplexity',

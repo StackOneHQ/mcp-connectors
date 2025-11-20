@@ -131,19 +131,14 @@ class TurbopufferClient {
   }
 }
 
-export interface TurbopufferCredentials {
-  apiKey: string;
-  openaiApiKey: string;
-  embeddingModel?: string;
-  includeAttributes?: string[];
-}
-
 export const TurbopufferCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
   openaiApiKey: z.string().describe('openaiApiKey value'),
   embeddingModel: z.string().describe('embeddingModel value').optional(),
   includeAttributes: z.array(z.string()).describe('includeAttributes value').optional(),
 });
+
+export type TurbopufferCredentials = z.infer<typeof TurbopufferCredentialsSchema>;
 
 export const TurbopufferConnectorMetadata = {
   key: 'turbopuffer',

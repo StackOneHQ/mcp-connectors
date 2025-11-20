@@ -58,15 +58,12 @@ async function formatProcessInfo(process: {
   );
 }
 
-export interface ModalCredentials {
-  tokenId: string;
-  tokenSecret: string;
-}
-
 export const ModalCredentialsSchema = z.object({
   tokenId: z.string().describe('tokenId value'),
   tokenSecret: z.string().describe('tokenSecret value'),
 });
+
+export type ModalCredentials = z.infer<typeof ModalCredentialsSchema>;
 
 export const ModalConnectorMetadata = {
   key: 'modal',

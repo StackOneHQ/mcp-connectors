@@ -142,15 +142,12 @@ class HiBobClient {
   }
 }
 
-export interface HiBobCredentials {
-  serviceUserId: string;
-  serviceUserToken: string;
-}
-
 export const HiBobCredentialsSchema = z.object({
   serviceUserId: z.string().describe('serviceUserId value'),
   serviceUserToken: z.string().describe('serviceUserToken value'),
 });
+
+export type HiBobCredentials = z.infer<typeof HiBobCredentialsSchema>;
 
 export const HibobConnectorMetadata = {
   key: 'hibob',

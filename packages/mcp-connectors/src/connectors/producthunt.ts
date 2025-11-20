@@ -431,13 +431,11 @@ class ProductHuntAPI {
   }
 }
 
-export interface ProductHuntCredentials {
-  access_token: string;
-}
-
 export const ProductHuntCredentialsSchema = z.object({
   access_token: z.string().describe('access_token value'),
 });
+
+export type ProductHuntCredentials = z.infer<typeof ProductHuntCredentialsSchema>;
 
 export const ProducthuntConnectorMetadata = {
   key: 'producthunt',

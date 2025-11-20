@@ -131,19 +131,14 @@ class LinkedInClient {
   }
 }
 
-export interface LinkedInCredentials {
-  clientId: string;
-  clientSecret: string;
-  accessToken?: string;
-  tokenType?: string;
-}
-
 export const LinkedInCredentialsSchema = z.object({
   clientId: z.string().describe('OAuth client ID'),
   clientSecret: z.string().describe('OAuth client secret'),
   accessToken: z.string().describe('OAuth access token').optional(),
   tokenType: z.string().describe('tokenType value').optional(),
 });
+
+export type LinkedInCredentials = z.infer<typeof LinkedInCredentialsSchema>;
 
 export const LinkedinConnectorMetadata = {
   key: 'linkedin',

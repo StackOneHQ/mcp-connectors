@@ -46,13 +46,11 @@ class SimpleFalClient implements FalClient {
   }
 }
 
-export interface FalCredentials {
-  apiKey: string;
-}
-
 export const FalCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type FalCredentials = z.infer<typeof FalCredentialsSchema>;
 
 export const FalConnectorMetadata = {
   key: 'fal',

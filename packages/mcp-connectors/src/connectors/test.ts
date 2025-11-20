@@ -2,15 +2,12 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ConnectorMetadata } from '../types/metadata';
 
-export interface TestCredentials {
-  apiKey: string;
-  someSetting: string;
-}
-
 export const TestCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
   someSetting: z.string().describe('someSetting value'),
 });
+
+export type TestCredentials = z.infer<typeof TestCredentialsSchema>;
 
 export const TestConnectorMetadata = {
   key: 'test',

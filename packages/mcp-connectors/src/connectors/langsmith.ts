@@ -218,13 +218,11 @@ class LangsmithClient {
   }
 }
 
-export interface LangsmithCredentials {
-  apiKey: string;
-}
-
 export const LangsmithCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type LangsmithCredentials = z.infer<typeof LangsmithCredentialsSchema>;
 
 export const LangsmithConnectorMetadata = {
   key: 'langsmith',

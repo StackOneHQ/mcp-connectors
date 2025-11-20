@@ -108,13 +108,11 @@ class ZapierClient {
   }
 }
 
-export interface ZapierCredentials {
-  apiKey: string;
-}
-
 export const ZapierCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type ZapierCredentials = z.infer<typeof ZapierCredentialsSchema>;
 
 export const ZapierConnectorMetadata = {
   key: 'zapier',

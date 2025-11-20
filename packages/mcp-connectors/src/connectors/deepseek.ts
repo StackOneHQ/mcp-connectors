@@ -166,13 +166,11 @@ const formatChatResponse = (response: DeepSeekChatResponse): string => {
 ${rawContent || 'No response content returned.'}${reasoningSection}${usage}`;
 };
 
-export interface DeepSeekCredentials {
-  apiKey: string;
-}
-
 export const DeepSeekCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type DeepSeekCredentials = z.infer<typeof DeepSeekCredentialsSchema>;
 
 export const DeepseekConnectorMetadata = {
   key: 'deepseek',

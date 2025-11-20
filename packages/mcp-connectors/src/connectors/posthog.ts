@@ -484,17 +484,13 @@ class PostHogClient {
   }
 }
 
-export interface PostHogCredentials {
-  apiKey?: string;
-  projectApiKey?: string;
-  host?: string;
-}
-
 export const PostHogCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication').optional(),
   projectApiKey: z.string().describe('projectApiKey value').optional(),
   host: z.string().describe('Host address').optional(),
 });
+
+export type PostHogCredentials = z.infer<typeof PostHogCredentialsSchema>;
 
 export const PosthogConnectorMetadata = {
   key: 'posthog',

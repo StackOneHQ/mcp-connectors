@@ -238,13 +238,11 @@ const handleGraphyError = (error: unknown): string => {
   return String(error);
 };
 
-export interface GraphyCredentials {
-  apiKey: string;
-}
-
 export const GraphyCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type GraphyCredentials = z.infer<typeof GraphyCredentialsSchema>;
 
 export const GraphyConnectorMetadata = {
   key: 'graphy',

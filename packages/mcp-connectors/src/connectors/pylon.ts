@@ -285,13 +285,11 @@ class PylonClient {
   }
 }
 
-export interface PylonCredentials {
-  apiToken: string;
-}
-
 export const PylonCredentialsSchema = z.object({
   apiToken: z.string().describe('API token for authentication'),
 });
+
+export type PylonCredentials = z.infer<typeof PylonCredentialsSchema>;
 
 export const PylonConnectorMetadata = {
   key: 'pylon',

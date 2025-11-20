@@ -308,15 +308,12 @@ class WandbClient {
   }
 }
 
-export interface WandbCredentials {
-  api_key: string;
-  base_url?: string;
-}
-
 export const WandbCredentialsSchema = z.object({
   api_key: z.string().describe('api_key value'),
   base_url: z.string().describe('base_url value').optional(),
 });
+
+export type WandbCredentials = z.infer<typeof WandbCredentialsSchema>;
 
 export const WandbConnectorMetadata = {
   key: 'wandb',

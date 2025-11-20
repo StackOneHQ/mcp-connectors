@@ -517,15 +517,12 @@ class RetoolClient {
   }
 }
 
-export interface RetoolCredentials {
-  apiToken: string;
-  baseUrl?: string;
-}
-
 export const RetoolCredentialsSchema = z.object({
   apiToken: z.string().describe('API token for authentication'),
   baseUrl: z.string().describe('Base URL of the instance').optional(),
 });
+
+export type RetoolCredentials = z.infer<typeof RetoolCredentialsSchema>;
 
 export const RetoolConnectorMetadata = {
   key: 'retool',

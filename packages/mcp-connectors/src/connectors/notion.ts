@@ -87,13 +87,11 @@ const handleNotionError = (error: unknown): string => {
   return `Error: ${String(error)}`;
 };
 
-export interface NotionCredentials {
-  token: string;
-}
-
 export const NotionCredentialsSchema = z.object({
   token: z.string().describe('API token for authentication'),
 });
+
+export type NotionCredentials = z.infer<typeof NotionCredentialsSchema>;
 
 export const NotionConnectorMetadata = {
   key: 'notion',

@@ -325,13 +325,11 @@ class GoogleMapsClient {
   }
 }
 
-export interface GoogleMapsCredentials {
-  apiKey: string;
-}
-
 export const GoogleMapsCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type GoogleMapsCredentials = z.infer<typeof GoogleMapsCredentialsSchema>;
 
 export const GoogleMapsConnectorMetadata = {
   key: 'google-maps',

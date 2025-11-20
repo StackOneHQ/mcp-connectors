@@ -90,15 +90,12 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
   return output.join('\n');
 };
 
-export interface ParallelCredentials {
-  apiKey: string;
-  processor?: 'base' | 'pro';
-}
-
 export const ParallelCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
-  processor: z.string().describe('processor value').optional(),
+  processor: z.enum(['base', 'pro']).describe('processor value').optional(),
 });
+
+export type ParallelCredentials = z.infer<typeof ParallelCredentialsSchema>;
 
 export const ParallelConnectorMetadata = {
   key: 'parallel',

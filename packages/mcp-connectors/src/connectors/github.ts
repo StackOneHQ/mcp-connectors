@@ -311,13 +311,11 @@ class GitHubClient {
   }
 }
 
-export interface GitHubCredentials {
-  token: string;
-}
-
 export const GitHubCredentialsSchema = z.object({
   token: z.string().describe('API token for authentication'),
 });
+
+export type GitHubCredentials = z.infer<typeof GitHubCredentialsSchema>;
 
 export const GithubConnectorMetadata = {
   key: 'github',

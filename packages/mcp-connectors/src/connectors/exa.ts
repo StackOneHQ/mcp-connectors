@@ -191,13 +191,11 @@ const formatSearchResultsForLLM = (
   return output.join('\n');
 };
 
-export interface ExaCredentials {
-  apiKey: string;
-}
-
 export const ExaCredentialsSchema = z.object({
   apiKey: z.string().describe('API key for authentication'),
 });
+
+export type ExaCredentials = z.infer<typeof ExaCredentialsSchema>;
 
 export const ExaConnectorMetadata = {
   key: 'exa',

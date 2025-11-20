@@ -399,13 +399,11 @@ class AsanaClient {
   }
 }
 
-export interface AsanaCredentials {
-  accessToken: string;
-}
-
 export const AsanaCredentialsSchema = z.object({
   accessToken: z.string().describe('OAuth access token'),
 });
+
+export type AsanaCredentials = z.infer<typeof AsanaCredentialsSchema>;
 
 export const AsanaConnectorMetadata = {
   key: 'asana',

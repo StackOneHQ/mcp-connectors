@@ -309,13 +309,11 @@ class TodoistClient {
   }
 }
 
-export interface TodoistCredentials {
-  apiToken: string;
-}
-
 export const TodoistCredentialsSchema = z.object({
   apiToken: z.string().describe('API token for authentication'),
 });
+
+export type TodoistCredentials = z.infer<typeof TodoistCredentialsSchema>;
 
 export const TodoistConnectorMetadata = {
   key: 'todoist',
