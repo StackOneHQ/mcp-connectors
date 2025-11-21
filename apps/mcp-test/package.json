@@ -60,5 +60,19 @@
         "onFail": "download"
       }
     ]
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./internal-server": "./src/internal-server.ts",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.js",
+      "./internal-server": "./dist/internal-server.js",
+      "./package.json": "./package.json"
+    }
   }
 }
