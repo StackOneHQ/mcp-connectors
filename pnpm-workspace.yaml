@@ -39,8 +39,15 @@ catalogs:
     winston: ^3.17.0
     zod: ^3.25
 
-minimumReleaseAge: 1440 # 1 day
+minimumReleaseAge: 1440
+
+onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - esbuild
+  - msw
+  - protobufjs
 
 trustPolicy: no-downgrade
+
 trustPolicyExclude:
   - chokidar@4.0.3
