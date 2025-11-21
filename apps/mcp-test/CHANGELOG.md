@@ -1,12 +1,5 @@
 # Changelog
 
-## [0.0.8](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.7...mcp-test-v0.0.8) (2025-11-21)
-
-
-### Features
-
-* add pnpm workspace catalog for centralised dependency management ([#196](https://github.com/StackOneHQ/mcp-connectors/issues/196)) ([c46601a](https://github.com/StackOneHQ/mcp-connectors/commit/c46601a930da33bf3bbb0346e35ff1a1c10945a0))
-
 ## [0.0.7](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.6...mcp-test-v0.0.7) (2025-09-16)
 
 

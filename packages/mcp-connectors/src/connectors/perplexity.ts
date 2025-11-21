@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface PerplexityResponse {
   id: string;
@@ -140,170 +139,110 @@ class PerplexityClient {
   }
 }
 
-export const PerplexityCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-});
-
-export type PerplexityCredentials = z.infer<typeof PerplexityCredentialsSchema>;
-
-export const PerplexityConnectorMetadata = {
-  key: 'perplexity',
+export const PerplexityConnectorConfig = mcpConnectorConfig({
   name: 'Perplexity',
-  description: 'AI-powered search',
-  version: '1.0.0',
+  key: 'perplexity',
   logo: 'https://stackone-logos.com/api/perplexity/filled/svg',
-  examplePrompt: 'Search with Perplexity',
-  categories: ['search', 'ai'],
-  credentialsSchema: PerplexityCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createPerplexityServer(credentials: PerplexityCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Perplexity',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'perplexity_search',
-    'Perform a web search using Perplexity Sonar Pro for quick, accurate results with citations',
-    {
-      query: z.string().describe('The search query or question'),
-      maxTokens: z.number().default(2000).describe('Maximum tokens for the response'),
-    },
-    async (args) => {
-      try {
-        const client = new PerplexityClient(credentials.apiKey);
-        const result = await client.search(args.query, args.maxTokens);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: result,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'perplexity_reason',
-    'Use Perplexity Sonar Reasoning Pro for complex analysis, problem-solving, and detailed explanations',
-    {
-      query: z.string().describe('The complex question or problem to analyze'),
-      maxTokens: z.number().default(4000).describe('Maximum tokens for the response'),
-    },
-    async (args) => {
-      try {
-        const client = new PerplexityClient(credentials.apiKey);
-        const result = await client.reason(args.query, args.maxTokens);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: result,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to perform reasoning: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'perplexity_deep_research',
-    'Conduct comprehensive research using Perplexity Sonar Deep Research for thorough investigations',
-    {
-      query: z
-        .string()
-        .describe('The research topic or question requiring comprehensive analysis'),
-      maxTokens: z.number().default(8000).describe('Maximum tokens for the response'),
-    },
-    async (args) => {
-      try {
-        const client = new PerplexityClient(credentials.apiKey);
-        const result = await client.deepResearch(args.query, args.maxTokens);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: result,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to perform deep research: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'perplexity_custom_model',
-    'Use a specific Perplexity model with custom prompts',
-    {
-      model: z
-        .enum(['sonar-pro', 'sonar-reasoning-pro', 'sonar-deep-research'])
-        .describe('The Perplexity model to use'),
-      prompt: z.string().describe('The main prompt or question'),
-      systemPrompt: z
-        .string()
-        .optional()
-        .describe('Optional system prompt to set context'),
-      maxTokens: z.number().default(4000).describe('Maximum tokens for the response'),
-    },
-    async (args) => {
-      try {
-        const client = new PerplexityClient(credentials.apiKey);
-        const result = await client.customModel(
-          args.model,
-          args.prompt,
-          args.systemPrompt,
-          args.maxTokens
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: result,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to use custom model: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  version: '1.0.0',
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'Perplexity API key from your developer dashboard :: pplx-1234567890abcdef1234567890abcdef :: https://www.perplexity.ai/help-center/en/articles/10352995-api-settings'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Search for the latest AI developments in 2024, analyze the implications of new LLM architectures, and conduct deep research on the future of multimodal AI.',
+  tools: (tool) => ({
+    SEARCH: tool({
+      name: 'perplexity_search',
+      description:
+        'Perform a web search using Perplexity Sonar Pro for quick, accurate results with citations',
+      schema: z.object({
+        query: z.string().describe('The search query or question'),
+        maxTokens: z.number().default(2000).describe('Maximum tokens for the response'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new PerplexityClient(apiKey);
+          const result = await client.search(args.query, args.maxTokens);
+          return result;
+        } catch (error) {
+          return `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    REASON: tool({
+      name: 'perplexity_reason',
+      description:
+        'Use Perplexity Sonar Reasoning Pro for complex analysis, problem-solving, and detailed explanations',
+      schema: z.object({
+        query: z.string().describe('The complex question or problem to analyze'),
+        maxTokens: z.number().default(4000).describe('Maximum tokens for the response'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new PerplexityClient(apiKey);
+          const result = await client.reason(args.query, args.maxTokens);
+          return result;
+        } catch (error) {
+          return `Failed to perform reasoning: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DEEP_RESEARCH: tool({
+      name: 'perplexity_deep_research',
+      description:
+        'Conduct comprehensive research using Perplexity Sonar Deep Research for thorough investigations',
+      schema: z.object({
+        query: z
+          .string()
+          .describe('The research topic or question requiring comprehensive analysis'),
+        maxTokens: z.number().default(8000).describe('Maximum tokens for the response'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new PerplexityClient(apiKey);
+          const result = await client.deepResearch(args.query, args.maxTokens);
+          return result;
+        } catch (error) {
+          return `Failed to perform deep research: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CUSTOM_MODEL: tool({
+      name: 'perplexity_custom_model',
+      description: 'Use a specific Perplexity model with custom prompts',
+      schema: z.object({
+        model: z
+          .enum(['sonar-pro', 'sonar-reasoning-pro', 'sonar-deep-research'])
+          .describe('The Perplexity model to use'),
+        prompt: z.string().describe('The main prompt or question'),
+        systemPrompt: z
+          .string()
+          .optional()
+          .describe('Optional system prompt to set context'),
+        maxTokens: z.number().default(4000).describe('Maximum tokens for the response'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new PerplexityClient(apiKey);
+          const result = await client.customModel(
+            args.model,
+            args.prompt,
+            args.systemPrompt,
+            args.maxTokens
+          );
+          return result;
+        } catch (error) {
+          return `Failed to use custom model: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

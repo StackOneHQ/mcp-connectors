@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface AsanaTask {
   gid: string;
@@ -399,474 +398,299 @@ class AsanaClient {
   }
 }
 
-export const AsanaCredentialsSchema = z.object({
-  accessToken: z.string().describe('OAuth access token'),
-});
-
-export type AsanaCredentials = z.infer<typeof AsanaCredentialsSchema>;
-
-export const AsanaConnectorMetadata = {
-  key: 'asana',
+export const AsanaConnectorConfig = mcpConnectorConfig({
   name: 'Asana',
-  description: 'Project management and team collaboration',
+  key: 'asana',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/asana/filled/svg',
-  examplePrompt: 'List my Asana tasks',
-  categories: ['productivity', 'project-management'],
-  credentialsSchema: AsanaCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createAsanaServer(credentials: AsanaCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Asana',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'asana_get_user',
-    'Get information about the current user or a specific user',
-    {
-      userGid: z
-        .string()
-        .optional()
-        .describe('User GID to get info for (omit for current user)'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const user = await client.getUser(args.userGid);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_list_workspaces',
-    'List all workspaces the user has access to',
-    {},
-    async (_args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const workspaces = await client.getWorkspaces();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(workspaces, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list workspaces: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_list_teams',
-    'List teams in a workspace',
-    {
-      workspaceGid: z.string().describe('Workspace GID to list teams for'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const teams = await client.getTeams(args.workspaceGid);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(teams, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_list_projects',
-    'List projects with optional filtering',
-    {
-      workspaceGid: z.string().optional().describe('Workspace GID to filter projects'),
-      teamGid: z.string().optional().describe('Team GID to filter projects'),
-      limit: z.number().default(50).describe('Maximum number of projects to return'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const projects = await client.getProjects(
-          args.workspaceGid,
-          args.teamGid,
-          args.limit
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(projects, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_get_project',
-    'Get detailed information about a specific project',
-    {
-      projectGid: z.string().describe('Project GID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const project = await client.getProject(args.projectGid);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(project, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get project: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_list_tasks',
-    'List tasks with optional filtering',
-    {
-      projectGid: z.string().optional().describe('Project GID to filter tasks'),
-      assigneeGid: z.string().optional().describe('Assignee GID to filter tasks'),
-      workspaceGid: z.string().optional().describe('Workspace GID to filter tasks'),
-      completedSince: z
-        .string()
-        .optional()
-        .describe('ISO 8601 datetime to filter completed tasks since'),
-      limit: z.number().default(50).describe('Maximum number of tasks to return'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const tasks = await client.getTasks(
-          args.projectGid,
-          args.assigneeGid,
-          args.workspaceGid,
-          args.completedSince,
-          args.limit
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(tasks, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_get_task',
-    'Get detailed information about a specific task',
-    {
-      taskGid: z.string().describe('Task GID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const task = await client.getTask(args.taskGid);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(task, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_create_task',
-    'Create a new task',
-    {
-      name: z.string().describe('Task name'),
-      notes: z.string().optional().describe('Task notes (plain text)'),
-      htmlNotes: z.string().optional().describe('Task notes (HTML format)'),
-      assignee: z.string().optional().describe('Assignee GID or "me"'),
-      projects: z.array(z.string()).optional().describe('Array of project GIDs'),
-      dueAt: z.string().optional().describe('Due date and time (ISO 8601)'),
-      dueOn: z.string().optional().describe('Due date (YYYY-MM-DD)'),
-      completed: z.boolean().optional().describe('Whether the task is completed'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const task = await client.createTask({
-          name: args.name,
-          notes: args.notes,
-          html_notes: args.htmlNotes,
-          assignee: args.assignee,
-          projects: args.projects,
-          due_at: args.dueAt,
-          due_on: args.dueOn,
-          completed: args.completed,
-        });
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(task, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_update_task',
-    'Update an existing task',
-    {
-      taskGid: z.string().describe('Task GID to update'),
-      name: z.string().optional().describe('Task name'),
-      notes: z.string().optional().describe('Task notes (plain text)'),
-      htmlNotes: z.string().optional().describe('Task notes (HTML format)'),
-      assignee: z.string().optional().describe('Assignee GID or "me"'),
-      dueAt: z.string().optional().describe('Due date and time (ISO 8601)'),
-      dueOn: z.string().optional().describe('Due date (YYYY-MM-DD)'),
-      completed: z.boolean().optional().describe('Whether the task is completed'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const task = await client.updateTask(args.taskGid, {
-          name: args.name,
-          notes: args.notes,
-          html_notes: args.htmlNotes,
-          assignee: args.assignee,
-          due_at: args.dueAt,
-          due_on: args.dueOn,
-          completed: args.completed,
-        });
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(task, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_delete_task',
-    'Delete a task',
-    {
-      taskGid: z.string().describe('Task GID to delete'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const result = await client.deleteTask(args.taskGid);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to delete task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_create_project',
-    'Create a new project',
-    {
-      name: z.string().describe('Project name'),
-      notes: z.string().optional().describe('Project notes'),
-      team: z.string().optional().describe('Team GID'),
-      workspace: z.string().optional().describe('Workspace GID'),
-      public: z.boolean().optional().describe('Whether the project is public'),
-      color: z.string().optional().describe('Project color'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const project = await client.createProject({
-          name: args.name,
-          notes: args.notes,
-          team: args.team,
-          workspace: args.workspace,
-          public: args.public,
-          color: args.color,
-        });
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(project, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'asana_update_project',
-    'Update an existing project',
-    {
-      projectGid: z.string().describe('Project GID to update'),
-      name: z.string().optional().describe('Project name'),
-      notes: z.string().optional().describe('Project notes'),
-      color: z.string().optional().describe('Project color'),
-      public: z.boolean().optional().describe('Whether the project is public'),
-      archived: z.boolean().optional().describe('Whether the project is archived'),
-    },
-    async (args) => {
-      try {
-        const client = new AsanaClient(credentials.accessToken);
-        const project = await client.updateProject(args.projectGid, {
-          name: args.name,
-          notes: args.notes,
-          color: args.color,
-          public: args.public,
-          archived: args.archived,
-        });
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(project, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update project: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  credentials: z.object({
+    accessToken: z
+      .string()
+      .describe(
+        'Asana Personal Access Token from Settings > Apps > Personal Access Tokens :: 0/68a9e79b868c6789e79a124c30b0'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Create a new task called "Review quarterly reports" assigned to me with a due date of next Friday, and list all projects in our main workspace.',
+  tools: (tool) => ({
+    GET_USER: tool({
+      name: 'asana_get_user',
+      description: 'Get information about the current user or a specific user',
+      schema: z.object({
+        userGid: z
+          .string()
+          .optional()
+          .describe('User GID to get info for (omit for current user)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const user = await client.getUser(args.userGid);
+          return JSON.stringify(user, null, 2);
+        } catch (error) {
+          return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_WORKSPACES: tool({
+      name: 'asana_list_workspaces',
+      description: 'List all workspaces the user has access to',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const workspaces = await client.getWorkspaces();
+          return JSON.stringify(workspaces, null, 2);
+        } catch (error) {
+          return `Failed to list workspaces: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_TEAMS: tool({
+      name: 'asana_list_teams',
+      description: 'List teams in a workspace',
+      schema: z.object({
+        workspaceGid: z.string().describe('Workspace GID to list teams for'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const teams = await client.getTeams(args.workspaceGid);
+          return JSON.stringify(teams, null, 2);
+        } catch (error) {
+          return `Failed to list teams: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_PROJECTS: tool({
+      name: 'asana_list_projects',
+      description: 'List projects with optional filtering',
+      schema: z.object({
+        workspaceGid: z.string().optional().describe('Workspace GID to filter projects'),
+        teamGid: z.string().optional().describe('Team GID to filter projects'),
+        limit: z.number().default(50).describe('Maximum number of projects to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const projects = await client.getProjects(
+            args.workspaceGid,
+            args.teamGid,
+            args.limit
+          );
+          return JSON.stringify(projects, null, 2);
+        } catch (error) {
+          return `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PROJECT: tool({
+      name: 'asana_get_project',
+      description: 'Get detailed information about a specific project',
+      schema: z.object({
+        projectGid: z.string().describe('Project GID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const project = await client.getProject(args.projectGid);
+          return JSON.stringify(project, null, 2);
+        } catch (error) {
+          return `Failed to get project: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_TASKS: tool({
+      name: 'asana_list_tasks',
+      description: 'List tasks with optional filtering',
+      schema: z.object({
+        projectGid: z.string().optional().describe('Project GID to filter tasks'),
+        assigneeGid: z.string().optional().describe('Assignee GID to filter tasks'),
+        workspaceGid: z.string().optional().describe('Workspace GID to filter tasks'),
+        completedSince: z
+          .string()
+          .optional()
+          .describe('ISO 8601 datetime to filter completed tasks since'),
+        limit: z.number().default(50).describe('Maximum number of tasks to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const tasks = await client.getTasks(
+            args.projectGid,
+            args.assigneeGid,
+            args.workspaceGid,
+            args.completedSince,
+            args.limit
+          );
+          return JSON.stringify(tasks, null, 2);
+        } catch (error) {
+          return `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_TASK: tool({
+      name: 'asana_get_task',
+      description: 'Get detailed information about a specific task',
+      schema: z.object({
+        taskGid: z.string().describe('Task GID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const task = await client.getTask(args.taskGid);
+          return JSON.stringify(task, null, 2);
+        } catch (error) {
+          return `Failed to get task: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_TASK: tool({
+      name: 'asana_create_task',
+      description: 'Create a new task',
+      schema: z.object({
+        name: z.string().describe('Task name'),
+        notes: z.string().optional().describe('Task notes (plain text)'),
+        htmlNotes: z.string().optional().describe('Task notes (HTML format)'),
+        assignee: z.string().optional().describe('Assignee GID or "me"'),
+        projects: z.array(z.string()).optional().describe('Array of project GIDs'),
+        dueAt: z.string().optional().describe('Due date and time (ISO 8601)'),
+        dueOn: z.string().optional().describe('Due date (YYYY-MM-DD)'),
+        completed: z.boolean().optional().describe('Whether the task is completed'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const task = await client.createTask({
+            name: args.name,
+            notes: args.notes,
+            html_notes: args.htmlNotes,
+            assignee: args.assignee,
+            projects: args.projects,
+            due_at: args.dueAt,
+            due_on: args.dueOn,
+            completed: args.completed,
+          });
+          return JSON.stringify(task, null, 2);
+        } catch (error) {
+          return `Failed to create task: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_TASK: tool({
+      name: 'asana_update_task',
+      description: 'Update an existing task',
+      schema: z.object({
+        taskGid: z.string().describe('Task GID to update'),
+        name: z.string().optional().describe('Task name'),
+        notes: z.string().optional().describe('Task notes (plain text)'),
+        htmlNotes: z.string().optional().describe('Task notes (HTML format)'),
+        assignee: z.string().optional().describe('Assignee GID or "me"'),
+        dueAt: z.string().optional().describe('Due date and time (ISO 8601)'),
+        dueOn: z.string().optional().describe('Due date (YYYY-MM-DD)'),
+        completed: z.boolean().optional().describe('Whether the task is completed'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const task = await client.updateTask(args.taskGid, {
+            name: args.name,
+            notes: args.notes,
+            html_notes: args.htmlNotes,
+            assignee: args.assignee,
+            due_at: args.dueAt,
+            due_on: args.dueOn,
+            completed: args.completed,
+          });
+          return JSON.stringify(task, null, 2);
+        } catch (error) {
+          return `Failed to update task: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DELETE_TASK: tool({
+      name: 'asana_delete_task',
+      description: 'Delete a task',
+      schema: z.object({
+        taskGid: z.string().describe('Task GID to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const result = await client.deleteTask(args.taskGid);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to delete task: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_PROJECT: tool({
+      name: 'asana_create_project',
+      description: 'Create a new project',
+      schema: z.object({
+        name: z.string().describe('Project name'),
+        notes: z.string().optional().describe('Project notes'),
+        team: z.string().optional().describe('Team GID'),
+        workspace: z.string().optional().describe('Workspace GID'),
+        public: z.boolean().optional().describe('Whether the project is public'),
+        color: z.string().optional().describe('Project color'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const project = await client.createProject({
+            name: args.name,
+            notes: args.notes,
+            team: args.team,
+            workspace: args.workspace,
+            public: args.public,
+            color: args.color,
+          });
+          return JSON.stringify(project, null, 2);
+        } catch (error) {
+          return `Failed to create project: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_PROJECT: tool({
+      name: 'asana_update_project',
+      description: 'Update an existing project',
+      schema: z.object({
+        projectGid: z.string().describe('Project GID to update'),
+        name: z.string().optional().describe('Project name'),
+        notes: z.string().optional().describe('Project notes'),
+        color: z.string().optional().describe('Project color'),
+        public: z.boolean().optional().describe('Whether the project is public'),
+        archived: z.boolean().optional().describe('Whether the project is archived'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessToken } = await context.getCredentials();
+          const client = new AsanaClient(accessToken);
+          const project = await client.updateProject(args.projectGid, {
+            name: args.name,
+            notes: args.notes,
+            color: args.color,
+            public: args.public,
+            archived: args.archived,
+          });
+          return JSON.stringify(project, null, 2);
+        } catch (error) {
+          return `Failed to update project: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

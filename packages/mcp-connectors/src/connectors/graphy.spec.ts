@@ -1,8 +1,9 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { describe, expect, it } from 'vitest';
-import { extractToolsFromServer } from '../__mocks__/server-tools';
-import { createGraphyServer } from './graphy';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { GraphyConnectorConfig } from './graphy';
 
 describe('#GraphyConnector', () => {
   describe('.LIST_BOARDS', () => {
@@ -40,10 +41,12 @@ describe('#GraphyConnector', () => {
           );
           server.listen();
 
-          const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
+          const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
+          const mockContext = createMockConnectorContext({
+            credentials: { apiToken: 'test-token' },
+          });
 
-          const actual = await tools.graphy_list_boards?.handler({});
+          const actual = await tool.handler({}, mockContext);
 
           server.close();
           expect(actual).toBe(JSON.stringify(mockBoards, null, 2));
@@ -74,13 +77,12 @@ describe('#GraphyConnector', () => {
           );
           server.listen();
 
-          const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.graphy_list_boards?.handler({
-            limit: 10,
-            offset: 5,
+          const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
+          const mockContext = createMockConnectorContext({
+            credentials: { apiToken: 'test-token' },
           });
+
+          const actual = await tool.handler({ limit: 10, offset: 5 }, mockContext);
 
           server.close();
           expect(actual).toBe(JSON.stringify(mockBoards, null, 2));
@@ -97,10 +99,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
+        });
 
-        const actual = await tools.graphy_list_boards?.handler({});
+        const actual = await tool.handler({}, mockContext);
 
         server.close();
         expect(actual).toBe('Unauthorized access');
@@ -116,10 +120,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = GraphyConnectorConfig.tools.LIST_BOARDS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
+        });
 
-        const actual = await tools.graphy_list_boards?.handler({});
+        const actual = await tool.handler({}, mockContext);
 
         server.close();
         expect(actual).toBe('Endpoint not found');
@@ -147,10 +153,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = GraphyConnectorConfig.tools.GET_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
+        });
 
-        const actual = await tools.graphy_get_board?.handler({ boardId: 'board-1' });
+        const actual = await tool.handler({ boardId: 'board-1' }, mockContext);
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
@@ -166,10 +174,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = GraphyConnectorConfig.tools.GET_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
+        });
 
-        const actual = await tools.graphy_get_board?.handler({ boardId: 'nonexistent' });
+        const actual = await tool.handler({ boardId: 'nonexistent' }, mockContext);
 
         server.close();
         expect(actual).toBe('Board not found');
@@ -197,14 +207,15 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.graphy_create_board?.handler({
-          title: 'New Board',
-          type: 'line',
-          description: 'A new board',
+        const tool = GraphyConnectorConfig.tools.CREATE_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
         });
+
+        const actual = await tool.handler(
+          { title: 'New Board', type: 'line', description: 'A new board' },
+          mockContext
+        );
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
@@ -220,13 +231,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.graphy_create_board?.handler({
-          title: '',
-          type: 'line',
+        const tool = GraphyConnectorConfig.tools.CREATE_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
         });
+
+        const actual = await tool.handler({ title: '', type: 'line' }, mockContext);
 
         server.close();
         expect(actual).toBe('Title is required');
@@ -254,14 +264,19 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.graphy_update_board?.handler({
-          boardId: 'board-1',
-          title: 'Updated Board',
-          description: 'Updated description',
+        const tool = GraphyConnectorConfig.tools.UPDATE_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
         });
+
+        const actual = await tool.handler(
+          {
+            boardId: 'board-1',
+            title: 'Updated Board',
+            description: 'Updated description',
+          },
+          mockContext
+        );
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockBoard, null, 2));
@@ -279,10 +294,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = GraphyConnectorConfig.tools.DELETE_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
+        });
 
-        const actual = await tools.graphy_delete_board?.handler({ boardId: 'board-1' });
+        const actual = await tool.handler({ boardId: 'board-1' }, mockContext);
 
         server.close();
         expect(actual).toBe('Board board-1 deleted successfully');
@@ -315,10 +332,12 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = GraphyConnectorConfig.tools.LIST_DATASETS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
+        });
 
-        const actual = await tools.graphy_list_datasets?.handler({});
+        const actual = await tool.handler({}, mockContext);
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockDatasets, null, 2));
@@ -349,21 +368,26 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.graphy_create_dataset?.handler({
-          name: 'Test Dataset',
-          data: [
-            [1, 'John'],
-            [2, 'Jane'],
-          ],
-          columns: [
-            { name: 'id', type: 'number' },
-            { name: 'name', type: 'string' },
-          ],
-          description: 'A test dataset',
+        const tool = GraphyConnectorConfig.tools.CREATE_DATASET as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
         });
+
+        const actual = await tool.handler(
+          {
+            name: 'Test Dataset',
+            data: [
+              [1, 'John'],
+              [2, 'Jane'],
+            ],
+            columns: [
+              { name: 'id', type: 'number' },
+              { name: 'name', type: 'string' },
+            ],
+            description: 'A test dataset',
+          },
+          mockContext
+        );
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockDataset, null, 2));
@@ -391,13 +415,15 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.graphy_get_board_data?.handler({
-          boardId: 'board-1',
-          format: 'json',
+        const tool = GraphyConnectorConfig.tools.GET_BOARD_DATA as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
         });
+
+        const actual = await tool.handler(
+          { boardId: 'board-1', format: 'json' },
+          mockContext
+        );
 
         server.close();
         expect(actual).toBe(JSON.stringify(mockData, null, 2));
@@ -419,13 +445,15 @@ describe('#GraphyConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createGraphyServer({ apiKey: 'test-token' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.graphy_share_board?.handler({
-          boardId: 'board-1',
-          isPublic: true,
+        const tool = GraphyConnectorConfig.tools.SHARE_BOARD as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiToken: 'test-token' },
         });
+
+        const actual = await tool.handler(
+          { boardId: 'board-1', isPublic: true },
+          mockContext
+        );
 
         server.close();
         expect(actual).toBe(

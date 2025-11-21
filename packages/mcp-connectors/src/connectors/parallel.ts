@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface ParallelSearchResult {
   url: string;
@@ -74,6 +73,7 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
     output.push(`${i + 1}. ${result.title}`);
     output.push(`   URL: ${result.url}`);
 
+    // Handle excerpts
     if (result.excerpts && result.excerpts.length > 0) {
       const contentPreview = result.excerpts.join(' ');
       const maxLength = 200;
@@ -84,96 +84,76 @@ const formatSearchResults = (response: ParallelSearchResponse): string => {
       output.push(`   Content: ${preview}`);
     }
 
-    output.push('');
+    output.push(''); // Empty line between results
   }
 
   return output.join('\n');
 };
 
-export const ParallelCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-  processor: z.enum(['base', 'pro']).describe('processor value').optional(),
-});
-
-export type ParallelCredentials = z.infer<typeof ParallelCredentialsSchema>;
-
-export const ParallelConnectorMetadata = {
+export const ParallelConnectorConfig = mcpConnectorConfig({
+  name: 'Parallel.ai',
   key: 'parallel',
-  name: 'Parallel',
-  description: 'Parallel processing',
-  version: '1.0.0',
   logo: 'https://stackone-logos.com/api/parallel/filled/svg',
-  examplePrompt: 'Process tasks in parallel',
-  categories: ['compute', 'processing'],
-  credentialsSchema: ParallelCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+  version: '1.0.0',
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'Parallel.ai API key from platform.parallel.ai :: PARALLEL_API_KEY_1234567890abcdef'
+      ),
+  }),
+  setup: z.object({
+    processor: z
+      .enum(['base', 'pro'])
+      .default('base')
+      .describe(
+        'Search processor tier: base (2-5s, cost-effective) or pro (15-60s, best quality)'
+      ),
+  }),
+  examplePrompt:
+    'Search for "latest AI model developments 2024" or search with specific queries like ["machine learning", "transformer models"]',
+  tools: (tool) => ({
+    SEARCH: tool({
+      name: 'parallel_search',
+      description: 'Perform AI-native web search using Parallel Search API',
+      schema: z.object({
+        objective: z
+          .string()
+          .optional()
+          .describe('The search objective or question to answer'),
+        searchQueries: z
+          .array(z.string())
+          .optional()
+          .describe('Specific search queries to execute'),
+        maxResults: z
+          .number()
+          .default(5)
+          .describe('Maximum number of search results to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const { processor } = await context.getSetup();
+          const client = new ParallelClient(apiKey);
 
-export function createParallelServer(credentials: ParallelCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Parallel.ai',
-    version: '1.0.0',
-  });
+          if (
+            !args.objective &&
+            (!args.searchQueries || args.searchQueries.length === 0)
+          ) {
+            return 'Error: Either objective or searchQueries must be provided.';
+          }
 
-  const processor = credentials.processor || 'base';
-
-  server.tool(
-    'parallel_search',
-    'Perform AI-native web search using Parallel Search API',
-    {
-      objective: z
-        .string()
-        .optional()
-        .describe('The search objective or question to answer'),
-      searchQueries: z
-        .array(z.string())
-        .optional()
-        .describe('Specific search queries to execute'),
-      maxResults: z
-        .number()
-        .default(5)
-        .describe('Maximum number of search results to return'),
-    },
-    async (args) => {
-      try {
-        const client = new ParallelClient(credentials.apiKey);
-
-        if (!args.objective && (!args.searchQueries || args.searchQueries.length === 0)) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Error: Either objective or searchQueries must be provided.',
-              },
-            ],
-          };
+          const result = await client.search(
+            args.objective,
+            args.searchQueries,
+            processor,
+            args.maxResults
+          );
+          return formatSearchResults(result);
+        } catch (error) {
+          return `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`;
         }
-
-        const result = await client.search(
-          args.objective,
-          args.searchQueries,
-          processor,
-          args.maxResults
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatSearchResults(result),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to perform search: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+      },
+    }),
+  }),
+});

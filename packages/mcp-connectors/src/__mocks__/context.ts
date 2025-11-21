@@ -1,16 +1,5 @@
+import type { ConnectorContext } from '@stackone/mcp-config-types';
 import { vi } from 'vitest';
-
-// Context interface for connector testing
-export interface ConnectorContext<C = unknown, S = unknown, O = unknown> {
-  getCredentials(): Promise<C>;
-  getSetup(): Promise<S>;
-  getData<T = unknown>(key?: string): Promise<T | null>;
-  setData(keyOrData: string | Record<string, unknown>, value?: unknown): Promise<void>;
-  readCache(key: string): Promise<string | null>;
-  writeCache(key: string, value: string): Promise<void>;
-  getOauth2Credentials?(): Promise<O>;
-  refreshOauth2Credentials?(): Promise<O>;
-}
 
 export interface MockContextOptions {
   credentials?: Record<string, unknown>;

@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface Secret {
   name?: string;
@@ -58,77 +57,69 @@ async function formatProcessInfo(process: {
   );
 }
 
-export const ModalCredentialsSchema = z.object({
-  tokenId: z.string().describe('tokenId value'),
-  tokenSecret: z.string().describe('tokenSecret value'),
-});
-
-export type ModalCredentials = z.infer<typeof ModalCredentialsSchema>;
-
-export const ModalConnectorMetadata = {
-  key: 'modal',
+export const ModalConnectorConfig = mcpConnectorConfig({
   name: 'Modal',
-  description: 'Serverless compute platform',
+  key: 'modal',
   version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/modal/filled/svg',
-  examplePrompt: 'Run Modal functions',
-  categories: ['compute', 'serverless'],
-  credentialsSchema: ModalCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+  logo: 'https://modal.com/assets/favicon.svg',
+  credentials: z.object({
+    tokenId: z
+      .string()
+      .describe('Modal Token ID :: The ID part of your Modal token (e.g., ak-xxx...)'),
+    tokenSecret: z
+      .string()
+      .describe('Modal Token Secret :: The secret part of your Modal token'),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Create a Python sandbox which runs a python script that prints "hello world" to the console.',
+  tools: (tool) => ({
+    CREATE_SANDBOX: tool({
+      name: 'modal_create_sandbox',
+      description:
+        'Create a new Modal sandbox for running code in an isolated environment',
+      schema: z.object({
+        appName: z
+          .string()
+          .optional()
+          .default('mcp-sandbox')
+          .describe('Name of the Modal app (default: mcp-sandbox)'),
+        entrypoint: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'Command to run as entrypoint (e.g., ["python", "-c", "print(\'hello\')"])'
+          ),
+        image: z
+          .string()
+          .optional()
+          .describe('Container image to use (default: python:3.12-slim)'),
+        timeout: z
+          .number()
+          .optional()
+          .describe('Timeout in milliseconds (default: 600000)'),
+        encrypted_ports: z
+          .array(z.number())
+          .optional()
+          .describe('List of ports to expose with encryption'),
+        unencrypted_ports: z
+          .array(z.number())
+          .optional()
+          .describe('List of ports to expose without encryption'),
+        secrets: z
+          .record(z.string())
+          .optional()
+          .describe('Environment variables to inject into the sandbox'),
+        cpu: z.number().optional().describe('CPU cores to allocate'),
+        memory: z.number().optional().describe('Memory in MiB to allocate'),
+        gpu: z.string().optional().describe('GPU type to allocate (e.g., "A100", "T4")'),
+        workdir: z.string().optional().describe('Working directory for the sandbox'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-export function createModalServer(credentials: ModalCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Modal',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'modal_create_sandbox',
-    'Create a new Modal sandbox for running code in an isolated environment',
-    {
-      appName: z
-        .string()
-        .optional()
-        .default('mcp-sandbox')
-        .describe('Name of the Modal app (default: mcp-sandbox)'),
-      entrypoint: z
-        .array(z.string())
-        .optional()
-        .describe(
-          'Command to run as entrypoint (e.g., ["python", "-c", "print(\'hello\')"])'
-        ),
-      image: z
-        .string()
-        .optional()
-        .describe('Container image to use (default: python:3.12-slim)'),
-      timeout: z
-        .number()
-        .optional()
-        .describe('Timeout in milliseconds (default: 600000)'),
-      encrypted_ports: z
-        .array(z.number())
-        .optional()
-        .describe('List of ports to expose with encryption'),
-      unencrypted_ports: z
-        .array(z.number())
-        .optional()
-        .describe('List of ports to expose without encryption'),
-      secrets: z
-        .record(z.string())
-        .optional()
-        .describe('Environment variables to inject into the sandbox'),
-      cpu: z.number().optional().describe('CPU cores to allocate'),
-      memory: z.number().optional().describe('Memory in MiB to allocate'),
-      gpu: z.string().optional().describe('GPU type to allocate (e.g., "A100", "T4")'),
-      workdir: z.string().optional().describe('Working directory for the sandbox'),
-    },
-    async (args) => {
-      try {
         const { App, Image, Secret, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const app = await App.lookup(args.appName || 'mcp-sandbox', {
           createIfMissing: true,
@@ -158,138 +149,78 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         // Create sandbox
         const sandbox = await app.createSandbox(image, sandboxOptions);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatSandboxInfo(sandbox),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create sandbox: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return formatSandboxInfo(sandbox);
+      },
+    }),
+    GET_SANDBOX: tool({
+      name: 'modal_get_sandbox',
+      description: 'Get information about a specific Modal sandbox',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox to retrieve'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_get_sandbox',
-    'Get information about a specific Modal sandbox',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox to retrieve'),
-    },
-    async (args) => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
         // Poll to get current state
         const exitCode = await sandbox.poll();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  sandbox_id: sandbox.sandboxId,
-                  state: exitCode === null ? 'RUNNING' : 'TERMINATED',
-                  exit_code: exitCode,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get sandbox: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(
+          {
+            sandbox_id: sandbox.sandboxId,
+            state: exitCode === null ? 'RUNNING' : 'TERMINATED',
+            exit_code: exitCode,
+          },
+          null,
+          2
+        );
+      },
+    }),
+    TERMINATE_SANDBOX: tool({
+      name: 'modal_terminate_sandbox',
+      description: 'Terminate a running Modal sandbox',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox to terminate'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_terminate_sandbox',
-    'Terminate a running Modal sandbox',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox to terminate'),
-    },
-    async (args) => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
         await sandbox.terminate();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Sandbox ${args.sandboxId} terminated successfully`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to terminate sandbox: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return `Sandbox ${args.sandboxId} terminated successfully`;
+      },
+    }),
+    EXEC_IN_SANDBOX: tool({
+      name: 'modal_exec_in_sandbox',
+      description: 'Execute a command in a Modal sandbox',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox'),
+        command: z
+          .array(z.string())
+          .describe('Command to execute (e.g., ["python", "-c", "print(\'hello\')"])'),
+        workdir: z.string().optional().describe('Working directory for the command'),
+        stdin: z.string().optional().describe('Input to send to the command'),
+        background: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe(
+            'Run the command in background without waiting for completion. Useful for servers or other very long-running processes.'
+          ),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_exec_in_sandbox',
-    'Execute a command in a Modal sandbox',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox'),
-      command: z
-        .array(z.string())
-        .describe('Command to execute (e.g., ["python", "-c", "print(\'hello\')"])'),
-      workdir: z.string().optional().describe('Working directory for the command'),
-      stdin: z.string().optional().describe('Input to send to the command'),
-      background: z
-        .boolean()
-        .optional()
-        .default(false)
-        .describe(
-          'Run the command in background without waiting for completion. Useful for servers or other very long-running processes.'
-        ),
-    },
-    async (args) => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -310,112 +241,69 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
 
         // If background mode, return immediately without waiting
         if (args.background) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    message: 'Command started in background',
-                    sandbox_id: args.sandboxId,
-                    is_running: true,
-                  },
-                  null,
-                  2
-                ),
-              },
-            ],
-          };
+          return JSON.stringify(
+            {
+              message: 'Command started in background',
+              sandbox_id: args.sandboxId,
+              is_running: true,
+            },
+            null,
+            2
+          );
         }
 
         const result = await formatProcessInfo(process);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: result,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to execute command: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return result;
+      },
+    }),
+    LIST_SANDBOXES: tool({
+      name: 'modal_list_sandboxes',
+      description:
+        'List active Modal sandboxes (Note: Modal SDK does not provide a direct list method)',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_list_sandboxes',
-    'List active Modal sandboxes (Note: Modal SDK does not provide a direct list method)',
-    {},
-    async () => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandboxes = [];
         for await (const sandbox of Sandbox.list()) {
           sandboxes.push(sandbox.sandboxId);
         }
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(sandboxes, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list sandboxes: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(sandboxes, null, 2);
+      },
+    }),
+    CREATE_SANDBOX_WITH_VOLUME: tool({
+      name: 'modal_create_sandbox_with_volume',
+      description: 'Create a Modal sandbox with a persistent volume attached',
+      schema: z.object({
+        appName: z
+          .string()
+          .optional()
+          .default('mcp-sandbox')
+          .describe('Name of the Modal app'),
+        volumeName: z.string().describe('Name of the volume to create or attach'),
+        mountPath: z
+          .string()
+          .default('/mnt/volume')
+          .describe('Path where the volume will be mounted'),
+        image: z
+          .string()
+          .optional()
+          .describe('Container image to use (default: python:3.12-slim)'),
+        entrypoint: z
+          .array(z.string())
+          .optional()
+          .describe('Command to run as entrypoint'),
+        timeout: z.number().optional().describe('Timeout in milliseconds'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_create_sandbox_with_volume',
-    'Create a Modal sandbox with a persistent volume attached',
-    {
-      appName: z
-        .string()
-        .optional()
-        .default('mcp-sandbox')
-        .describe('Name of the Modal app'),
-      volumeName: z.string().describe('Name of the volume to create or attach'),
-      mountPath: z
-        .string()
-        .default('/mnt/volume')
-        .describe('Path where the volume will be mounted'),
-      image: z
-        .string()
-        .optional()
-        .describe('Container image to use (default: python:3.12-slim)'),
-      entrypoint: z.array(z.string()).optional().describe('Command to run as entrypoint'),
-      timeout: z.number().optional().describe('Timeout in milliseconds'),
-    },
-    async (args) => {
-      try {
         const { App, Image, Volume, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const app = await App.lookup(args.appName || 'mcp-sandbox', {
           createIfMissing: true,
@@ -438,50 +326,30 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
 
         const sandbox = await app.createSandbox(image, sandboxOptions);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  sandbox_id: sandbox.sandboxId,
-                  volume_name: args.volumeName,
-                  mount_path: args.mountPath,
-                  message: 'Sandbox with volume created successfully',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create sandbox with volume: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(
+          {
+            sandbox_id: sandbox.sandboxId,
+            volume_name: args.volumeName,
+            mount_path: args.mountPath,
+            message: 'Sandbox with volume created successfully',
+          },
+          null,
+          2
+        );
+      },
+    }),
+    SANDBOX_READ_FILE: tool({
+      name: 'modal_sandbox_read_file',
+      description: 'Read a file from a Modal sandbox',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox'),
+        filePath: z.string().describe('Path to the file to read'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_sandbox_read_file',
-    'Read a file from a Modal sandbox',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox'),
-      filePath: z.string().describe('Path to the file to read'),
-    },
-    async (args) => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -492,50 +360,30 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         const decoder = new TextDecoder();
         const text = decoder.decode(content);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  file_path: args.filePath,
-                  content: text,
-                  size: content.length,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(
+          {
+            file_path: args.filePath,
+            content: text,
+            size: content.length,
+          },
+          null,
+          2
+        );
+      },
+    }),
+    SANDBOX_WRITE_FILE: tool({
+      name: 'modal_sandbox_write_file',
+      description: 'Write a file to a Modal sandbox',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox'),
+        filePath: z.string().describe('Path where the file will be written'),
+        content: z.string().describe('Content to write to the file'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_sandbox_write_file',
-    'Write a file to a Modal sandbox',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox'),
-      filePath: z.string().describe('Path where the file will be written'),
-      content: z.string().describe('Content to write to the file'),
-    },
-    async (args) => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
 
@@ -544,48 +392,28 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
         await handle.write(encoder.encode(args.content));
         await handle.close();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  file_path: args.filePath,
-                  bytes_written: args.content.length,
-                  message: 'File written successfully',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to write file: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(
+          {
+            file_path: args.filePath,
+            bytes_written: args.content.length,
+            message: 'File written successfully',
+          },
+          null,
+          2
+        );
+      },
+    }),
+    GET_SANDBOX_TUNNELS: tool({
+      name: 'modal_get_sandbox_tunnels',
+      description: 'Get tunnel URLs for exposed ports in a Modal sandbox',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
 
-  server.tool(
-    'modal_get_sandbox_tunnels',
-    'Get tunnel URLs for exposed ports in a Modal sandbox',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox'),
-    },
-    async (args) => {
-      try {
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
         const tunnels = await sandbox.tunnels();
@@ -598,79 +426,41 @@ export function createModalServer(credentials: ModalCredentials): McpServer {
           };
         }
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  sandbox_id: args.sandboxId,
-                  tunnels: tunnelInfo,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get sandbox tunnels: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'modal_wait_for_sandbox',
-    'Wait for a Modal sandbox to complete and get its exit code',
-    {
-      sandboxId: z.string().describe('The ID of the sandbox'),
-    },
-    async (args) => {
-      try {
+        return JSON.stringify(
+          {
+            sandbox_id: args.sandboxId,
+            tunnels: tunnelInfo,
+          },
+          null,
+          2
+        );
+      },
+    }),
+    WAIT_FOR_SANDBOX: tool({
+      name: 'modal_wait_for_sandbox',
+      description: 'Wait for a Modal sandbox to complete and get its exit code',
+      schema: z.object({
+        sandboxId: z.string().describe('The ID of the sandbox'),
+      }),
+      handler: async (args, context) => {
+        const { tokenId, tokenSecret } = await context.getCredentials();
         const { Sandbox, initializeClient } = await import('modal');
-        await initializeClient({
-          tokenId: credentials.tokenId,
-          tokenSecret: credentials.tokenSecret,
-        });
+
+        await initializeClient({ tokenId, tokenSecret });
 
         const sandbox = await Sandbox.fromId(args.sandboxId);
         const exitCode = await sandbox.wait();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  sandbox_id: args.sandboxId,
-                  exit_code: exitCode,
-                  state: 'TERMINATED',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to wait for sandbox: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+        return JSON.stringify(
+          {
+            sandbox_id: args.sandboxId,
+            exit_code: exitCode,
+            state: 'TERMINATED',
+          },
+          null,
+          2
+        );
+      },
+    }),
+  }),
+});

@@ -11,19 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@71cf2267d89c5cb81562390fa70a37fa40b1305e # v6-beta
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: latest
 
       - name: 💫 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun i --frozen-lockfile
 
       - name: Run build
-        run: pnpm run build
+        run: bun run build
 
       - name: 🔍 Run Biome
-        run: pnpm run check
+        run: bun run check
 
       - name: 📝 Type check
-        run: pnpm run typecheck
+        run: bun run typecheck

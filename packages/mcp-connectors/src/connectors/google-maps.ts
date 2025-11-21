@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 const GOOGLE_MAPS_API_BASE = 'https://maps.googleapis.com/maps/api';
 
@@ -325,227 +324,174 @@ class GoogleMapsClient {
   }
 }
 
-export const GoogleMapsCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-});
-
-export type GoogleMapsCredentials = z.infer<typeof GoogleMapsCredentialsSchema>;
-
-export const GoogleMapsConnectorMetadata = {
-  key: 'google-maps',
+export const googleMapsConnector = mcpConnectorConfig({
   name: 'Google Maps',
-  description: 'Maps and location services',
+  key: 'google-maps',
+  logo: 'https://stackone-logos.com/api/google-maps/filled/svg',
   version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/googlemaps/filled/svg',
-  examplePrompt: 'Search for locations with Google Maps',
-  categories: ['maps', 'location'],
-  credentialsSchema: GoogleMapsCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+  credentials: z.object({
+    apiKey: z.string().min(1, 'Google Maps API key is required'),
+  }),
+  setup: z.object({}),
+  examplePrompt: 'Find restaurants near Times Square in New York City.',
+  tools: (tool) => ({
+    SEARCH_NEARBY: tool({
+      name: 'search_nearby',
+      description: 'Search for nearby places using Google Places API',
+      schema: z.object({
+        location: z
+          .string()
+          .describe(
+            'Location as latitude,longitude (e.g., "40.7128,-74.0060") or place name'
+          ),
+        radius: z
+          .number()
+          .min(1)
+          .max(50000)
+          .default(1000)
+          .describe('Search radius in meters (max 50000)'),
+        type: z
+          .string()
+          .optional()
+          .describe('Place type (e.g., restaurant, gas_station, hospital)'),
+        keyword: z
+          .string()
+          .optional()
+          .describe('Keyword to match against place names and types'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const results = await client.searchNearby(
+          args.location,
+          args.radius,
+          args.type,
+          args.keyword
+        );
 
-export function createGoogleMapsServer(credentials: GoogleMapsCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Google Maps',
-    version: '1.0.0',
-  });
+        return JSON.stringify({ results }, null, 2);
+      },
+    }),
+    GET_PLACE_DETAILS: tool({
+      name: 'get_place_details',
+      description: 'Get detailed information about a specific place',
+      schema: z.object({
+        placeId: z.string().describe('Place ID from Google Places API'),
+        fields: z
+          .array(z.string())
+          .optional()
+          .describe('Specific fields to retrieve (optional)'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const result = await client.getPlaceDetails(args.placeId, args.fields);
 
-  server.tool(
-    'search_nearby',
-    'Search for nearby places using Google Places API',
-    {
-      location: z
-        .string()
-        .describe(
-          'Location as latitude,longitude (e.g., "40.7128,-74.0060") or place name'
-        ),
-      radius: z
-        .number()
-        .min(1)
-        .max(50000)
-        .default(1000)
-        .describe('Search radius in meters (max 50000)'),
-      type: z
-        .string()
-        .optional()
-        .describe('Place type (e.g., restaurant, gas_station, hospital)'),
-      keyword: z
-        .string()
-        .optional()
-        .describe('Keyword to match against place names and types'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const results = await client.searchNearby(
-        args.location,
-        args.radius,
-        args.type,
-        args.keyword
-      );
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ results }, null, 2),
-          },
-        ],
-      };
-    }
-  );
+        return JSON.stringify(result, null, 2);
+      },
+    }),
+    GEOCODE: tool({
+      name: 'maps_geocode',
+      description: 'Convert addresses to coordinates using Google Geocoding API',
+      schema: z.object({
+        address: z.string().describe('Address to geocode'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const results = await client.geocode(args.address);
 
-  server.tool(
-    'get_place_details',
-    'Get detailed information about a specific place',
-    {
-      placeId: z.string().describe('Place ID from Google Places API'),
-      fields: z
-        .array(z.string())
-        .optional()
-        .describe('Specific fields to retrieve (optional)'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const result = await client.getPlaceDetails(args.placeId, args.fields);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
+        return JSON.stringify({ results }, null, 2);
+      },
+    }),
+    REVERSE_GEOCODE: tool({
+      name: 'maps_reverse_geocode',
+      description: 'Convert coordinates to addresses using Google Reverse Geocoding API',
+      schema: z.object({
+        lat: z.number().describe('Latitude'),
+        lng: z.number().describe('Longitude'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const results = await client.reverseGeocode(args.lat, args.lng);
 
-  server.tool(
-    'maps_geocode',
-    'Convert addresses to coordinates using Google Geocoding API',
-    {
-      address: z.string().describe('Address to geocode'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const results = await client.geocode(args.address);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ results }, null, 2),
-          },
-        ],
-      };
-    }
-  );
+        return JSON.stringify({ results }, null, 2);
+      },
+    }),
+    DIRECTIONS: tool({
+      name: 'maps_directions',
+      description: 'Get directions between two locations using Google Directions API',
+      schema: z.object({
+        origin: z.string().describe('Starting location (address or lat,lng)'),
+        destination: z.string().describe('Destination location (address or lat,lng)'),
+        mode: z
+          .enum(['driving', 'walking', 'bicycling', 'transit'])
+          .default('driving')
+          .describe('Travel mode'),
+        waypoints: z.array(z.string()).optional().describe('Waypoints to route through'),
+        avoidTolls: z.boolean().optional().describe('Avoid tolls'),
+        avoidHighways: z.boolean().optional().describe('Avoid highways'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const result = await client.getDirections(
+          args.origin,
+          args.destination,
+          args.mode,
+          args.waypoints,
+          args.avoidTolls,
+          args.avoidHighways
+        );
 
-  server.tool(
-    'maps_reverse_geocode',
-    'Convert coordinates to addresses using Google Reverse Geocoding API',
-    {
-      lat: z.number().describe('Latitude'),
-      lng: z.number().describe('Longitude'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const results = await client.reverseGeocode(args.lat, args.lng);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({ results }, null, 2),
-          },
-        ],
-      };
-    }
-  );
+        return JSON.stringify(result, null, 2);
+      },
+    }),
+    DISTANCE_MATRIX: tool({
+      name: 'maps_distance_matrix',
+      description:
+        'Calculate distances and travel times between multiple origins and destinations',
+      schema: z.object({
+        origins: z.array(z.string()).describe('Array of origin locations'),
+        destinations: z.array(z.string()).describe('Array of destination locations'),
+        mode: z
+          .enum(['driving', 'walking', 'bicycling', 'transit'])
+          .default('driving')
+          .describe('Travel mode'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const result = await client.getDistanceMatrix(
+          args.origins,
+          args.destinations,
+          args.mode
+        );
 
-  server.tool(
-    'maps_directions',
-    'Get directions between two locations using Google Directions API',
-    {
-      origin: z.string().describe('Starting location (address or lat,lng)'),
-      destination: z.string().describe('Destination location (address or lat,lng)'),
-      mode: z
-        .enum(['driving', 'walking', 'bicycling', 'transit'])
-        .default('driving')
-        .describe('Travel mode'),
-      waypoints: z.array(z.string()).optional().describe('Waypoints to route through'),
-      avoidTolls: z.boolean().optional().describe('Avoid tolls'),
-      avoidHighways: z.boolean().optional().describe('Avoid highways'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const result = await client.getDirections(
-        args.origin,
-        args.destination,
-        args.mode,
-        args.waypoints,
-        args.avoidTolls,
-        args.avoidHighways
-      );
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
+        return JSON.stringify(result, null, 2);
+      },
+    }),
+    ELEVATION: tool({
+      name: 'maps_elevation',
+      description: 'Get elevation data for locations using Google Elevation API',
+      schema: z.object({
+        locations: z
+          .array(
+            z.object({
+              lat: z.number(),
+              lng: z.number(),
+            })
+          )
+          .describe('Array of locations to get elevation for'),
+      }),
+      handler: async (args, context) => {
+        const { apiKey } = await context.getCredentials();
+        const client = new GoogleMapsClient(apiKey);
+        const result = await client.getElevation(args.locations);
 
-  server.tool(
-    'maps_distance_matrix',
-    'Calculate distances and travel times between multiple origins and destinations',
-    {
-      origins: z.array(z.string()).describe('Array of origin locations'),
-      destinations: z.array(z.string()).describe('Array of destination locations'),
-      mode: z
-        .enum(['driving', 'walking', 'bicycling', 'transit'])
-        .default('driving')
-        .describe('Travel mode'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const result = await client.getDistanceMatrix(
-        args.origins,
-        args.destinations,
-        args.mode
-      );
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  server.tool(
-    'maps_elevation',
-    'Get elevation data for locations using Google Elevation API',
-    {
-      locations: z
-        .array(
-          z.object({
-            lat: z.number(),
-            lng: z.number(),
-          })
-        )
-        .describe('Array of locations to get elevation for'),
-    },
-    async (args) => {
-      const client = new GoogleMapsClient(credentials.apiKey);
-      const result = await client.getElevation(args.locations);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  return server;
-}
+        return JSON.stringify(result, null, 2);
+      },
+    }),
+  }),
+});

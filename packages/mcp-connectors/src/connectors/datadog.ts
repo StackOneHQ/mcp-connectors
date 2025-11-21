@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface DatadogIncident {
   id: string;
@@ -250,306 +249,206 @@ class DatadogClient {
   }
 }
 
-export const DatadogCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-  appKey: z.string().describe('Application key'),
-  site: z.string().describe('Site URL').optional(),
-});
-
-export type DatadogCredentials = z.infer<typeof DatadogCredentialsSchema>;
-
-export const DatadogConnectorMetadata = {
-  key: 'datadog',
+export const DatadogConnectorConfig = mcpConnectorConfig({
   name: 'Datadog',
-  description: 'Monitoring and analytics platform',
-  version: '1.0.0',
+  key: 'datadog',
   logo: 'https://stackone-logos.com/api/datadog/filled/svg',
-  examplePrompt: 'Check my Datadog monitors',
-  categories: ['monitoring', 'observability'],
-  credentialsSchema: DatadogCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createDatadogServer(credentials: DatadogCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Datadog',
-    version: '1.0.0',
-  });
-
-  const site = credentials.site || 'datadoghq.com';
-
-  server.tool(
-    'datadog_list_incidents',
-    'List incidents with optional filtering',
-    {
-      limit: z.number().default(30).describe('Maximum number of incidents to return'),
-      state: z
-        .string()
-        .optional()
-        .describe('Filter by incident state (active, stable, resolved)'),
-      severity: z
-        .string()
-        .optional()
-        .describe('Filter by severity (SEV-1, SEV-2, SEV-3, SEV-4, SEV-5)'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const incidents = await client.listIncidents(
-          args.limit,
-          args.state,
-          args.severity
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(incidents, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_get_incident',
-    'Get detailed information about a specific incident',
-    {
-      incidentId: z.string().describe('The incident ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const incident = await client.getIncident(args.incidentId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(incident, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_get_monitors',
-    'Get monitor statuses with optional filtering',
-    {
-      limit: z.number().default(30).describe('Maximum number of monitors to return'),
-      state: z
-        .string()
-        .optional()
-        .describe('Filter by monitor state (Alert, Warn, No Data, OK)'),
-      tags: z.array(z.string()).optional().describe('Filter by tags'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const monitors = await client.getMonitors(args.limit, args.state, args.tags);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(monitors, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get monitors: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_get_monitor',
-    'Get details of a specific monitor',
-    {
-      monitorId: z.number().describe('The monitor ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const monitor = await client.getMonitor(args.monitorId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(monitor, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get monitor: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_search_logs',
-    'Search and retrieve logs',
-    {
-      query: z.string().describe('Log search query'),
-      from: z
-        .string()
-        .optional()
-        .describe('Start time (ISO 8601 format, defaults to 24h ago)'),
-      to: z.string().optional().describe('End time (ISO 8601 format, defaults to now)'),
-      limit: z.number().default(50).describe('Maximum number of logs to return'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const logs = await client.searchLogs(args.query, args.from, args.to, args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(logs, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to search logs: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_get_metrics',
-    'Query metrics data',
-    {
-      query: z.string().describe('Metrics query (e.g., "avg:system.cpu.user{*}")'),
-      from: z.number().describe('Start time (Unix timestamp)'),
-      to: z.number().describe('End time (Unix timestamp)'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const metrics = await client.getMetrics(args.query, args.from, args.to);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(metrics, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get metrics: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_get_downtimes',
-    'List scheduled downtimes',
-    {
-      limit: z.number().default(30).describe('Maximum number of downtimes to return'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const downtimes = await client.getDowntimes(args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(downtimes, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get downtimes: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'datadog_get_hosts',
-    'List hosts in the infrastructure',
-    {
-      limit: z.number().default(30).describe('Maximum number of hosts to return'),
-      filter: z.string().optional().describe('Filter hosts by tags or attributes'),
-    },
-    async (args) => {
-      try {
-        const client = new DatadogClient(credentials.apiKey, credentials.appKey, site);
-        const hosts = await client.getHosts(args.limit, args.filter);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(hosts, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get hosts: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  version: '1.0.0',
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'Datadog API key from Organization Settings > API Keys :: 1234567890abcdef1234567890abcdef :: https://docs.datadoghq.com/account_management/api-app-keys/'
+      ),
+    appKey: z
+      .string()
+      .describe(
+        'Datadog application key from Organization Settings > Application Keys :: 1234567890abcdef1234567890abcdef12345678'
+      ),
+  }),
+  setup: z.object({
+    site: z
+      .string()
+      .default('datadoghq.com')
+      .describe('Datadog site (e.g., datadoghq.com, datadoghq.eu) :: datadoghq.com'),
+  }),
+  examplePrompt:
+    'Check my active incidents with SEV-1 severity, list all monitors that are alerting, and search for error logs from the last hour.',
+  tools: (tool) => ({
+    LIST_INCIDENTS: tool({
+      name: 'datadog_list_incidents',
+      description: 'List incidents with optional filtering',
+      schema: z.object({
+        limit: z.number().default(30).describe('Maximum number of incidents to return'),
+        state: z
+          .string()
+          .optional()
+          .describe('Filter by incident state (active, stable, resolved)'),
+        severity: z
+          .string()
+          .optional()
+          .describe('Filter by severity (SEV-1, SEV-2, SEV-3, SEV-4, SEV-5)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const incidents = await client.listIncidents(
+            args.limit,
+            args.state,
+            args.severity
+          );
+          return JSON.stringify(incidents, null, 2);
+        } catch (error) {
+          return `Failed to list incidents: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_INCIDENT: tool({
+      name: 'datadog_get_incident',
+      description: 'Get detailed information about a specific incident',
+      schema: z.object({
+        incidentId: z.string().describe('The incident ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const incident = await client.getIncident(args.incidentId);
+          return JSON.stringify(incident, null, 2);
+        } catch (error) {
+          return `Failed to get incident: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_MONITORS: tool({
+      name: 'datadog_get_monitors',
+      description: 'Get monitor statuses with optional filtering',
+      schema: z.object({
+        limit: z.number().default(30).describe('Maximum number of monitors to return'),
+        state: z
+          .string()
+          .optional()
+          .describe('Filter by monitor state (Alert, Warn, No Data, OK)'),
+        tags: z.array(z.string()).optional().describe('Filter by tags'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const monitors = await client.getMonitors(args.limit, args.state, args.tags);
+          return JSON.stringify(monitors, null, 2);
+        } catch (error) {
+          return `Failed to get monitors: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_MONITOR: tool({
+      name: 'datadog_get_monitor',
+      description: 'Get details of a specific monitor',
+      schema: z.object({
+        monitorId: z.number().describe('The monitor ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const monitor = await client.getMonitor(args.monitorId);
+          return JSON.stringify(monitor, null, 2);
+        } catch (error) {
+          return `Failed to get monitor: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    SEARCH_LOGS: tool({
+      name: 'datadog_search_logs',
+      description: 'Search and retrieve logs',
+      schema: z.object({
+        query: z.string().describe('Log search query'),
+        from: z
+          .string()
+          .optional()
+          .describe('Start time (ISO 8601 format, defaults to 24h ago)'),
+        to: z.string().optional().describe('End time (ISO 8601 format, defaults to now)'),
+        limit: z.number().default(50).describe('Maximum number of logs to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const logs = await client.searchLogs(
+            args.query,
+            args.from,
+            args.to,
+            args.limit
+          );
+          return JSON.stringify(logs, null, 2);
+        } catch (error) {
+          return `Failed to search logs: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_METRICS: tool({
+      name: 'datadog_get_metrics',
+      description: 'Query metrics data',
+      schema: z.object({
+        query: z.string().describe('Metrics query (e.g., "avg:system.cpu.user{*}")'),
+        from: z.number().describe('Start time (Unix timestamp)'),
+        to: z.number().describe('End time (Unix timestamp)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const metrics = await client.getMetrics(args.query, args.from, args.to);
+          return JSON.stringify(metrics, null, 2);
+        } catch (error) {
+          return `Failed to get metrics: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_DOWNTIMES: tool({
+      name: 'datadog_get_downtimes',
+      description: 'List scheduled downtimes',
+      schema: z.object({
+        limit: z.number().default(30).describe('Maximum number of downtimes to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const downtimes = await client.getDowntimes(args.limit);
+          return JSON.stringify(downtimes, null, 2);
+        } catch (error) {
+          return `Failed to get downtimes: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_HOSTS: tool({
+      name: 'datadog_get_hosts',
+      description: 'List hosts in the infrastructure',
+      schema: z.object({
+        limit: z.number().default(30).describe('Maximum number of hosts to return'),
+        filter: z.string().optional().describe('Filter hosts by tags or attributes'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey, appKey } = await context.getCredentials();
+          const { site } = await context.getSetup();
+          const client = new DatadogClient(apiKey, appKey, site);
+          const hosts = await client.getHosts(args.limit, args.filter);
+          return JSON.stringify(hosts, null, 2);
+        } catch (error) {
+          return `Failed to get hosts: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

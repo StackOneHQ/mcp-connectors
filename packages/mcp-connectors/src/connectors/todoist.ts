@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface TodoistTask {
   id: string;
@@ -309,612 +308,378 @@ class TodoistClient {
   }
 }
 
-export const TodoistCredentialsSchema = z.object({
-  apiToken: z.string().describe('API token for authentication'),
-});
-
-export type TodoistCredentials = z.infer<typeof TodoistCredentialsSchema>;
-
-export const TodoistConnectorMetadata = {
-  key: 'todoist',
+export const TodoistConnectorConfig = mcpConnectorConfig({
   name: 'Todoist',
-  description: 'Task management',
+  key: 'todoist',
   version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/todoist/filled/svg',
-  examplePrompt: 'List my Todoist tasks',
-  categories: ['productivity', 'task-management'],
-  credentialsSchema: TodoistCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createTodoistServer(credentials: TodoistCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Todoist',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'create_task',
-    'Creates a new task in Todoist. Supports natural language due dates, labels, priorities, and project assignment.',
-    {
-      content: z.string().describe('Task content/title'),
-      description: z.string().optional().describe('Task description'),
-      projectId: z.string().optional().describe('Project ID to add task to'),
-      sectionId: z.string().optional().describe('Section ID within project'),
-      parentId: z.string().optional().describe('Parent task ID for subtasks'),
-      priority: z
-        .number()
-        .min(1)
-        .max(4)
-        .optional()
-        .describe('Priority: 1 (normal) to 4 (urgent)'),
-      labels: z.array(z.string()).optional().describe('Array of label names'),
-      dueString: z
-        .string()
-        .optional()
-        .describe(
-          'Due date in natural language (e.g., "tomorrow", "next Monday at 2pm")'
-        ),
-      dueDate: z.string().optional().describe('Due date in YYYY-MM-DD format'),
-      dueDatetime: z.string().optional().describe('Due datetime in RFC3339 format'),
-      assigneeId: z.string().optional().describe('User ID to assign task to'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const task = await client.createTask(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Created task "${task.content}" (ID: ${task.id})\nURL: ${task.url}\nPriority: ${task.priority}\nDue: ${task.due?.string || 'None'}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'update_task',
-    'Updates an existing task with new content, priority, due date, or other properties.',
-    {
-      id: z.string().describe('Task ID to update'),
-      content: z.string().optional().describe('New task content'),
-      description: z.string().optional().describe('New task description'),
-      priority: z
-        .number()
-        .min(1)
-        .max(4)
-        .optional()
-        .describe('New priority: 1 (normal) to 4 (urgent)'),
-      labels: z.array(z.string()).optional().describe('New array of label names'),
-      dueString: z.string().optional().describe('New due date in natural language'),
-      dueDate: z.string().optional().describe('New due date in YYYY-MM-DD format'),
-      dueDatetime: z.string().optional().describe('New due datetime in RFC3339 format'),
-      assigneeId: z.string().optional().describe('New assignee user ID'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const task = await client.updateTask(args.id, args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Updated task "${task.content}" (ID: ${task.id})\nURL: ${task.url}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'get_task',
-    'Retrieves details of a specific task by its ID.',
-    {
-      id: z.string().describe('Task ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const task = await client.getTask(args.id);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Task: ${task.content}\nDescription: ${task.description || 'None'}\nProject ID: ${task.projectId}\nPriority: ${task.priority}\nLabels: ${task.labels.join(', ') || 'None'}\nDue: ${task.due?.string || 'None'}\nCompleted: ${task.isCompleted}\nURL: ${task.url}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'list_tasks',
-    'Lists tasks with optional filtering by project, section, label, or custom filter expressions.',
-    {
-      projectId: z.string().optional().describe('Filter by project ID'),
-      sectionId: z.string().optional().describe('Filter by section ID'),
-      label: z.string().optional().describe('Filter by label name'),
-      filter: z
-        .string()
-        .optional()
-        .describe('Custom filter expression (e.g., "today", "overdue", "@work")'),
-      lang: z.string().optional().describe('Language for date parsing (default: en)'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const tasks = await client.getTasks(
-          args.projectId,
-          args.sectionId,
-          args.label,
-          args.filter,
-          args.lang
-        );
-
-        if (tasks.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'No tasks found matching the criteria.',
-              },
-            ],
-          };
+  logo: 'https://www.todoist.com/static/favicon.ico',
+  credentials: z.object({
+    apiToken: z
+      .string()
+      .describe(
+        'Todoist API token from Settings > Integrations > Developer :: 0123456789abcdef0123456789abcdef01234567'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Create a task to "Buy groceries" with high priority for tomorrow, list all projects, and add a comment to task ID 123.',
+  tools: (tool) => ({
+    CREATE_TASK: tool({
+      name: 'create_task',
+      description:
+        'Creates a new task in Todoist. Supports natural language due dates, labels, priorities, and project assignment.',
+      schema: z.object({
+        content: z.string().describe('Task content/title'),
+        description: z.string().optional().describe('Task description'),
+        projectId: z.string().optional().describe('Project ID to add task to'),
+        sectionId: z.string().optional().describe('Section ID within project'),
+        parentId: z.string().optional().describe('Parent task ID for subtasks'),
+        priority: z
+          .number()
+          .min(1)
+          .max(4)
+          .optional()
+          .describe('Priority: 1 (normal) to 4 (urgent)'),
+        labels: z.array(z.string()).optional().describe('Array of label names'),
+        dueString: z
+          .string()
+          .optional()
+          .describe(
+            'Due date in natural language (e.g., "tomorrow", "next Monday at 2pm")'
+          ),
+        dueDate: z.string().optional().describe('Due date in YYYY-MM-DD format'),
+        dueDatetime: z.string().optional().describe('Due datetime in RFC3339 format'),
+        assigneeId: z.string().optional().describe('User ID to assign task to'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const task = await client.createTask(args);
+          return `Created task "${task.content}" (ID: ${task.id})\nURL: ${task.url}\nPriority: ${task.priority}\nDue: ${task.due?.string || 'None'}`;
+        } catch (error) {
+          return `Failed to create task: ${error instanceof Error ? error.message : String(error)}`;
         }
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Found ${tasks.length} tasks:\n${tasks
-                .map(
-                  (task) =>
-                    `- ${task.content} (ID: ${task.id})\n  Priority: ${task.priority}\n  Due: ${task.due?.string || 'None'}\n  Labels: ${task.labels.join(', ') || 'None'}\n  ${task.url}`
-                )
-                .join('\n\n')}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'complete_task',
-    'Marks a task as completed.',
-    {
-      id: z.string().describe('Task ID to complete'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        await client.completeTask(args.id);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Task ${args.id} marked as completed.`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to complete task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'delete_task',
-    'Permanently deletes a task.',
-    {
-      id: z.string().describe('Task ID to delete'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        await client.deleteTask(args.id);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Task ${args.id} deleted successfully.`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to delete task: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'create_project',
-    'Creates a new project in Todoist.',
-    {
-      name: z.string().describe('Project name'),
-      parentId: z.string().optional().describe('Parent project ID'),
-      color: z.string().optional().describe('Project color'),
-      isFavorite: z.boolean().optional().describe('Mark as favorite'),
-      viewStyle: z.enum(['list', 'board']).optional().describe('Project view style'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const project = await client.createProject(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Created project "${project.name}" (ID: ${project.id})\nURL: ${project.url}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create project: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'list_projects',
-    "Lists all projects in the user's account.",
-    {},
-    async () => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const projects = await client.getProjects();
-
-        if (projects.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'No projects found.',
-              },
-            ],
-          };
+      },
+    }),
+    UPDATE_TASK: tool({
+      name: 'update_task',
+      description:
+        'Updates an existing task with new content, priority, due date, or other properties.',
+      schema: z.object({
+        id: z.string().describe('Task ID to update'),
+        content: z.string().optional().describe('New task content'),
+        description: z.string().optional().describe('New task description'),
+        priority: z
+          .number()
+          .min(1)
+          .max(4)
+          .optional()
+          .describe('New priority: 1 (normal) to 4 (urgent)'),
+        labels: z.array(z.string()).optional().describe('New array of label names'),
+        dueString: z.string().optional().describe('New due date in natural language'),
+        dueDate: z.string().optional().describe('New due date in YYYY-MM-DD format'),
+        dueDatetime: z.string().optional().describe('New due datetime in RFC3339 format'),
+        assigneeId: z.string().optional().describe('New assignee user ID'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const task = await client.updateTask(args.id, args);
+          return `Updated task "${task.content}" (ID: ${task.id})\nURL: ${task.url}`;
+        } catch (error) {
+          return `Failed to update task: ${error instanceof Error ? error.message : String(error)}`;
         }
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Found ${projects.length} projects:\n${projects
-                .map(
-                  (project) =>
-                    `- ${project.name} (ID: ${project.id})\n  Color: ${project.color}\n  Favorite: ${project.isFavorite}\n  ${project.url}`
-                )
-                .join('\n\n')}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'update_project',
-    'Updates an existing project.',
-    {
-      id: z.string().describe('Project ID to update'),
-      name: z.string().optional().describe('New project name'),
-      color: z.string().optional().describe('New project color'),
-      isFavorite: z.boolean().optional().describe('New favorite status'),
-      viewStyle: z.enum(['list', 'board']).optional().describe('New project view style'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const project = await client.updateProject(args.id, args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Updated project "${project.name}" (ID: ${project.id})\nURL: ${project.url}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update project: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'delete_project',
-    'Permanently deletes a project and all its tasks.',
-    {
-      id: z.string().describe('Project ID to delete'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        await client.deleteProject(args.id);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Project ${args.id} deleted successfully.`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to delete project: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool('list_labels', "Lists all labels in the user's account.", {}, async () => {
-    try {
-      const client = new TodoistClient(credentials.apiToken);
-      const labels = await client.getLabels();
-
-      if (labels.length === 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: 'No labels found.',
-            },
-          ],
-        };
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Found ${labels.length} labels:\n${labels
-              .map(
-                (label) =>
-                  `- ${label.name} (ID: ${label.id})\n  Color: ${label.color}\n  Favorite: ${label.isFavorite}`
-              )
-              .join('\n\n')}`,
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Failed to list labels: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-      };
-    }
-  });
-
-  server.tool(
-    'create_label',
-    'Creates a new label for organizing tasks.',
-    {
-      name: z.string().describe('Label name'),
-      order: z.number().optional().describe('Label order'),
-      color: z.string().optional().describe('Label color'),
-      isFavorite: z.boolean().optional().describe('Mark as favorite'),
-    },
-    async (args) => {
-      try {
-        const client = new TodoistClient(credentials.apiToken);
-        const label = await client.createLabel(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Created label "${label.name}" (ID: ${label.id})`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create label: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'add_comment',
-    'Adds a comment to a task or project.',
-    {
-      taskId: z.string().optional().describe('Task ID to comment on'),
-      projectId: z.string().optional().describe('Project ID to comment on'),
-      content: z.string().describe('Comment content'),
-      attachment: z
-        .object({
-          fileName: z.string(),
-          fileType: z.string(),
-          fileUrl: z.string(),
-          resourceType: z.string(),
-        })
-        .optional()
-        .describe('Optional file attachment'),
-    },
-    async (args) => {
-      try {
-        if (!args.taskId && !args.projectId) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Error: Either taskId or projectId must be provided.',
-              },
-            ],
-          };
+      },
+    }),
+    GET_TASK: tool({
+      name: 'get_task',
+      description: 'Retrieves details of a specific task by its ID.',
+      schema: z.object({
+        id: z.string().describe('Task ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const task = await client.getTask(args.id);
+          return `Task: ${task.content}\nDescription: ${task.description || 'None'}\nProject ID: ${task.projectId}\nPriority: ${task.priority}\nLabels: ${task.labels.join(', ') || 'None'}\nDue: ${task.due?.string || 'None'}\nCompleted: ${task.isCompleted}\nURL: ${task.url}`;
+        } catch (error) {
+          return `Failed to get task: ${error instanceof Error ? error.message : String(error)}`;
         }
+      },
+    }),
+    LIST_TASKS: tool({
+      name: 'list_tasks',
+      description:
+        'Lists tasks with optional filtering by project, section, label, or custom filter expressions.',
+      schema: z.object({
+        projectId: z.string().optional().describe('Filter by project ID'),
+        sectionId: z.string().optional().describe('Filter by section ID'),
+        label: z.string().optional().describe('Filter by label name'),
+        filter: z
+          .string()
+          .optional()
+          .describe('Custom filter expression (e.g., "today", "overdue", "@work")'),
+        lang: z.string().optional().describe('Language for date parsing (default: en)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const tasks = await client.getTasks(
+            args.projectId,
+            args.sectionId,
+            args.label,
+            args.filter,
+            args.lang
+          );
 
-        const client = new TodoistClient(credentials.apiToken);
-        const comment = await client.addComment(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Added comment (ID: ${comment.id})\nContent: ${comment.content}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+          if (tasks.length === 0) {
+            return 'No tasks found matching the criteria.';
+          }
 
-  server.tool(
-    'list_comments',
-    'Lists comments for a task or project.',
-    {
-      taskId: z.string().optional().describe('Task ID to get comments for'),
-      projectId: z.string().optional().describe('Project ID to get comments for'),
-    },
-    async (args) => {
-      try {
-        if (!args.taskId && !args.projectId) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Error: Either taskId or projectId must be provided.',
-              },
-            ],
-          };
+          return `Found ${tasks.length} tasks:\n${tasks
+            .map(
+              (task) =>
+                `- ${task.content} (ID: ${task.id})\n  Priority: ${task.priority}\n  Due: ${task.due?.string || 'None'}\n  Labels: ${task.labels.join(', ') || 'None'}\n  ${task.url}`
+            )
+            .join('\n\n')}`;
+        } catch (error) {
+          return `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`;
         }
-
-        const client = new TodoistClient(credentials.apiToken);
-        const comments = await client.getComments(args.taskId, args.projectId);
-
-        if (comments.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'No comments found.',
-              },
-            ],
-          };
+      },
+    }),
+    COMPLETE_TASK: tool({
+      name: 'complete_task',
+      description: 'Marks a task as completed.',
+      schema: z.object({
+        id: z.string().describe('Task ID to complete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          await client.completeTask(args.id);
+          return `Task ${args.id} marked as completed.`;
+        } catch (error) {
+          return `Failed to complete task: ${error instanceof Error ? error.message : String(error)}`;
         }
+      },
+    }),
+    DELETE_TASK: tool({
+      name: 'delete_task',
+      description: 'Permanently deletes a task.',
+      schema: z.object({
+        id: z.string().describe('Task ID to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          await client.deleteTask(args.id);
+          return `Task ${args.id} deleted successfully.`;
+        } catch (error) {
+          return `Failed to delete task: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_PROJECT: tool({
+      name: 'create_project',
+      description: 'Creates a new project in Todoist.',
+      schema: z.object({
+        name: z.string().describe('Project name'),
+        parentId: z.string().optional().describe('Parent project ID'),
+        color: z.string().optional().describe('Project color'),
+        isFavorite: z.boolean().optional().describe('Mark as favorite'),
+        viewStyle: z.enum(['list', 'board']).optional().describe('Project view style'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const project = await client.createProject(args);
+          return `Created project "${project.name}" (ID: ${project.id})\nURL: ${project.url}`;
+        } catch (error) {
+          return `Failed to create project: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_PROJECTS: tool({
+      name: 'list_projects',
+      description: "Lists all projects in the user's account.",
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const projects = await client.getProjects();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Found ${comments.length} comments:\n${comments
-                .map(
-                  (comment) =>
-                    `- Comment ID: ${comment.id}\n  Content: ${comment.content}\n  Posted: ${comment.postedAt}${comment.attachment ? `\n  Attachment: ${comment.attachment.fileName}` : ''}`
-                )
-                .join('\n\n')}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list comments: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+          if (projects.length === 0) {
+            return 'No projects found.';
+          }
 
-  return server;
-}
+          return `Found ${projects.length} projects:\n${projects
+            .map(
+              (project) =>
+                `- ${project.name} (ID: ${project.id})\n  Color: ${project.color}\n  Favorite: ${project.isFavorite}\n  ${project.url}`
+            )
+            .join('\n\n')}`;
+        } catch (error) {
+          return `Failed to list projects: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_PROJECT: tool({
+      name: 'update_project',
+      description: 'Updates an existing project.',
+      schema: z.object({
+        id: z.string().describe('Project ID to update'),
+        name: z.string().optional().describe('New project name'),
+        color: z.string().optional().describe('New project color'),
+        isFavorite: z.boolean().optional().describe('New favorite status'),
+        viewStyle: z
+          .enum(['list', 'board'])
+          .optional()
+          .describe('New project view style'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const project = await client.updateProject(args.id, args);
+          return `Updated project "${project.name}" (ID: ${project.id})\nURL: ${project.url}`;
+        } catch (error) {
+          return `Failed to update project: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DELETE_PROJECT: tool({
+      name: 'delete_project',
+      description: 'Permanently deletes a project and all its tasks.',
+      schema: z.object({
+        id: z.string().describe('Project ID to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          await client.deleteProject(args.id);
+          return `Project ${args.id} deleted successfully.`;
+        } catch (error) {
+          return `Failed to delete project: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_LABELS: tool({
+      name: 'list_labels',
+      description: "Lists all labels in the user's account.",
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const labels = await client.getLabels();
+
+          if (labels.length === 0) {
+            return 'No labels found.';
+          }
+
+          return `Found ${labels.length} labels:\n${labels
+            .map(
+              (label) =>
+                `- ${label.name} (ID: ${label.id})\n  Color: ${label.color}\n  Favorite: ${label.isFavorite}`
+            )
+            .join('\n\n')}`;
+        } catch (error) {
+          return `Failed to list labels: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_LABEL: tool({
+      name: 'create_label',
+      description: 'Creates a new label for organizing tasks.',
+      schema: z.object({
+        name: z.string().describe('Label name'),
+        order: z.number().optional().describe('Label order'),
+        color: z.string().optional().describe('Label color'),
+        isFavorite: z.boolean().optional().describe('Mark as favorite'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const label = await client.createLabel(args);
+          return `Created label "${label.name}" (ID: ${label.id})`;
+        } catch (error) {
+          return `Failed to create label: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    ADD_COMMENT: tool({
+      name: 'add_comment',
+      description: 'Adds a comment to a task or project.',
+      schema: z.object({
+        taskId: z.string().optional().describe('Task ID to comment on'),
+        projectId: z.string().optional().describe('Project ID to comment on'),
+        content: z.string().describe('Comment content'),
+        attachment: z
+          .object({
+            fileName: z.string(),
+            fileType: z.string(),
+            fileUrl: z.string(),
+            resourceType: z.string(),
+          })
+          .optional()
+          .describe('Optional file attachment'),
+      }),
+      handler: async (args, context) => {
+        try {
+          if (!args.taskId && !args.projectId) {
+            return 'Error: Either taskId or projectId must be provided.';
+          }
+
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const comment = await client.addComment(args);
+          return `Added comment (ID: ${comment.id})\nContent: ${comment.content}`;
+        } catch (error) {
+          return `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_COMMENTS: tool({
+      name: 'list_comments',
+      description: 'Lists comments for a task or project.',
+      schema: z.object({
+        taskId: z.string().optional().describe('Task ID to get comments for'),
+        projectId: z.string().optional().describe('Project ID to get comments for'),
+      }),
+      handler: async (args, context) => {
+        try {
+          if (!args.taskId && !args.projectId) {
+            return 'Error: Either taskId or projectId must be provided.';
+          }
+
+          const { apiToken } = await context.getCredentials();
+          const client = new TodoistClient(apiToken);
+          const comments = await client.getComments(args.taskId, args.projectId);
+
+          if (comments.length === 0) {
+            return 'No comments found.';
+          }
+
+          return `Found ${comments.length} comments:\n${comments
+            .map(
+              (comment) =>
+                `- Comment ID: ${comment.id}\n  Content: ${comment.content}\n  Posted: ${comment.postedAt}${comment.attachment ? `\n  Attachment: ${comment.attachment.fileName}` : ''}`
+            )
+            .join('\n\n')}`;
+        } catch (error) {
+          return `Failed to list comments: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

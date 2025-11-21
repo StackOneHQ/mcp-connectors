@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 // String similarity utility functions
 function levenshteinDistance(str1: string, str2: string): number {
@@ -285,176 +284,127 @@ class PylonClient {
   }
 }
 
-export const PylonCredentialsSchema = z.object({
-  apiToken: z.string().describe('API token for authentication'),
-});
-
-export type PylonCredentials = z.infer<typeof PylonCredentialsSchema>;
-
-export const PylonConnectorMetadata = {
-  key: 'pylon',
+export const PylonConnectorConfig = mcpConnectorConfig({
   name: 'Pylon',
-  description: 'Customer support platform',
+  key: 'pylon',
   version: '1.0.0',
+  credentials: z.object({
+    apiToken: z
+      .string()
+      .describe(
+        'Pylon API Token :: pyl_1234567890abcdefghijklmnopqrstuvwxyz :: https://app.usepylon.com/settings/api-tokens'
+      ),
+  }),
   logo: 'https://stackone-logos.com/api/pylon/filled/svg',
-  examplePrompt: 'List Pylon tickets',
-  categories: ['support', 'customer-service'],
-  credentialsSchema: PylonCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createPylonServer(credentials: PylonCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Pylon',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'pylon_get_issue',
-    'Get a Pylon issue by its ID, optionally including all messages within the issue',
-    {
-      issueId: z.string().describe('The ID of the Pylon issue to retrieve'),
-      includeMessages: z
-        .boolean()
-        .optional()
-        .default(false)
-        .describe('Whether to include all messages within the issue (default: false)'),
-    },
-    async (args) => {
-      try {
-        const client = new PylonClient(credentials.apiToken);
-        const issue = await client.getIssue(args.issueId, args.includeMessages);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(issue, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error getting Pylon issue: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'pylon_search_accounts',
-    'Search Pylon accounts by name using fuzzy matching. Returns top matching accounts.',
-    {
-      query: z
-        .string()
-        .optional()
-        .describe('Search query to match against account names (fuzzy search)'),
-      limit: z
-        .number()
-        .default(3)
-        .optional()
-        .describe('The number of accounts to return (default: 3)'),
-      cursor: z.string().optional().describe('The cursor to use for pagination'),
-    },
-    async (args) => {
-      try {
-        const client = new PylonClient(credentials.apiToken);
-        const accounts = await client.searchAccounts(args.query, args.limit, args.cursor);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(accounts, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error searching Pylon accounts: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'pylon_search_issues',
-    'Search Pylon issues by account ID',
-    {
-      accountId: z.string().describe('Filter issues by account ID'),
-      limit: z
-        .number()
-        .default(20)
-        .optional()
-        .describe('Maximum number of issues to return (default: 20)'),
-    },
-    async (args) => {
-      try {
-        const client = new PylonClient(credentials.apiToken);
-        const issues = await client.searchIssues(args.accountId, args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(issues, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error searching Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'pylon_list_issues',
-    'List all Pylon issues with optional pagination',
-    {
-      limit: z
-        .number()
-        .default(20)
-        .optional()
-        .describe('Maximum number of issues to return (default: 20)'),
-      cursor: z.string().optional().describe('Cursor for pagination'),
-    },
-    async (args) => {
-      try {
-        const client = new PylonClient(credentials.apiToken);
-        const issues = await client.listIssues(args.limit, args.cursor);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(issues, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error listing Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  setup: z.object({}),
+  examplePrompt:
+    'Search for accounts matching "Acme Corp", list all issues for that account, and get detailed information including messages for issue #123.',
+  tools: (tool) => ({
+    GET_ISSUE: tool({
+      name: 'pylon_get_issue',
+      description:
+        'Get a Pylon issue by its ID, optionally including all messages within the issue',
+      schema: z.object({
+        issueId: z.string().describe('The ID of the Pylon issue to retrieve'),
+        includeMessages: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe('Whether to include all messages within the issue (default: false)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new PylonClient(apiToken);
+          const issue = await client.getIssue(args.issueId, args.includeMessages);
+          return JSON.stringify(issue, null, 2);
+        } catch (error) {
+          throw new Error(
+            `Error getting Pylon issue: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      },
+    }),
+    SEARCH_ACCOUNTS: tool({
+      name: 'pylon_search_accounts',
+      description:
+        'Search Pylon accounts by name using fuzzy matching. Returns top matching accounts.',
+      schema: z.object({
+        query: z
+          .string()
+          .optional()
+          .describe('Search query to match against account names (fuzzy search)'),
+        limit: z
+          .number()
+          .default(3)
+          .optional()
+          .describe('The number of accounts to return (default: 3)'),
+        cursor: z.string().optional().describe('The cursor to use for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new PylonClient(apiToken);
+          const accounts = await client.searchAccounts(
+            args.query,
+            args.limit,
+            args.cursor
+          );
+          return JSON.stringify(accounts, null, 2);
+        } catch (error) {
+          throw new Error(
+            `Error searching Pylon accounts: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      },
+    }),
+    SEARCH_ISSUES: tool({
+      name: 'pylon_search_issues',
+      description: 'Search Pylon issues by account ID',
+      schema: z.object({
+        accountId: z.string().describe('Filter issues by account ID'),
+        limit: z
+          .number()
+          .default(20)
+          .optional()
+          .describe('Maximum number of issues to return (default: 20)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new PylonClient(apiToken);
+          const issues = await client.searchIssues(args.accountId, args.limit);
+          return JSON.stringify(issues, null, 2);
+        } catch (error) {
+          throw new Error(
+            `Error searching Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      },
+    }),
+    LIST_ISSUES: tool({
+      name: 'pylon_list_issues',
+      description: 'List all Pylon issues with optional pagination',
+      schema: z.object({
+        limit: z
+          .number()
+          .default(20)
+          .optional()
+          .describe('Maximum number of issues to return (default: 20)'),
+        cursor: z.string().optional().describe('Cursor for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken } = await context.getCredentials();
+          const client = new PylonClient(apiToken);
+          const issues = await client.listIssues(args.limit, args.cursor);
+          return JSON.stringify(issues, null, 2);
+        } catch (error) {
+          throw new Error(
+            `Error listing Pylon issues: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      },
+    }),
+  }),
+});

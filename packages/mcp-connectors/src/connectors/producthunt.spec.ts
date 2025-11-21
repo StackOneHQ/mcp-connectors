@@ -1,8 +1,9 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { extractToolsFromServer } from '../__mocks__/server-tools';
-import { createProductHuntServer } from './producthunt';
+import { afterAll, afterEach, beforeAll, describe, expect, it, type vi } from 'vitest';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { ProducthuntConnectorConfig } from './producthunt';
 
 // Type for GraphQL request body
 interface GraphQLRequestBody {
@@ -50,12 +51,14 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.producthunt_get_product?.handler({
-            slug: 'test-product',
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
           });
+
+          const actual = await tool.handler({ slug: 'test-product' }, mockContext);
 
           const productData = JSON.parse(actual as string);
           expect(productData.name).toBe('Test Product');
@@ -74,12 +77,14 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'invalid-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.producthunt_get_product?.handler({
-            slug: 'test-product',
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'invalid-token',
           });
+
+          const actual = await tool.handler({ slug: 'test-product' }, mockContext);
 
           expect(actual).toContain('Failed to get product:');
           expect(actual).toContain('Product Hunt API error: 401 Unauthorized');
@@ -96,12 +101,14 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.producthunt_get_product?.handler({
-            slug: 'nonexistent',
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_PRODUCT as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
           });
+
+          const actual = await tool.handler({ slug: 'nonexistent' }, mockContext);
 
           expect(actual).toContain('Failed to get product:');
           expect(actual).toContain('GraphQL error: Post not found');
@@ -145,13 +152,14 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.producthunt_search_products?.handler({
-            query: 'AI',
-            limit: 10,
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_SEARCH_PRODUCTS as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
           });
+
+          const actual = await tool.handler({ query: 'AI', limit: 10 }, mockContext);
 
           const products = JSON.parse(actual as string);
           expect(products).toHaveLength(1);
@@ -176,10 +184,14 @@ describe('#ProductHuntConnector', () => {
             )
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_SEARCH_PRODUCTS as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
-          await tools.producthunt_search_products?.handler({ query: 'test', limit: 5 });
+          await tool.handler({ query: 'test', limit: 5 }, mockContext);
 
           expect(requestBody.variables?.first).toBe(5);
         });
@@ -219,10 +231,14 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_FEATURED as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
-          const actual = await tools.producthunt_get_featured?.handler({ limit: 10 });
+          const actual = await tool.handler({ limit: 10 }, mockContext);
 
           const products = JSON.parse(actual as string);
           expect(products).toHaveLength(1);
@@ -247,13 +263,20 @@ describe('#ProductHuntConnector', () => {
             )
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          await tools.producthunt_get_featured?.handler({
-            date: '2024-01-01T00:00:00Z',
-            limit: 10,
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_FEATURED as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
           });
+
+          await tool.handler(
+            {
+              date: '2024-01-01T00:00:00Z',
+              limit: 10,
+            },
+            mockContext
+          );
 
           expect(requestBody.variables?.postedAfter).toBe('2024-01-01T00:00:00Z');
         });
@@ -285,12 +308,14 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.producthunt_get_user?.handler({
-            username: 'johndoe',
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_USER as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
           });
+
+          const actual = await tool.handler({ username: 'johndoe' }, mockContext);
 
           const userData = JSON.parse(actual as string);
           expect(userData.username).toBe('johndoe');
@@ -333,13 +358,17 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
-
-          const actual = await tools.producthunt_get_comments?.handler({
-            slug: 'test-product',
-            limit: 10,
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_COMMENTS as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
           });
+
+          const actual = await tool.handler(
+            { slug: 'test-product', limit: 10 },
+            mockContext
+          );
 
           const comments = JSON.parse(actual as string);
           expect(comments).toHaveLength(1);
@@ -379,15 +408,122 @@ describe('#ProductHuntConnector', () => {
             })
           );
 
-          const mcpServer = createProductHuntServer({ access_token: 'test-token' });
-          const tools = extractToolsFromServer(mcpServer);
+          const tool = ProducthuntConnectorConfig.tools
+            .PRODUCTHUNT_GET_COLLECTIONS as MCPToolDefinition;
+          const mockContext = createMockConnectorContext();
+          (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+            access_token: 'test-token',
+          });
 
-          const actual = await tools.producthunt_get_collections?.handler({ limit: 10 });
+          const actual = await tool.handler({ limit: 10 }, mockContext);
 
           const collections = JSON.parse(actual as string);
           expect(collections).toHaveLength(1);
           expect(collections[0].name).toBe('AI Tools');
           expect(collections[0].productsCount).toBe(25);
+        });
+      });
+    });
+  });
+
+  describe('resources', () => {
+    describe('.PRODUCTHUNT_TRENDING_TODAY', () => {
+      describe('when resource is accessed', () => {
+        describe('and API returns trending products', () => {
+          it("returns today's trending products", async () => {
+            server.use(
+              http.post('https://api.producthunt.com/v2/api/graphql', () => {
+                return HttpResponse.json({
+                  data: {
+                    posts: {
+                      edges: [
+                        {
+                          node: {
+                            id: 'trending123',
+                            name: 'Trending Product',
+                            tagline: 'Hot product today',
+                            description: 'This is trending',
+                            slug: 'trending-product',
+                            votesCount: 300,
+                            commentsCount: 60,
+                            featured: true,
+                            url: 'https://producthunt.com/posts/trending-product',
+                            createdAt: '2024-01-01T00:00:00Z',
+                            featuredAt: '2024-01-01T09:00:00Z',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                });
+              })
+            );
+
+            const resource =
+              ProducthuntConnectorConfig.resources.PRODUCTHUNT_TRENDING_TODAY;
+            if (!resource) {
+              throw new Error('Resource PRODUCTHUNT_TRENDING_TODAY not found');
+            }
+            const mockContext = createMockConnectorContext();
+            (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+              access_token: 'test-token',
+            });
+
+            const actual = await resource.handler(mockContext);
+
+            const products = JSON.parse(actual as string);
+            expect(products).toHaveLength(1);
+            expect(products[0].name).toBe('Trending Product');
+          });
+        });
+      });
+    });
+
+    describe('.PRODUCTHUNT_TOP_COLLECTIONS', () => {
+      describe('when resource is accessed', () => {
+        describe('and API returns collections', () => {
+          it('returns top collections', async () => {
+            server.use(
+              http.post('https://api.producthunt.com/v2/api/graphql', () => {
+                return HttpResponse.json({
+                  data: {
+                    collections: {
+                      edges: [
+                        {
+                          node: {
+                            id: 'topcollection123',
+                            name: 'Top Collection',
+                            description: 'Most popular collection',
+                            slug: 'top-collection',
+                            url: 'https://producthunt.com/collections/top-collection',
+                            postsCount: 50,
+                            followersCount: 1000,
+                            createdAt: '2024-01-01T00:00:00Z',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                });
+              })
+            );
+
+            const resource =
+              ProducthuntConnectorConfig.resources.PRODUCTHUNT_TOP_COLLECTIONS;
+            if (!resource) {
+              throw new Error('Resource PRODUCTHUNT_TOP_COLLECTIONS not found');
+            }
+            const mockContext = createMockConnectorContext();
+            (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+              access_token: 'test-token',
+            });
+
+            const actual = await resource.handler(mockContext);
+
+            const collections = JSON.parse(actual as string);
+            expect(collections).toHaveLength(1);
+            expect(collections[0].name).toBe('Top Collection');
+          });
         });
       });
     });

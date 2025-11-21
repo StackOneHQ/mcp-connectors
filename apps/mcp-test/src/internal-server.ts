@@ -372,17 +372,18 @@ const server = new McpServer(
 );
 
 // Register the generate_test_data tool
-server.registerTool(
+server.tool(
   'generate_test_data',
+  'Generate realistic test data for basic data types using faker-js',
   {
-    title: 'Generate Realistic Test Data',
-    description: 'Generate realistic test data for various data types using faker-js.',
-    inputSchema: {
-      type: z.string().describe('Data type to generate'),
-      length: z
-        .number()
-        .optional()
-        .describe('Length of data to generate (for strings, words, or numeric strings)'),
+    type: {
+      type: 'string',
+      enum: generateTestDataSchema.shape.type.options,
+      description: 'Data type to generate',
+    },
+    length: {
+      type: 'number',
+      description: 'Length of data to generate (for strings, words, or numeric strings)',
     },
   },
   async (args: unknown) => {

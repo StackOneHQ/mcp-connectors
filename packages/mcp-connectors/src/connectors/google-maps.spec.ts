@@ -1,8 +1,9 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { extractToolsFromServer } from '../__mocks__/server-tools';
-import { createGoogleMapsServer } from './google-maps';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { googleMapsConnector } from './google-maps';
 
 const GOOGLE_MAPS_API_BASE = 'https://maps.googleapis.com/maps/api';
 
@@ -42,14 +43,19 @@ describe('#GoogleMapsConnector', () => {
           })
         );
 
-        const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.search_nearby?.handler({
-          location: '40.7128,-74.0060',
-          radius: 1000,
-          type: 'restaurant',
+        const tool = googleMapsConnector.tools.SEARCH_NEARBY as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' },
         });
+
+        const actual = await tool.handler(
+          {
+            location: '40.7128,-74.0060',
+            radius: 1000,
+            type: 'restaurant',
+          },
+          mockContext
+        );
 
         expect(actual).toContain('Test Restaurant');
         expect(actual).toContain('restaurant');
@@ -70,14 +76,19 @@ describe('#GoogleMapsConnector', () => {
           })
         );
 
-        const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
+        const tool = googleMapsConnector.tools.SEARCH_NEARBY as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' },
+        });
 
         await expect(
-          tools.search_nearby?.handler({
-            location: 'invalid',
-            radius: 1000,
-          })
+          tool.handler(
+            {
+              location: 'invalid',
+              radius: 1000,
+            },
+            mockContext
+          )
         ).rejects.toThrow('Google Maps API error');
       });
     });
@@ -113,12 +124,17 @@ describe('#GoogleMapsConnector', () => {
           })
         );
 
-        const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.get_place_details?.handler({
-          placeId: 'ChIJ1234567890abcdef',
+        const tool = googleMapsConnector.tools.GET_PLACE_DETAILS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' },
         });
+
+        const actual = await tool.handler(
+          {
+            placeId: 'ChIJ1234567890abcdef',
+          },
+          mockContext
+        );
 
         expect(actual).toContain('Test Restaurant');
         expect(actual).toContain('+1 555-123-4567');
@@ -167,12 +183,17 @@ describe('#GoogleMapsConnector', () => {
           })
         );
 
-        const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.maps_geocode?.handler({
-          address: '1600 Amphitheatre Parkway, Mountain View, CA',
+        const tool = googleMapsConnector.tools.GEOCODE as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' },
         });
+
+        const actual = await tool.handler(
+          {
+            address: '1600 Amphitheatre Parkway, Mountain View, CA',
+          },
+          mockContext
+        );
 
         expect(actual).toContain('1600 Amphitheatre Parkway');
         expect(actual).toContain('37.4224764');
@@ -237,14 +258,19 @@ describe('#GoogleMapsConnector', () => {
           })
         );
 
-        const mcpServer = createGoogleMapsServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.maps_directions?.handler({
-          origin: 'San Francisco, CA',
-          destination: 'Mountain View, CA',
-          mode: 'driving',
+        const tool = googleMapsConnector.tools.DIRECTIONS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext({
+          credentials: { apiKey: 'test-api-key' },
         });
+
+        const actual = await tool.handler(
+          {
+            origin: 'San Francisco, CA',
+            destination: 'Mountain View, CA',
+            mode: 'driving',
+          },
+          mockContext
+        );
 
         expect(actual).toContain('San Francisco, CA, USA');
         expect(actual).toContain('Mountain View, CA, USA');
