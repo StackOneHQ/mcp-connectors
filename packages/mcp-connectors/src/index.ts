@@ -18,6 +18,7 @@ import { GitLabConnectorConfig } from './connectors/gitlab';
 import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { GraphyConnectorConfig } from './connectors/graphy';
+import { HarnessConnectorConfig } from './connectors/harness';
 import { HiBobConnectorConfig } from './connectors/hibob';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
@@ -71,6 +72,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GoogleDriveConnectorConfig,
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
+  HarnessConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
@@ -124,6 +126,7 @@ export {
   GoogleDriveConnectorConfig,
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
+  HarnessConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
