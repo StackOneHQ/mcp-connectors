@@ -6,10 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "bun": "./src/index.ts",
-      "default": "./dist/index.js"
-    },
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
   "type": "module",
@@ -70,5 +67,6 @@
         "onFail": "download"
       }
     ]
-  }
+  },
+  "devDependencies": {}
 }
