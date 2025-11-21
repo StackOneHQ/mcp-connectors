@@ -2,6 +2,7 @@
   "name": "@stackone/mcp-server",
   "version": "1.0.0",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
