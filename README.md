@@ -52,28 +52,28 @@ If you want to run the connectors locally or contribute to the project:
    cd mcp-connectors
    ```
 
-2. **Install Bun** (if you don't have it already):
+2. **Install pnpm** (if you don't have it already):
 
    ```bash
-   curl -fsSL https://bun.sh/install | bash
+   npm install -g pnpm
    ```
 
 3. **Install dependencies:**
 
    ```bash
-   bun install
+   pnpm install
    ```
 
 4. **Build the project:**
 
    ```bash
-   bun run build
+   pnpm build
    ```
 
 5. **Run the tests:**
 
    ```bash
-   bun test
+   pnpm test
    ```
 
 6. **Check out the documentation:**
@@ -83,7 +83,7 @@ If you want to run the connectors locally or contribute to the project:
 
 ## Usage
 
-This is a monorepo managed with Bun and Turbo.
+This is a monorepo managed with pnpm workspaces.
 
 ### Start a server from a connector
 
@@ -91,11 +91,11 @@ No credentials needed:
 
 ```bash
 # Start a test server in the background
-bun run server -- -- --connector test
-bun run server -- -- --connector documentation
+pnpm server -- -- --connector test
+pnpm server -- -- --connector documentation
 
 # Start with credentials (credentials object schema may be different for each connector)
-bun run server -- -- --connector github --credentials '{"token":"ghp_xxx"}'
+pnpm server -- -- --connector github --credentials '{"token":"ghp_xxx"}'
 ```
 
 Server runs at `http://localhost:3000/mcp`
@@ -108,7 +108,7 @@ Server runs at `http://localhost:3000/mcp`
 
 **Popular integrations:** `asana`, `github`, `slack`, `notion`, `jira`, `linear`, `todoist`, `google-drive`, `supabase`
 
-**Full list:** Run `bun start --help` to see all 35+ connectors
+**Full list:** Run `pnpm start --help` to see all 50+ connectors
 
 ## Documentation
 
