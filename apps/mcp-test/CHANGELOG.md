@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.9...mcp-test-v0.0.10) (2025-11-21)
+
+
+### Bug Fixes
+
+* version ([#201](https://github.com/StackOneHQ/mcp-connectors/issues/201)) ([590a47d](https://github.com/StackOneHQ/mcp-connectors/commit/590a47d1117364a3f6fa46a90daf2ad543707584))
+
 ## [0.0.9](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.8...mcp-test-v0.0.9) (2025-11-21)
 
 
