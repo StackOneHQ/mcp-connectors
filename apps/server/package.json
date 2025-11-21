@@ -8,14 +8,14 @@
     "spawn": "bun run src/spawn-server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@modelcontextprotocol/sdk": "catalog:prod",
     "@stackone/mcp-connectors": "workspace:*",
-    "express": "^4.21.2",
-    "winston": "^3.17.0"
+    "express": "catalog:prod",
+    "winston": "catalog:prod"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/node": "^24.10.1"
+    "@types/express": "catalog:dev",
+    "@types/node": "catalog:dev"
   },
   "devEngines": {
     "runtime": [
