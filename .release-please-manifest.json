@@ -1,4 +1,5 @@
 {
-    "packages/mcp-connectors": "0.0.24",
-    "apps/mcp-test": "0.0.8"
+    "packages/mcp-connectors": "0.0.21",
+    "packages/mcp-config-types": "0.0.12",
+    "apps/mcp-test": "0.0.7"
 }

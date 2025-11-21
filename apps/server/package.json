@@ -2,34 +2,20 @@
   "name": "@stackone/mcp-server",
   "version": "1.0.0",
   "type": "module",
-  "private": true,
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "spawn": "bun run src/spawn-server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "catalog:prod",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@stackone/mcp-config-types": "workspace:*",
     "@stackone/mcp-connectors": "workspace:*",
-    "express": "catalog:prod",
-    "winston": "catalog:prod"
+    "express": "^4.21.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@types/express": "catalog:dev",
-    "@types/node": "catalog:dev"
-  },
-  "devEngines": {
-    "runtime": [
-      {
-        "name": "node",
-        "version": "^24.11.0",
-        "onFail": "download"
-      },
-      {
-        "name": "bun",
-        "version": "^1.3.2",
-        "onFail": "download"
-      }
-    ]
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.5"
   }
 }

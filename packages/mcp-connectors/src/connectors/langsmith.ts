@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface LangsmithRun {
   id: string;
@@ -218,290 +217,187 @@ class LangsmithClient {
   }
 }
 
-export const LangsmithCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-});
-
-export type LangsmithCredentials = z.infer<typeof LangsmithCredentialsSchema>;
-
-export const LangsmithConnectorMetadata = {
-  key: 'langsmith',
+export const LangsmithConnectorConfig = mcpConnectorConfig({
   name: 'LangSmith',
-  description: 'LLM application monitoring',
-  version: '1.0.0',
+  key: 'langsmith',
   logo: 'https://stackone-logos.com/api/langsmith/filled/svg',
-  examplePrompt: 'View LangSmith traces',
-  categories: ['ai', 'monitoring'],
-  credentialsSchema: LangsmithCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createLangsmithServer(credentials: LangsmithCredentials): McpServer {
-  const server = new McpServer({
-    name: 'LangSmith',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'langsmith_get_thread_history',
-    'Fetch conversation history for a specific session/thread',
-    {
-      sessionId: z.string().describe('The session ID to get history for'),
-      limit: z.number().default(50).describe('Maximum number of runs to return'),
-      offset: z.number().default(0).describe('Number of runs to skip'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const history = await client.getThreadHistory(
-          args.sessionId,
-          args.limit,
-          args.offset
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(history, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get thread history: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'langsmith_get_prompts',
-    'Retrieve prompts with optional filtering',
-    {
-      limit: z.number().default(50).describe('Maximum number of prompts to return'),
-      offset: z.number().default(0).describe('Number of prompts to skip'),
-      nameContains: z
-        .string()
-        .optional()
-        .describe('Filter prompts by name containing this string'),
-      isPublic: z.boolean().optional().describe('Filter by public/private prompts'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const prompts = await client.getPrompts(
-          args.limit,
-          args.offset,
-          args.nameContains,
-          args.isPublic
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(prompts, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get prompts: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'langsmith_pull_prompt',
-    'Get a specific prompt by name and optional version',
-    {
-      promptName: z.string().describe('The name of the prompt to retrieve'),
-      version: z
-        .string()
-        .optional()
-        .describe('Specific version of the prompt (defaults to latest)'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const prompt = await client.pullPrompt(args.promptName, args.version);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(prompt, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to pull prompt: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'langsmith_get_sessions',
-    'List all sessions with optional filtering',
-    {
-      limit: z.number().default(50).describe('Maximum number of sessions to return'),
-      offset: z.number().default(0).describe('Number of sessions to skip'),
-      nameContains: z
-        .string()
-        .optional()
-        .describe('Filter sessions by name containing this string'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const sessions = await client.getSessions(
-          args.limit,
-          args.offset,
-          args.nameContains
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(sessions, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get sessions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'langsmith_get_session',
-    'Get details of a specific session',
-    {
-      sessionId: z.string().describe('The session ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const session = await client.getSession(args.sessionId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(session, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get session: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'langsmith_get_run',
-    'Get details of a specific run',
-    {
-      runId: z.string().describe('The run ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const run = await client.getRun(args.runId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(run, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get run: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'langsmith_search_runs',
-    'Search runs with various filters',
-    {
-      query: z.string().optional().describe('Search query string'),
-      sessionId: z.string().optional().describe('Filter by session ID'),
-      runType: z
-        .string()
-        .optional()
-        .describe('Filter by run type (e.g., llm, chain, tool)'),
-      status: z.string().optional().describe('Filter by status (e.g., success, error)'),
-      limit: z.number().default(50).describe('Maximum number of runs to return'),
-      offset: z.number().default(0).describe('Number of runs to skip'),
-    },
-    async (args) => {
-      try {
-        const client = new LangsmithClient(credentials.apiKey);
-        const runs = await client.searchRuns(
-          args.query,
-          args.sessionId,
-          args.runType,
-          args.status,
-          args.limit,
-          args.offset
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(runs, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to search runs: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  version: '1.0.0',
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'Langsmith API key from your dashboard :: lsv2_pt_1234567890abcdef1234567890abcdef_123456 :: https://docs.smith.langchain.com/administration/how_to_guides/organization_management/create_account_api_key'
+      ),
+  }),
+  description:
+    'LangSmith is a platform for monitoring and managing LLM applications. It allows you to create datasets, iterate on prompts, and run evaluations.',
+  setup: z.object({}),
+  examplePrompt:
+    'Get my recent prompts, pull the "customer-support-agent" prompt, and search for all successful LLM runs from the last 24 hours in my main session.',
+  tools: (tool) => ({
+    GET_THREAD_HISTORY: tool({
+      name: 'langsmith_get_thread_history',
+      description: 'Fetch conversation history for a specific session/thread',
+      schema: z.object({
+        sessionId: z.string().describe('The session ID to get history for'),
+        limit: z.number().default(50).describe('Maximum number of runs to return'),
+        offset: z.number().default(0).describe('Number of runs to skip'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const history = await client.getThreadHistory(
+            args.sessionId,
+            args.limit,
+            args.offset
+          );
+          return JSON.stringify(history, null, 2);
+        } catch (error) {
+          return `Failed to get thread history: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PROMPTS: tool({
+      name: 'langsmith_get_prompts',
+      description: 'Retrieve prompts with optional filtering',
+      schema: z.object({
+        limit: z.number().default(50).describe('Maximum number of prompts to return'),
+        offset: z.number().default(0).describe('Number of prompts to skip'),
+        nameContains: z
+          .string()
+          .optional()
+          .describe('Filter prompts by name containing this string'),
+        isPublic: z.boolean().optional().describe('Filter by public/private prompts'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const prompts = await client.getPrompts(
+            args.limit,
+            args.offset,
+            args.nameContains,
+            args.isPublic
+          );
+          return JSON.stringify(prompts, null, 2);
+        } catch (error) {
+          return `Failed to get prompts: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    PULL_PROMPT: tool({
+      name: 'langsmith_pull_prompt',
+      description: 'Get a specific prompt by name and optional version',
+      schema: z.object({
+        promptName: z.string().describe('The name of the prompt to retrieve'),
+        version: z
+          .string()
+          .optional()
+          .describe('Specific version of the prompt (defaults to latest)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const prompt = await client.pullPrompt(args.promptName, args.version);
+          return JSON.stringify(prompt, null, 2);
+        } catch (error) {
+          return `Failed to pull prompt: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_SESSIONS: tool({
+      name: 'langsmith_get_sessions',
+      description: 'List all sessions with optional filtering',
+      schema: z.object({
+        limit: z.number().default(50).describe('Maximum number of sessions to return'),
+        offset: z.number().default(0).describe('Number of sessions to skip'),
+        nameContains: z
+          .string()
+          .optional()
+          .describe('Filter sessions by name containing this string'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const sessions = await client.getSessions(
+            args.limit,
+            args.offset,
+            args.nameContains
+          );
+          return JSON.stringify(sessions, null, 2);
+        } catch (error) {
+          return `Failed to get sessions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_SESSION: tool({
+      name: 'langsmith_get_session',
+      description: 'Get details of a specific session',
+      schema: z.object({
+        sessionId: z.string().describe('The session ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const session = await client.getSession(args.sessionId);
+          return JSON.stringify(session, null, 2);
+        } catch (error) {
+          return `Failed to get session: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_RUN: tool({
+      name: 'langsmith_get_run',
+      description: 'Get details of a specific run',
+      schema: z.object({
+        runId: z.string().describe('The run ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const run = await client.getRun(args.runId);
+          return JSON.stringify(run, null, 2);
+        } catch (error) {
+          return `Failed to get run: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    SEARCH_RUNS: tool({
+      name: 'langsmith_search_runs',
+      description: 'Search runs with various filters',
+      schema: z.object({
+        query: z.string().optional().describe('Search query string'),
+        sessionId: z.string().optional().describe('Filter by session ID'),
+        runType: z
+          .string()
+          .optional()
+          .describe('Filter by run type (e.g., llm, chain, tool)'),
+        status: z.string().optional().describe('Filter by status (e.g., success, error)'),
+        limit: z.number().default(50).describe('Maximum number of runs to return'),
+        offset: z.number().default(0).describe('Number of runs to skip'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new LangsmithClient(apiKey);
+          const runs = await client.searchRuns(
+            args.query,
+            args.sessionId,
+            args.runType,
+            args.status,
+            args.limit,
+            args.offset
+          );
+          return JSON.stringify(runs, null, 2);
+        } catch (error) {
+          return `Failed to search runs: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

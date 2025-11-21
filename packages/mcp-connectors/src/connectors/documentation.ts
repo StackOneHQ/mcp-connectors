@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 import { type AnySearchableObject, createIndex, search } from '../utils/lexical-search';
 import { splitTextIntoSmartChunks } from '../utils/text-chunking';
@@ -285,262 +284,177 @@ const DOCUMENTATION_PROVIDERS: DocumentationProvider[] = [
   },
 ];
 
-// Simple in-memory cache for documentation
-const documentationCache = new Map<string, string>();
-
-export const DocumentationConnectorMetadata = {
-  key: 'documentation',
+export const DocumentationConnectorConfig = mcpConnectorConfig({
   name: 'Documentation',
-  description: 'Documentation management',
+  key: 'documentation',
   version: '1.0.0',
-  examplePrompt: 'Search documentation',
-  categories: ['documentation', 'knowledge'],
-} as const satisfies ConnectorMetadata;
-
-export type DocumentationCredentials = Record<string, never>;
-
-export function createDocumentationServer(
-  _credentials: DocumentationCredentials
-): McpServer {
-  const server = new McpServer({
-    name: 'Documentation',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'get_provider_key',
-    'ALWAYS call this first to discover available documentation providers. Essential step before searching documentation. Returns provider keys, names, and descriptions for 30+ services including AI platforms (anthropic, openai), databases (pinecone, prisma), frameworks (astro, expo), and developer tools (cursor, zapier). Use the returned provider_key with search_docs.',
-    {
-      provider_name: z
-        .string()
-        .describe(
-          'Optional provider name to fuzzy match. Examples: "anthropic", "prisma", "cursor". Leave empty to see all providers.'
-        )
-        .optional(),
-    },
-    async (args) => {
-      try {
-        // try be as token efficient as possible
-        if (!args.provider_name || args.provider_name.trim() === '') {
-          const providerList = DOCUMENTATION_PROVIDERS.map(
-            (p) => `- Key: ${p.key}\n- Description: ${p.description}`
-          ).join('\n----------\n');
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `${generateProviderExplanation()}${providerList}`,
-              },
-            ],
-          };
-        }
-
-        // create an index
-        const index = await createIndex(DOCUMENTATION_PROVIDERS, {
-          fields: ['key', 'name', 'description'],
-          maxResults: 10,
-          threshold: 0.1,
-        });
-
-        // do the search
-        const searchResults = await search(index, args.provider_name);
-        if (searchResults.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `No providers found matching "${args.provider_name}". Try a broader search or call get_provider_key without arguments.`,
-              },
-            ],
-          };
-        }
-
-        // Return matched providers
-        const results = searchResults.map(
-          (res) =>
-            `- Key: ${res.item.key}\n- Name: ${res.item.name}\n- Description: ${res.item.description}\n- LlmFullUrl: ${res.item.llmsFullUrl}\n- Category: ${res.item.category}`
-        );
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `${generateProviderExplanation()}Found ${results.length} provider${results.length === 1 ? '' : 's'} matching "${args.provider_name}":\n\n${results.join('\n----------\n')}`,
-            },
-          ],
-        };
-      } catch (error) {
-        console.error('[get_provider_key] Handler error:', error);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error getting provider keys: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'search_docs',
-    'Search documentation for a specific provider using a query. MUST use get_provider_key first to get the correct provider_key. Returns relevant documentation sections with confidence scores. Works best with specific technical terms, API names, or feature descriptions.',
-    {
-      provider_key: z
-        .string()
-        .describe(
-          'Exact provider key from get_provider_key output. Common examples: "anthropic" (Claude API), "ai-sdk" (Vercel AI SDK), "prisma" (database ORM), "cursor" (AI editor), "zapier" (automation), "pinecone" (vector database). Case-sensitive.'
-        ),
-      query: z
-        .string()
-        .describe(
-          'Search query for documentation. Best results with: API method names (e.g., "createMessage"), feature names (e.g., "function calling"), technical concepts (e.g., "authentication", "rate limits"), or error codes. Avoid generic terms like "how to" or "tutorial".'
-        ),
-      max_results: z
-        .number()
-        .min(1)
-        .max(10)
-        .default(5)
-        .describe('Maximum number of results to return (1-10). Default is 5.')
-        .optional(),
-    },
-    async (args) => {
-      try {
-        const maxResults = args.max_results || 5;
-        const provider = DOCUMENTATION_PROVIDERS.find((p) => p.key === args.provider_key);
-
-        if (!provider) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Provider "${args.provider_key}" not found. Call get_provider_key to see available providers.`,
-              },
-            ],
-          };
-        }
-
-        if (!args.query || args.query.trim().length < 2) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Please provide a meaningful search query (at least 2 characters).',
-              },
-            ],
-          };
-        }
-
-        // Try to get cached documentation first
-        let text: string | null = null;
-
-        // connector level cache in format <connector-key>:<search-key>:v<version>
-        const cacheKey = `documentation:${args.provider_key}:v3`;
-
+  credentials: z.object({}),
+  setup: z.object({}),
+  description:
+    'Search the documentation of 30+ services including AI platforms (anthropic), databases (pinecone, prisma), frameworks (astro, expo), and developer tools (cursor, zapier). This connector uses the llms-full.txt endpoint to get the full documentation in markdown format.',
+  examplePrompt:
+    'Find documentation for Anthropic Claude API authentication methods, then search for Prisma database schema migration best practices.',
+  logo: 'https://stackone-logos.com/api/disco/filled/svg',
+  tools: (tool) => ({
+    GET_PROVIDER_KEY: tool({
+      name: 'get_provider_key',
+      description:
+        'ALWAYS call this first to discover available documentation providers. Essential step before searching documentation. Returns provider keys, names, and descriptions for 30+ services including AI platforms (anthropic, openai), databases (pinecone, prisma), frameworks (astro, expo), and developer tools (cursor, zapier). Use the returned provider_key with search_docs.',
+      schema: z.object({
+        provider_name: z
+          .string()
+          .describe(
+            'Optional provider name to fuzzy match. Examples: "anthropic", "prisma", "cursor". Leave empty to see all providers.'
+          )
+          .optional(),
+      }),
+      handler: async (args, _context) => {
         try {
-          text = documentationCache.get(cacheKey) || null;
-        } catch (error) {
-          console.warn(`Cache read error for ${args.provider_key}:`, error);
-        }
+          // try be as token efficient as possible
+          if (!args.provider_name || args.provider_name.trim() === '') {
+            const providerList = DOCUMENTATION_PROVIDERS.map(
+              (p) => `- Key: ${p.key}\n- Description: ${p.description}`
+            ).join('\n----------\n');
 
-        // If not cached, fetch from external URL
-        if (!text) {
-          const res = await fetch(provider.llmsFullUrl);
-
-          if (!res.ok) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Error fetching documentation for ${provider.name}: ${res.status} ${res.statusText}`,
-                },
-              ],
-            };
+            return `${generateProviderExplanation()}${providerList}`;
           }
 
-          text = await res.text();
+          // create an index
+          const index = await createIndex(DOCUMENTATION_PROVIDERS, {
+            fields: ['key', 'name', 'description'],
+            maxResults: 10,
+            threshold: 0.1,
+          });
 
-          // Cache the fetched documentation
-          if (text && text.length > 100) {
-            try {
-              documentationCache.set(cacheKey, text);
-            } catch (error) {
-              console.warn(`Cache write error for ${args.provider_key}:`, error);
+          // do the search
+          const searchResults = await search(index, args.provider_name);
+          if (searchResults.length === 0) {
+            return `No providers found matching "${args.provider_name}". Try a broader search or call get_provider_key without arguments.`;
+          }
+
+          // Return matched providers
+          const results = searchResults.map(
+            (res) =>
+              `- Key: ${res.item.key}\n- Name: ${res.item.name}\n- Description: ${res.item.description}\n- LlmFullUrl: ${res.item.llmsFullUrl}\n- Category: ${res.item.category}`
+          );
+
+          return `${generateProviderExplanation()}Found ${results.length} provider${results.length === 1 ? '' : 's'} matching "${args.provider_name}":\n\n${results.join('\n----------\n')}`;
+        } catch (error) {
+          console.error('[get_provider_key] Handler error:', error);
+          return `Error getting provider keys: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        }
+      },
+    }),
+    SEARCH_DOCS: tool({
+      name: 'search_docs',
+      description:
+        'Search documentation for a specific provider using a query. MUST use get_provider_key first to get the correct provider_key. Returns relevant documentation sections with confidence scores. Works best with specific technical terms, API names, or feature descriptions.',
+      schema: z.object({
+        provider_key: z
+          .string()
+          .describe(
+            'Exact provider key from get_provider_key output. Common examples: "anthropic" (Claude API), "ai-sdk" (Vercel AI SDK), "prisma" (database ORM), "cursor" (AI editor), "zapier" (automation), "pinecone" (vector database). Case-sensitive.'
+          ),
+        query: z
+          .string()
+          .describe(
+            'Search query for documentation. Best results with: API method names (e.g., "createMessage"), feature names (e.g., "function calling"), technical concepts (e.g., "authentication", "rate limits"), or error codes. Avoid generic terms like "how to" or "tutorial".'
+          ),
+        max_results: z
+          .number()
+          .min(1)
+          .max(10)
+          .default(5)
+          .describe('Maximum number of results to return (1-10). Default is 5.')
+          .optional(),
+      }),
+      handler: async (args, context) => {
+        try {
+          const maxResults = args.max_results || 5;
+          const provider = DOCUMENTATION_PROVIDERS.find(
+            (p) => p.key === args.provider_key
+          );
+
+          if (!provider) {
+            return `Provider "${args.provider_key}" not found. Call get_provider_key to see available providers.`;
+          }
+
+          if (!args.query || args.query.trim().length < 2) {
+            return 'Please provide a meaningful search query (at least 2 characters).';
+          }
+
+          // Try to get cached documentation first
+          let text: string | null = null;
+
+          // connector level cache in format <connector-key>:<search-key>:<version>
+          const cacheKey = `documentation:${args.provider_key}:v3`;
+
+          try {
+            text = await context.readCache(cacheKey);
+          } catch (error) {
+            console.warn(`KV cache read error for ${args.provider_key}:`, error);
+          }
+
+          // If not cached, fetch from external URL
+          if (!text) {
+            const res = await fetch(provider.llmsFullUrl);
+
+            if (!res.ok) {
+              return `Error fetching documentation for ${provider.name}: ${res.status} ${res.statusText}`;
+            }
+
+            text = await res.text();
+
+            // Cache the fetched documentation (24 hour TTL)
+            if (text && text.length > 100) {
+              try {
+                await context.writeCache(cacheKey, text);
+              } catch (error) {
+                console.warn(`KV cache write error for ${args.provider_key}:`, error);
+              }
             }
           }
+
+          // Search the documentation text
+          const chunks = splitTextIntoSmartChunks(text);
+
+          if (chunks.length === 0) {
+            return `No content found in ${provider.name} documentation.`;
+          }
+
+          // Convert chunks to searchable objects
+          const documents = chunks.map((chunk, index) => ({
+            id: String(index),
+            text: chunk,
+          }));
+
+          // Search using our lexical search utility
+          const index = await createIndex(documents, {
+            fields: ['text'],
+            maxResults,
+            threshold: 0.1,
+          });
+
+          const searchResults = await search(index, args.query);
+
+          if (searchResults.length === 0) {
+            return `No relevant documentation found for "${args.query}" in ${provider.name}. Try different search terms.`;
+          }
+
+          // Format search results
+          const results = searchResults
+            .map(
+              (result, idx) =>
+                `### Search Result ${idx + 1}\n\n${((result.item as AnySearchableObject).text as string).trim()}`
+            )
+            .join(`\n\n${'----------'}\n\n`);
+
+          return `Found ${searchResults.length} relevant sections in ${provider.name} documentation for "${args.query}":\n\n${results}`;
+        } catch (error) {
+          console.error('[search_docs] Handler error:', error);
+          return `Error searching "${args.provider_key}" for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
-
-        // Search the documentation text
-        const chunks = splitTextIntoSmartChunks(text);
-
-        if (chunks.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `No content found in ${provider.name} documentation.`,
-              },
-            ],
-          };
-        }
-
-        // Convert chunks to searchable objects
-        const documents = chunks.map((chunk, index) => ({
-          id: String(index),
-          text: chunk,
-        }));
-
-        // Search using our lexical search utility
-        const index = await createIndex(documents, {
-          fields: ['text'],
-          maxResults,
-          threshold: 0.1,
-        });
-
-        const searchResults = await search(index, args.query);
-
-        if (searchResults.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `No relevant documentation found for "${args.query}" in ${provider.name}. Try different search terms.`,
-              },
-            ],
-          };
-        }
-
-        // Format search results
-        const results = searchResults
-          .map(
-            (result, idx) =>
-              `### Search Result ${idx + 1}\n\n${((result.item as AnySearchableObject).text as string).trim()}`
-          )
-          .join(`\n\n${'----------'}\n\n`);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Found ${searchResults.length} relevant sections in ${provider.name} documentation for "${args.query}":\n\n${results}`,
-            },
-          ],
-        };
-      } catch (error) {
-        console.error('[search_docs] Handler error:', error);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error searching "${args.provider_key}" for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+      },
+    }),
+  }),
+});

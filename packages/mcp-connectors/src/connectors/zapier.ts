@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface ZapierAction {
   id: string;
@@ -108,151 +107,89 @@ class ZapierClient {
   }
 }
 
-export const ZapierCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-});
-
-export type ZapierCredentials = z.infer<typeof ZapierCredentialsSchema>;
-
-export const ZapierConnectorMetadata = {
-  key: 'zapier',
+export const ZapierConnectorConfig = mcpConnectorConfig({
   name: 'Zapier',
-  description: 'Automation platform',
+  key: 'zapier',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/zapier/filled/svg',
-  examplePrompt: 'Trigger Zapier zaps',
-  categories: ['automation', 'integration'],
-  credentialsSchema: ZapierCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createZapierServer(credentials: ZapierCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Zapier',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'zapier_list_actions',
-    'List all available Zapier actions for the authenticated user',
-    {},
-    async (_args) => {
-      try {
-        const client = new ZapierClient(credentials.apiKey);
-        const response = await client.listActions();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list actions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'zapier_search_actions',
-    'Search for Zapier actions by app name or keywords',
-    {
-      query: z.string().describe('Search query for actions (app name, keywords, etc.)'),
-    },
-    async (args) => {
-      try {
-        const client = new ZapierClient(credentials.apiKey);
-        const response = await client.searchActions(args.query);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to search actions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'zapier_execute_action',
-    'Execute a specific Zapier action with provided parameters',
-    {
-      action_id: z.string().describe('The ID of the action to execute'),
-      parameters: z.record(z.unknown()).describe('Parameters to pass to the action'),
-    },
-    async (args) => {
-      try {
-        const client = new ZapierClient(credentials.apiKey);
-        const response = await client.executeAction(args.action_id, args.parameters);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to execute action: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'zapier_get_action_details',
-    'Get detailed information about a specific Zapier action including input fields',
-    {
-      action_id: z.string().describe('The ID of the action to get details for'),
-    },
-    async (args) => {
-      try {
-        const client = new ZapierClient(credentials.apiKey);
-        const response = await client.getActionDetails(args.action_id);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(response, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get action details: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'Zapier API Key from your Zapier account :: sk-xxx :: https://nla.zapier.com/'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'List all available Zapier actions, execute a Gmail send email action, or search for Slack actions.',
+  tools: (tool) => ({
+    LIST_ACTIONS: tool({
+      name: 'zapier_list_actions',
+      description: 'List all available Zapier actions for the authenticated user',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new ZapierClient(apiKey);
+          const response = await client.listActions();
+          return JSON.stringify(response);
+        } catch (error) {
+          return `Failed to list actions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    SEARCH_ACTIONS: tool({
+      name: 'zapier_search_actions',
+      description: 'Search for Zapier actions by app name or keywords',
+      schema: z.object({
+        query: z.string().describe('Search query for actions (app name, keywords, etc.)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new ZapierClient(apiKey);
+          const response = await client.searchActions(args.query);
+          return JSON.stringify(response);
+        } catch (error) {
+          return `Failed to search actions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    EXECUTE_ACTION: tool({
+      name: 'zapier_execute_action',
+      description: 'Execute a specific Zapier action with provided parameters',
+      schema: z.object({
+        action_id: z.string().describe('The ID of the action to execute'),
+        parameters: z.record(z.unknown()).describe('Parameters to pass to the action'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new ZapierClient(apiKey);
+          const response = await client.executeAction(args.action_id, args.parameters);
+          return JSON.stringify(response);
+        } catch (error) {
+          return `Failed to execute action: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_ACTION_DETAILS: tool({
+      name: 'zapier_get_action_details',
+      description:
+        'Get detailed information about a specific Zapier action including input fields',
+      schema: z.object({
+        action_id: z.string().describe('The ID of the action to get details for'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new ZapierClient(apiKey);
+          const response = await client.getActionDetails(args.action_id);
+          return JSON.stringify(response);
+        } catch (error) {
+          return `Failed to get action details: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

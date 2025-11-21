@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 // LinkedIn API interfaces
 interface LinkedInCompany {
@@ -33,14 +32,27 @@ interface LinkedInOrganization {
   organizationType?: string;
 }
 
+// LinkedIn OAuth2 Configuration for Client Credentials Flow (2-legged OAuth)
+const LINKEDIN_OAUTH2_CONFIG = {
+  tokenUrl: 'https://www.linkedin.com/oauth/v2/accessToken',
+  scopes: [], // Client credentials flow doesn't use scopes in the same way
+} as const;
+
+// OAuth2 credentials schema for LinkedIn
+const linkedInOAuth2Schema = z.object({
+  accessToken: z.string().describe('OAuth2 access token'),
+  tokenType: z.string().default('Bearer').describe('Token type'),
+  expiresAt: z.number().optional().describe('Token expiration timestamp'),
+});
+
+type LinkedInOAuth2Credentials = z.infer<typeof linkedInOAuth2Schema>;
+
 class LinkedInClient {
   private baseUrl = 'https://api.linkedin.com/v2';
-  private accessToken: string;
-  private tokenType: string;
+  private oauth2Credentials: LinkedInOAuth2Credentials;
 
-  constructor(accessToken: string, tokenType = 'Bearer') {
-    this.accessToken = accessToken;
-    this.tokenType = tokenType;
+  constructor(oauth2Credentials: LinkedInOAuth2Credentials) {
+    this.oauth2Credentials = oauth2Credentials;
   }
 
   private async authenticatedFetch(
@@ -48,7 +60,10 @@ class LinkedInClient {
     options: RequestInit = {}
   ): Promise<Response> {
     const headers = new Headers(options.headers);
-    headers.set('Authorization', `${this.tokenType} ${this.accessToken}`);
+    headers.set(
+      'Authorization',
+      `${this.oauth2Credentials.tokenType} ${this.oauth2Credentials.accessToken}`
+    );
     headers.set('X-Restli-Protocol-Version', '2.0.0');
     headers.set('LinkedIn-Version', '202401');
 
@@ -131,216 +146,196 @@ class LinkedInClient {
   }
 }
 
-export const LinkedInCredentialsSchema = z.object({
-  clientId: z.string().describe('OAuth client ID'),
-  clientSecret: z.string().describe('OAuth client secret'),
-  accessToken: z.string().describe('OAuth access token').optional(),
-  tokenType: z.string().describe('tokenType value').optional(),
-});
-
-export type LinkedInCredentials = z.infer<typeof LinkedInCredentialsSchema>;
-
-export const LinkedinConnectorMetadata = {
-  key: 'linkedin',
+// Connector configuration
+export const LinkedInConnectorConfig = mcpConnectorConfig({
   name: 'LinkedIn',
-  description: 'Professional networking',
+  key: 'linkedin',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/linkedin/filled/svg',
-  examplePrompt: 'Post to LinkedIn',
-  categories: ['social', 'professional'],
-  credentialsSchema: LinkedInCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+  credentials: z.object({
+    clientId: z
+      .string()
+      .describe(
+        'LinkedIn OAuth2 Client ID. Get from LinkedIn Developer Portal: 1) Go to developer.linkedin.com and sign in. 2) Click "Create App". 3) Fill app details (name, company, description). 4) After creation, find your Client ID on the Auth tab. For detailed documentation, see: https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication#application-authorization-2-legged-oauth-client-credential-flow :: 861abc123def45'
+      ),
+    clientSecret: z
+      .string()
+      .describe(
+        'LinkedIn OAuth2 Client Secret. Found on the Auth tab of your LinkedIn app, next to the Client ID. Keep this secure and never share it publicly :: AbCdEfGhIjKlMnOp'
+      ),
+  }),
+  setup: z.object({}),
+  oauth2: {
+    schema: linkedInOAuth2Schema,
+    token: async (credentials) => {
+      // LinkedIn Client Credentials Flow (2-legged OAuth)
+      const body = new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: credentials.clientId,
+        client_secret: credentials.clientSecret,
+      });
 
-export function createLinkedInServer(credentials: LinkedInCredentials): McpServer {
-  const server = new McpServer({
-    name: 'LinkedIn',
-    version: '1.0.0',
-  });
+      const response = await fetch(LINKEDIN_OAUTH2_CONFIG.tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+      });
 
-  // Helper function to get access token (handles OAuth2 token fetching if needed)
-  async function getAccessToken(): Promise<{ accessToken: string; tokenType: string }> {
-    if (credentials.accessToken) {
-      return {
-        accessToken: credentials.accessToken,
-        tokenType: credentials.tokenType || 'Bearer',
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `LinkedIn token request failed: ${response.status} ${response.statusText}. ${errorText}`
+        );
+      }
+
+      // OAuth2 token response structure varies by provider, using any for flexibility
+      const tokenData = (await response.json()) as {
+        access_token: string;
+        token_type: string;
+        expires_in: number;
       };
-    }
 
-    // Fetch new token using client credentials flow
-    const body = new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: credentials.clientId,
-      client_secret: credentials.clientSecret,
-    });
-
-    const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body.toString(),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `LinkedIn token request failed: ${response.status} ${response.statusText}. ${errorText}`
-      );
-    }
-
-    const tokenData = (await response.json()) as {
-      access_token: string;
-      token_type: string;
-      expires_in: number;
-    };
-
-    // Update credentials for future use
-    credentials.accessToken = tokenData.access_token;
-    credentials.tokenType = tokenData.token_type || 'Bearer';
-
-    return {
-      accessToken: tokenData.access_token,
-      tokenType: tokenData.token_type || 'Bearer',
-    };
-  }
-
-  server.tool(
-    'linkedin_search_companies',
-    'Search for companies on LinkedIn',
-    {
-      keywords: z.string().describe('Search keywords'),
-      start: z.number().optional().default(0).describe('Starting index for pagination'),
-      count: z.number().optional().default(10).describe('Number of results to return'),
+      return {
+        accessToken: tokenData.access_token,
+        tokenType: tokenData.token_type || 'Bearer',
+        expiresAt: tokenData.expires_in
+          ? Date.now() + tokenData.expires_in * 1000
+          : undefined,
+      };
     },
-    async (args) => {
-      try {
-        const { accessToken, tokenType } = await getAccessToken();
-        const client = new LinkedInClient(accessToken, tokenType);
+    refresh: async (credentials, _oauth2) => {
+      // LinkedIn Client Credentials Flow doesn't support refresh tokens
+      // When the token expires, we need to request a new one
+      const body = new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: credentials.clientId,
+        client_secret: credentials.clientSecret,
+      });
+
+      const response = await fetch(LINKEDIN_OAUTH2_CONFIG.tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `LinkedIn token refresh failed: ${response.status} ${response.statusText}. ${errorText}`
+        );
+      }
+
+      // OAuth2 token response structure varies by provider, using any for flexibility
+      const tokenData = (await response.json()) as {
+        access_token: string;
+        token_type: string;
+        expires_in: number;
+      };
+
+      return {
+        accessToken: tokenData.access_token,
+        tokenType: tokenData.token_type || 'Bearer',
+        expiresAt: tokenData.expires_in
+          ? Date.now() + tokenData.expires_in * 1000
+          : undefined,
+      };
+    },
+  },
+  tools: (tool) => ({
+    SEARCH_COMPANIES: tool({
+      name: 'linkedin_search_companies',
+      description: 'Search for companies on LinkedIn',
+      schema: z.object({
+        keywords: z.string().describe('Search keywords'),
+        start: z.number().optional().default(0).describe('Starting index for pagination'),
+        count: z.number().optional().default(10).describe('Number of results to return'),
+      }),
+      handler: async (args, context) => {
+        const oauth2Raw = await context.getOauth2Credentials?.();
+        if (!oauth2Raw) {
+          throw new Error('OAuth2 credentials not available');
+        }
+
+        // Parse the raw OAuth2 credentials to ensure they match our schema
+        const oauth2 = linkedInOAuth2Schema.parse(oauth2Raw);
+
+        const client = new LinkedInClient(oauth2);
         const result = await client.searchCompanies(
           args.keywords,
           args.start,
           args.count
         );
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to search companies: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(result, null, 2);
+      },
+    }),
+    GET_COMPANY: tool({
+      name: 'linkedin_get_company',
+      description: 'Get detailed information about a LinkedIn company',
+      schema: z.object({
+        companyId: z.string().describe('LinkedIn company ID'),
+      }),
+      handler: async (args, context) => {
+        const oauth2Raw = await context.getOauth2Credentials?.();
+        if (!oauth2Raw) {
+          throw new Error('OAuth2 credentials not available');
+        }
 
-  server.tool(
-    'linkedin_get_company',
-    'Get detailed information about a LinkedIn company',
-    {
-      companyId: z.string().describe('LinkedIn company ID'),
-    },
-    async (args) => {
-      try {
-        const { accessToken, tokenType } = await getAccessToken();
-        const client = new LinkedInClient(accessToken, tokenType);
+        // Parse the raw OAuth2 credentials to ensure they match our schema
+        const oauth2 = linkedInOAuth2Schema.parse(oauth2Raw);
+
+        const client = new LinkedInClient(oauth2);
         const company = await client.getCompany(args.companyId);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(company, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get company: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(company, null, 2);
+      },
+    }),
+    SEARCH_ORGANIZATIONS: tool({
+      name: 'linkedin_search_organizations',
+      description: 'Search for organizations by vanity name',
+      schema: z.object({
+        vanityName: z.string().describe('Organization vanity name (e.g., "microsoft")'),
+      }),
+      handler: async (args, context) => {
+        const oauth2Raw = await context.getOauth2Credentials?.();
+        if (!oauth2Raw) {
+          throw new Error('OAuth2 credentials not available');
+        }
 
-  server.tool(
-    'linkedin_search_organizations',
-    'Search for organizations by vanity name',
-    {
-      vanityName: z.string().describe('Organization vanity name (e.g., "microsoft")'),
-    },
-    async (args) => {
-      try {
-        const { accessToken, tokenType } = await getAccessToken();
-        const client = new LinkedInClient(accessToken, tokenType);
+        // Parse the raw OAuth2 credentials to ensure they match our schema
+        const oauth2 = linkedInOAuth2Schema.parse(oauth2Raw);
+
+        const client = new LinkedInClient(oauth2);
         const result = await client.searchOrganizations(args.vanityName);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to search organizations: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+        return JSON.stringify(result, null, 2);
+      },
+    }),
+    GET_ORGANIZATION: tool({
+      name: 'linkedin_get_organization',
+      description: 'Get detailed information about a LinkedIn organization',
+      schema: z.object({
+        organizationId: z.string().describe('LinkedIn organization ID'),
+      }),
+      handler: async (args, context) => {
+        const oauth2Raw = await context.getOauth2Credentials?.();
+        if (!oauth2Raw) {
+          throw new Error('OAuth2 credentials not available');
+        }
 
-  server.tool(
-    'linkedin_get_organization',
-    'Get detailed information about a LinkedIn organization',
-    {
-      organizationId: z.string().describe('LinkedIn organization ID'),
-    },
-    async (args) => {
-      try {
-        const { accessToken, tokenType } = await getAccessToken();
-        const client = new LinkedInClient(accessToken, tokenType);
+        // Parse the raw OAuth2 credentials to ensure they match our schema
+        const oauth2 = linkedInOAuth2Schema.parse(oauth2Raw);
+
+        const client = new LinkedInClient(oauth2);
         const organization = await client.getOrganization(args.organizationId);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(organization, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get organization: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+        return JSON.stringify(organization, null, 2);
+      },
+    }),
+  }),
+  examplePrompt: 'Search for companies related to "artificial intelligence" on LinkedIn',
+});

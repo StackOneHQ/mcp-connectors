@@ -1,8 +1,9 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { describe, expect, it } from 'vitest';
-import { extractToolsFromServer } from '../__mocks__/server-tools';
-import { createExaServer } from './exa';
+import { describe, expect, it, type vi } from 'vitest';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { ExaConnectorConfig } from './exa';
 
 const mockSearchResponse = {
   results: [
@@ -54,15 +55,21 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.search?.handler({
-          query: 'test query',
-          numResults: 10,
-          includeText: false,
-          type: 'auto',
+        const tool = ExaConnectorConfig.tools.SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+            numResults: 10,
+            includeText: false,
+            type: 'auto',
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -84,13 +91,19 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.search?.handler({
-          query: 'test query',
-          includeText: true,
+        const tool = ExaConnectorConfig.tools.SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+            includeText: true,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -107,12 +120,18 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'invalid-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.search?.handler({
-          query: 'test query',
+        const tool = ExaConnectorConfig.tools.SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'invalid-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -130,12 +149,18 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.search?.handler({
-          query: 'test query',
+        const tool = ExaConnectorConfig.tools.SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -153,12 +178,18 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.search?.handler({
-          query: 'nonexistent query',
+        const tool = ExaConnectorConfig.tools.SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'nonexistent query',
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -177,19 +208,25 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        await tools.search?.handler({
-          query: 'test query',
-          type: 'neural',
-          category: 'research paper',
-          includeDomains: ['arxiv.org'],
-          excludeDomains: ['example.com'],
-          startPublishedDate: '2024-01-01',
-          endPublishedDate: '2024-12-31',
-          useAutoprompt: false,
+        const tool = ExaConnectorConfig.tools.SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        await tool.handler(
+          {
+            query: 'test query',
+            type: 'neural',
+            category: 'research paper',
+            includeDomains: ['arxiv.org'],
+            excludeDomains: ['example.com'],
+            startPublishedDate: '2024-01-01',
+            endPublishedDate: '2024-12-31',
+            useAutoprompt: false,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -217,15 +254,21 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.get_contents?.handler({
-          ids: ['test-id-1'],
-          text: true,
-          highlights: true,
-          summary: true,
+        const tool = ExaConnectorConfig.tools.GET_CONTENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            ids: ['test-id-1'],
+            text: true,
+            highlights: true,
+            summary: true,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -246,12 +289,18 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.get_contents?.handler({
-          ids: ['invalid-id'],
+        const tool = ExaConnectorConfig.tools.GET_CONTENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            ids: ['invalid-id'],
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -271,13 +320,19 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        await tools.get_contents?.handler({
-          ids: ['id-1', 'id-2', 'id-3'],
-          text: true,
+        const tool = ExaConnectorConfig.tools.GET_CONTENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        await tool.handler(
+          {
+            ids: ['id-1', 'id-2', 'id-3'],
+            text: true,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -299,14 +354,20 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.neural_search?.handler({
-          query: 'semantic search query',
-          numResults: 5,
-          category: 'research paper',
+        const tool = ExaConnectorConfig.tools.NEURAL_SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'semantic search query',
+            numResults: 5,
+            category: 'research paper',
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -326,12 +387,18 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        await tools.neural_search?.handler({
-          query: 'semantic query',
+        const tool = ExaConnectorConfig.tools.NEURAL_SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        await tool.handler(
+          {
+            query: 'semantic query',
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -348,12 +415,18 @@ describe('#ExaConnectorConfig', () => {
         );
         server.listen();
 
-        const mcpServer = createExaServer({ apiKey: 'test-api-key' });
-        const tools = extractToolsFromServer(mcpServer);
-
-        const actual = await tools.neural_search?.handler({
-          query: 'test query',
+        const tool = ExaConnectorConfig.tools.NEURAL_SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
+          apiKey: 'test-api-key',
         });
+
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+          },
+          mockContext
+        );
 
         server.close();
 

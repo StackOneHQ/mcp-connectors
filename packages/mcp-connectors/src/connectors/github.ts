@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface GitHubRepository {
   id: number;
@@ -311,410 +310,274 @@ class GitHubClient {
   }
 }
 
-export const GitHubCredentialsSchema = z.object({
-  token: z.string().describe('API token for authentication'),
-});
-
-export type GitHubCredentials = z.infer<typeof GitHubCredentialsSchema>;
-
-export const GithubConnectorMetadata = {
-  key: 'github',
+export const GitHubConnectorConfig = mcpConnectorConfig({
   name: 'GitHub',
-  description: 'Repository and issue management',
+  key: 'github',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/github/filled/svg',
-  examplePrompt: 'List my GitHub repositories',
-  categories: ['development', 'version-control'],
-  credentialsSchema: GitHubCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createGitHubServer(credentials: GitHubCredentials): McpServer {
-  const server = new McpServer({
-    name: 'GitHub',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'github_get_repository',
-    'Get information about a specific GitHub repository',
-    {
-      owner: z.string().describe('Repository owner (username or organization)'),
-      repo: z.string().describe('Repository name'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const repository = await client.getRepository(args.owner, args.repo);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(repository, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get repository: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_list_repositories',
-    'List repositories for a user, organization, or authenticated user',
-    {
-      username: z.string().optional().describe('Username to list repositories for'),
-      org: z.string().optional().describe('Organization to list repositories for'),
-      limit: z.number().default(30).describe('Maximum number of repositories to return'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const repositories = await client.listRepositories(
-          args.username,
-          args.org,
-          args.limit
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(repositories, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list repositories: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_list_issues',
-    'List issues for a repository',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      state: z
-        .enum(['open', 'closed', 'all'])
-        .default('open')
-        .describe('Issue state filter'),
-      limit: z.number().default(30).describe('Maximum number of issues to return'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const issues = await client.listIssues(
-          args.owner,
-          args.repo,
-          args.state,
-          args.limit
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(issues, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_get_issue',
-    'Get details of a specific issue',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      issueNumber: z.number().describe('Issue number'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const issue = await client.getIssue(args.owner, args.repo, args.issueNumber);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(issue, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_create_issue',
-    'Create a new issue in a repository',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      title: z.string().describe('Issue title'),
-      body: z.string().optional().describe('Issue body/description'),
-      labels: z.array(z.string()).optional().describe('Labels to apply to the issue'),
-      assignees: z
-        .array(z.string())
-        .optional()
-        .describe('Usernames to assign to the issue'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const issue = await client.createIssue(
-          args.owner,
-          args.repo,
-          args.title,
-          args.body,
-          args.labels,
-          args.assignees
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(issue, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_list_pull_requests',
-    'List pull requests for a repository',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      state: z
-        .enum(['open', 'closed', 'all'])
-        .default('open')
-        .describe('Pull request state filter'),
-      limit: z.number().default(30).describe('Maximum number of pull requests to return'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const pullRequests = await client.listPullRequests(
-          args.owner,
-          args.repo,
-          args.state,
-          args.limit
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(pullRequests, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list pull requests: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_get_pull_request',
-    'Get details of a specific pull request',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      pullNumber: z.number().describe('Pull request number'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const pullRequest = await client.getPullRequest(
-          args.owner,
-          args.repo,
-          args.pullNumber
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(pullRequest, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get pull request: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_get_user',
-    'Get information about a GitHub user',
-    {
-      username: z
-        .string()
-        .optional()
-        .describe('Username to get info for (omit for authenticated user)'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const user = await client.getUser(args.username);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_list_files',
-    'List files and directories in a repository path',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      path: z.string().default('').describe('Path to list (empty for root)'),
-      ref: z
-        .string()
-        .optional()
-        .describe('Branch, tag, or commit SHA (default: default branch)'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const files = await client.listFiles(args.owner, args.repo, args.path, args.ref);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(files, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list files: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'github_get_file_content',
-    'Get the content of a file from a repository',
-    {
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
-      path: z.string().describe('File path'),
-      ref: z
-        .string()
-        .optional()
-        .describe('Branch, tag, or commit SHA (default: default branch)'),
-    },
-    async (args) => {
-      try {
-        const client = new GitHubClient(credentials.token);
-        const content = await client.getFileContent(
-          args.owner,
-          args.repo,
-          args.path,
-          args.ref
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: content,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  credentials: z.object({
+    token: z
+      .string()
+      .describe(
+        'GitHub Personal Access Token or GitHub App token :: ghp_1234567890abcdefGHIJKLMNOP :: https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'List all open issues in my main repository, create a new feature request issue, and check the latest pull requests that need review.',
+  tools: (tool) => ({
+    GET_REPOSITORY: tool({
+      name: 'github_get_repository',
+      description: 'Get information about a specific GitHub repository',
+      schema: z.object({
+        owner: z.string().describe('Repository owner (username or organization)'),
+        repo: z.string().describe('Repository name'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const repository = await client.getRepository(args.owner, args.repo);
+          return JSON.stringify(repository, null, 2);
+        } catch (error) {
+          return `Failed to get repository: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_REPOSITORIES: tool({
+      name: 'github_list_repositories',
+      description: 'List repositories for a user, organization, or authenticated user',
+      schema: z.object({
+        username: z.string().optional().describe('Username to list repositories for'),
+        org: z.string().optional().describe('Organization to list repositories for'),
+        limit: z
+          .number()
+          .default(30)
+          .describe('Maximum number of repositories to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const repositories = await client.listRepositories(
+            args.username,
+            args.org,
+            args.limit
+          );
+          return JSON.stringify(repositories, null, 2);
+        } catch (error) {
+          return `Failed to list repositories: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_ISSUES: tool({
+      name: 'github_list_issues',
+      description: 'List issues for a repository',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        state: z
+          .enum(['open', 'closed', 'all'])
+          .default('open')
+          .describe('Issue state filter'),
+        limit: z.number().default(30).describe('Maximum number of issues to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const issues = await client.listIssues(
+            args.owner,
+            args.repo,
+            args.state,
+            args.limit
+          );
+          return JSON.stringify(issues, null, 2);
+        } catch (error) {
+          return `Failed to list issues: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_ISSUE: tool({
+      name: 'github_get_issue',
+      description: 'Get details of a specific issue',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        issueNumber: z.number().describe('Issue number'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const issue = await client.getIssue(args.owner, args.repo, args.issueNumber);
+          return JSON.stringify(issue, null, 2);
+        } catch (error) {
+          return `Failed to get issue: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_ISSUE: tool({
+      name: 'github_create_issue',
+      description: 'Create a new issue in a repository',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        title: z.string().describe('Issue title'),
+        body: z.string().optional().describe('Issue body/description'),
+        labels: z.array(z.string()).optional().describe('Labels to apply to the issue'),
+        assignees: z
+          .array(z.string())
+          .optional()
+          .describe('Usernames to assign to the issue'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const issue = await client.createIssue(
+            args.owner,
+            args.repo,
+            args.title,
+            args.body,
+            args.labels,
+            args.assignees
+          );
+          return JSON.stringify(issue, null, 2);
+        } catch (error) {
+          return `Failed to create issue: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_PULL_REQUESTS: tool({
+      name: 'github_list_pull_requests',
+      description: 'List pull requests for a repository',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        state: z
+          .enum(['open', 'closed', 'all'])
+          .default('open')
+          .describe('Pull request state filter'),
+        limit: z
+          .number()
+          .default(30)
+          .describe('Maximum number of pull requests to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const pullRequests = await client.listPullRequests(
+            args.owner,
+            args.repo,
+            args.state,
+            args.limit
+          );
+          return JSON.stringify(pullRequests, null, 2);
+        } catch (error) {
+          return `Failed to list pull requests: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_PULL_REQUEST: tool({
+      name: 'github_get_pull_request',
+      description: 'Get details of a specific pull request',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        pullNumber: z.number().describe('Pull request number'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const pullRequest = await client.getPullRequest(
+            args.owner,
+            args.repo,
+            args.pullNumber
+          );
+          return JSON.stringify(pullRequest, null, 2);
+        } catch (error) {
+          return `Failed to get pull request: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_USER: tool({
+      name: 'github_get_user',
+      description: 'Get information about a GitHub user',
+      schema: z.object({
+        username: z
+          .string()
+          .optional()
+          .describe('Username to get info for (omit for authenticated user)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const user = await client.getUser(args.username);
+          return JSON.stringify(user, null, 2);
+        } catch (error) {
+          return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_FILES: tool({
+      name: 'github_list_files',
+      description: 'List files and directories in a repository path',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        path: z.string().default('').describe('Path to list (empty for root)'),
+        ref: z
+          .string()
+          .optional()
+          .describe('Branch, tag, or commit SHA (default: default branch)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const files = await client.listFiles(
+            args.owner,
+            args.repo,
+            args.path,
+            args.ref
+          );
+          return JSON.stringify(files, null, 2);
+        } catch (error) {
+          return `Failed to list files: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_FILE_CONTENT: tool({
+      name: 'github_get_file_content',
+      description: 'Get the content of a file from a repository',
+      schema: z.object({
+        owner: z.string().describe('Repository owner'),
+        repo: z.string().describe('Repository name'),
+        path: z.string().describe('File path'),
+        ref: z
+          .string()
+          .optional()
+          .describe('Branch, tag, or commit SHA (default: default branch)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { token } = await context.getCredentials();
+          const client = new GitHubClient(token);
+          const content = await client.getFileContent(
+            args.owner,
+            args.repo,
+            args.path,
+            args.ref
+          );
+          return content;
+        } catch (error) {
+          return `Failed to get file content: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 const GRAPHY_API_BASE = 'https://api.graphy.app/rest/v1';
 
@@ -238,420 +237,274 @@ const handleGraphyError = (error: unknown): string => {
   return String(error);
 };
 
-export const GraphyCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-});
-
-export type GraphyCredentials = z.infer<typeof GraphyCredentialsSchema>;
-
-export const GraphyConnectorMetadata = {
-  key: 'graphy',
+export const GraphyConnectorConfig = mcpConnectorConfig({
   name: 'Graphy',
-  description: 'Data visualization and analytics',
+  key: 'graphy',
   version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/graphy/filled/svg',
-  examplePrompt: 'Create visualizations with Graphy',
-  categories: ['analytics', 'visualization'],
-  credentialsSchema: GraphyCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createGraphyServer(credentials: GraphyCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Graphy',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'graphy_list_boards',
-    'List all boards in your Graphy account',
-    {
-      limit: z
-        .number()
-        .min(1)
-        .max(100)
-        .optional()
-        .default(50)
-        .describe('Number of boards to return (max 100)'),
-      offset: z
-        .number()
-        .min(0)
-        .optional()
-        .default(0)
-        .describe('Number of boards to skip for pagination'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const boards = await client.getBoards(args.limit, args.offset);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(boards, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_get_board',
-    'Get details of a specific board by ID',
-    {
-      boardId: z.string().describe('The ID of the board to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const board = await client.getBoard(args.boardId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(board, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_create_board',
-    'Create a new board in Graphy',
-    {
-      title: z.string().describe('Board title'),
-      type: z.string().describe('Board type (bar, line, pie, scatter, area, etc.)'),
-      description: z.string().optional().describe('Board description'),
-      datasetId: z.string().optional().describe('ID of dataset to use for the board'),
-      config: z.record(z.unknown()).optional().describe('Board configuration options'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const board = await client.createBoard(
-          args.title,
-          args.type,
-          args.description,
-          args.datasetId,
-          args.config
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(board, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_update_board',
-    'Update an existing board',
-    {
-      boardId: z.string().describe('The ID of the board to update'),
-      title: z.string().optional().describe('New board title'),
-      description: z.string().optional().describe('New board description'),
-      config: z
-        .record(z.unknown())
-        .optional()
-        .describe('Updated board configuration options'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const board = await client.updateBoard(
-          args.boardId,
-          args.title,
-          args.description,
-          args.config
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(board, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_delete_board',
-    'Delete a board by ID',
-    {
-      boardId: z.string().describe('The ID of the board to delete'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        await client.deleteBoard(args.boardId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Board ${args.boardId} deleted successfully`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_list_datasets',
-    'List all datasets in your Graphy account',
-    {
-      limit: z
-        .number()
-        .min(1)
-        .max(100)
-        .optional()
-        .default(50)
-        .describe('Number of datasets to return (max 100)'),
-      offset: z
-        .number()
-        .min(0)
-        .optional()
-        .default(0)
-        .describe('Number of datasets to skip for pagination'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const datasets = await client.getDatasets(args.limit, args.offset);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(datasets, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_get_dataset',
-    'Get details of a specific dataset by ID',
-    {
-      datasetId: z.string().describe('The ID of the dataset to retrieve'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const dataset = await client.getDataset(args.datasetId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(dataset, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_create_dataset',
-    'Create a new dataset with data',
-    {
-      name: z.string().describe('Dataset name'),
-      data: z.array(z.array(z.unknown())).describe('Array of data rows'),
-      columns: z
-        .array(
-          z.object({
-            name: z.string().describe('Column name'),
-            type: z.string().describe('Column data type (string, number, date, boolean)'),
-          })
-        )
-        .describe('Array of column definitions'),
-      description: z.string().optional().describe('Dataset description'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const dataset = await client.createDataset(
-          args.name,
-          args.data,
-          args.columns as Array<{ name: string; type: string }>,
-          args.description
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(dataset, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_get_board_data',
-    'Get the underlying data for a board',
-    {
-      boardId: z.string().describe('The ID of the board to get data for'),
-      format: z
-        .enum(['json', 'csv', 'xlsx'])
-        .optional()
-        .default('json')
-        .describe('Data format to return'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const data = await client.getBoardData(args.boardId, args.format);
-        let resultText: string;
-        if (args.format === 'json') {
-          resultText = JSON.stringify(data, null, 2);
-        } else if (
-          args.format === 'xlsx' &&
-          typeof data === 'string' &&
-          data.startsWith('data:')
-        ) {
-          resultText = data;
-        } else {
-          resultText = String(data);
+  logo: 'https://stackone-logos.com/api/graphy/squared/png',
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'Graphy API key from Account settings > API keys :: token_1234567890abcdef :: Create at https://visualize.graphy.app/account/api'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Create a bar chart for sales data, list all my existing boards, and share a board publicly to get an embed URL. Show me all my datasets and create a line chart from the revenue dataset to visualize monthly trends. Create a pie chart showing user distribution by country from my analytics dataset, then share it publicly.',
+  tools: (tool) => ({
+    LIST_BOARDS: tool({
+      name: 'graphy_list_boards',
+      description: 'List all boards in your Graphy account',
+      schema: z.object({
+        limit: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .default(50)
+          .describe('Number of boards to return (max 100)'),
+        offset: z
+          .number()
+          .min(0)
+          .optional()
+          .default(0)
+          .describe('Number of boards to skip for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const boards = await client.getBoards(args.limit, args.offset);
+          return JSON.stringify(boards, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
         }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: resultText,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'graphy_share_board',
-    'Share a board publicly and get an embed URL',
-    {
-      boardId: z.string().describe('The ID of the board to share'),
-      isPublic: z
-        .boolean()
-        .optional()
-        .default(true)
-        .describe('Whether to make the board publicly accessible'),
-    },
-    async (args) => {
-      try {
-        const client = new GraphyClient(credentials.apiKey);
-        const embedUrl = await client.shareBoard(args.boardId, args.isPublic);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Board shared successfully. Embed URL: ${embedUrl}`,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: handleGraphyError(error),
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+      },
+    }),
+    GET_BOARD: tool({
+      name: 'graphy_get_board',
+      description: 'Get details of a specific board by ID',
+      schema: z.object({
+        boardId: z.string().describe('The ID of the board to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const board = await client.getBoard(args.boardId);
+          return JSON.stringify(board, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    CREATE_BOARD: tool({
+      name: 'graphy_create_board',
+      description: 'Create a new board in Graphy',
+      schema: z.object({
+        title: z.string().describe('Board title'),
+        type: z.string().describe('Board type (bar, line, pie, scatter, area, etc.)'),
+        description: z.string().optional().describe('Board description'),
+        datasetId: z.string().optional().describe('ID of dataset to use for the board'),
+        config: z.record(z.unknown()).optional().describe('Board configuration options'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const board = await client.createBoard(
+            args.title,
+            args.type,
+            args.description,
+            args.datasetId,
+            args.config
+          );
+          return JSON.stringify(board, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    UPDATE_BOARD: tool({
+      name: 'graphy_update_board',
+      description: 'Update an existing board',
+      schema: z.object({
+        boardId: z.string().describe('The ID of the board to update'),
+        title: z.string().optional().describe('New board title'),
+        description: z.string().optional().describe('New board description'),
+        config: z
+          .record(z.unknown())
+          .optional()
+          .describe('Updated board configuration options'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const board = await client.updateBoard(
+            args.boardId,
+            args.title,
+            args.description,
+            args.config
+          );
+          return JSON.stringify(board, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    DELETE_BOARD: tool({
+      name: 'graphy_delete_board',
+      description: 'Delete a board by ID',
+      schema: z.object({
+        boardId: z.string().describe('The ID of the board to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          await client.deleteBoard(args.boardId);
+          return `Board ${args.boardId} deleted successfully`;
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    LIST_DATASETS: tool({
+      name: 'graphy_list_datasets',
+      description: 'List all datasets in your Graphy account',
+      schema: z.object({
+        limit: z
+          .number()
+          .min(1)
+          .max(100)
+          .optional()
+          .default(50)
+          .describe('Number of datasets to return (max 100)'),
+        offset: z
+          .number()
+          .min(0)
+          .optional()
+          .default(0)
+          .describe('Number of datasets to skip for pagination'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const datasets = await client.getDatasets(args.limit, args.offset);
+          return JSON.stringify(datasets, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    GET_DATASET: tool({
+      name: 'graphy_get_dataset',
+      description: 'Get details of a specific dataset by ID',
+      schema: z.object({
+        datasetId: z.string().describe('The ID of the dataset to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const dataset = await client.getDataset(args.datasetId);
+          return JSON.stringify(dataset, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    CREATE_DATASET: tool({
+      name: 'graphy_create_dataset',
+      description: 'Create a new dataset with data',
+      schema: z.object({
+        name: z.string().describe('Dataset name'),
+        data: z.array(z.array(z.unknown())).describe('Array of data rows'),
+        columns: z
+          .array(
+            z.object({
+              name: z.string().describe('Column name'),
+              type: z
+                .string()
+                .describe('Column data type (string, number, date, boolean)'),
+            })
+          )
+          .describe('Array of column definitions'),
+        description: z.string().optional().describe('Dataset description'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const dataset = await client.createDataset(
+            args.name,
+            args.data,
+            args.columns,
+            args.description
+          );
+          return JSON.stringify(dataset, null, 2);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    GET_BOARD_DATA: tool({
+      name: 'graphy_get_board_data',
+      description: 'Get the underlying data for a board',
+      schema: z.object({
+        boardId: z.string().describe('The ID of the board to get data for'),
+        format: z
+          .enum(['json', 'csv', 'xlsx'])
+          .optional()
+          .default('json')
+          .describe('Data format to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const data = await client.getBoardData(args.boardId, args.format);
+          if (args.format === 'json') {
+            return JSON.stringify(data, null, 2);
+          }
+          // For binary formats like XLSX, data is already base64-encoded data URL
+          if (
+            args.format === 'xlsx' &&
+            typeof data === 'string' &&
+            data.startsWith('data:')
+          ) {
+            return data;
+          }
+          return String(data);
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+    SHARE_BOARD: tool({
+      name: 'graphy_share_board',
+      description: 'Share a board publicly and get an embed URL',
+      schema: z.object({
+        boardId: z.string().describe('The ID of the board to share'),
+        isPublic: z
+          .boolean()
+          .optional()
+          .default(true)
+          .describe('Whether to make the board publicly accessible'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new GraphyClient(apiKey);
+          const embedUrl = await client.shareBoard(args.boardId, args.isPublic);
+          return `Board shared successfully. Embed URL: ${embedUrl}`;
+        } catch (error) {
+          return handleGraphyError(error);
+        }
+      },
+    }),
+  }),
+});

@@ -1,94 +1,226 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { extractToolsFromServer } from '../__mocks__/server-tools';
-import { createParallelServer } from './parallel';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { ParallelConnectorConfig } from './parallel';
 
-const PARALLEL_API_BASE = 'https://api.parallel.ai';
+const createMockContextWithCredentials = () => {
+  const mockContext = createMockConnectorContext();
+  mockContext.getCredentials = vi.fn().mockResolvedValue({ apiKey: 'test-api-key' });
+  return mockContext;
+};
 
-describe('#ParallelConnector', () => {
-  const server = setupServer();
+const mockSearchResponse = {
+  search_id: 'search_12345',
+  results: [
+    {
+      url: 'https://example.com/result1',
+      title: 'Test Result 1',
+      excerpts: [
+        'This is test content for result 1 with detailed information about the topic.',
+      ],
+    },
+    {
+      url: 'https://example.com/result2',
+      title: 'Test Result 2',
+      excerpts: [
+        'This is test content for result 2 with more details about the subject matter.',
+      ],
+    },
+  ],
+};
 
-  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-  afterEach(() => server.resetHandlers());
-  afterAll(() => server.close());
+const server = setupServer(
+  http.post('https://api.parallel.ai/alpha/search', () => {
+    return HttpResponse.json(mockSearchResponse);
+  })
+);
 
-  describe('.parallel_search', () => {
-    it('returns formatted results when the API succeeds', async () => {
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+describe('#ParallelConnectorConfig', () => {
+  describe('.SEARCH', () => {
+    it('should search with objective only', async () => {
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'What is artificial intelligence?',
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Found 2 search results');
+      expect(actual).toContain('Test Result 1');
+      expect(actual).toContain('Test Result 2');
+      expect(actual).toContain('https://example.com/result1');
+      expect(actual).toContain('https://example.com/result2');
+    });
+
+    it('should search with search queries only', async () => {
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          searchQueries: ['AI development', 'machine learning'],
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Found 2 search results');
+      expect(actual).toContain('Test Result 1');
+    });
+
+    it('should return error when neither objective nor searchQueries provided', async () => {
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler({}, createMockContextWithCredentials());
+
+      expect(actual).toBe('Error: Either objective or searchQueries must be provided.');
+    });
+
+    it('should handle search results with empty excerpts', async () => {
       server.use(
-        http.post(`${PARALLEL_API_BASE}/alpha/search`, async ({ request }) => {
-          const body = (await request.json()) as Record<string, unknown>;
-
-          expect(body.objective).toBe('Find AI news');
-          expect(body.max_results).toBe(3);
-          expect(body.processor).toBe('base');
-
+        http.post('https://api.parallel.ai/alpha/search', () => {
           return HttpResponse.json({
-            search_id: 'search_123',
+            search_id: 'search_456',
             results: [
               {
-                url: 'https://example.com/result1',
-                title: 'Result 1',
-                excerpts: ['Snippet 1'],
+                url: 'https://example.com/no-excerpts',
+                title: 'Result Without Excerpts',
+                excerpts: [],
               },
               {
-                url: 'https://example.com/result2',
-                title: 'Result 2',
-                excerpts: ['Snippet 2'],
+                url: 'https://example.com/with-excerpts',
+                title: 'Result With Excerpts',
+                excerpts: ['This has content'],
               },
             ],
           });
         })
       );
 
-      const mcpServer = createParallelServer({ apiKey: 'test-api-key' });
-      const tools = extractToolsFromServer(mcpServer);
-      const actual =
-        (await tools.parallel_search?.handler({
-          objective: 'Find AI news',
-          maxResults: 3,
-        })) ?? '';
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'test search with missing content',
+        },
+        createMockContextWithCredentials()
+      );
 
       expect(actual).toContain('Found 2 search results');
-      expect(actual).toContain('Result 1');
-      expect(actual).toContain('https://example.com/result2');
+      expect(actual).toContain('Result Without Excerpts');
+      expect(actual).toContain('Result With Excerpts');
+      expect(actual).toContain('This has content');
     });
 
-    it('returns a validation error message when objective and queries missing', async () => {
-      const mcpServer = createParallelServer({ apiKey: 'test-api-key' });
-      const tools = extractToolsFromServer(mcpServer);
-      const actual = (await tools.parallel_search?.handler({})) ?? '';
-
-      expect(actual).toBe('Error: Either objective or searchQueries must be provided.');
-    });
-
-    it('returns API error details when the request fails', async () => {
+    it('should handle long excerpts by truncating', async () => {
+      const longText = 'A'.repeat(300);
       server.use(
-        http.post(`${PARALLEL_API_BASE}/alpha/search`, () => {
-          return HttpResponse.json(
-            {
-              error: 'invalid processor',
-            },
-            {
-              status: 400,
-              statusText: 'Bad Request',
-            }
-          );
+        http.post('https://api.parallel.ai/alpha/search', () => {
+          return HttpResponse.json({
+            search_id: 'search_789',
+            results: [
+              {
+                url: 'https://example.com/long',
+                title: 'Long Content Result',
+                excerpts: [longText],
+              },
+            ],
+          });
         })
       );
 
-      const mcpServer = createParallelServer({
-        apiKey: 'test-api-key',
-        processor: 'pro',
-      });
-      const tools = extractToolsFromServer(mcpServer);
-      const actual =
-        (await tools.parallel_search?.handler({
-          objective: 'Find AI news',
-        })) ?? '';
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'test long content',
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Found 1 search results');
+      expect(actual).toContain('Long Content Result');
+      expect(actual).toContain(`${'A'.repeat(200)}...`);
+    });
+
+    it('should handle empty results', async () => {
+      server.use(
+        http.post('https://api.parallel.ai/alpha/search', () => {
+          return HttpResponse.json({
+            search_id: 'search_empty',
+            results: [],
+          });
+        })
+      );
+
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'nonexistent topic',
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toBe('No search results found for your query.');
+    });
+
+    it('should handle API error', async () => {
+      server.use(
+        http.post('https://api.parallel.ai/alpha/search', () => {
+          return new HttpResponse(null, { status: 401, statusText: 'Unauthorized' });
+        })
+      );
+
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'test search',
+        },
+        createMockContextWithCredentials()
+      );
 
       expect(actual).toContain('Failed to perform search');
-      expect(actual).toContain('400');
+      expect(actual).toContain('401 Unauthorized');
+    });
+
+    it('should use pro processor when specified', async () => {
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'Advanced search',
+          processor: 'pro',
+          maxResults: 3,
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Found 2 search results');
+    });
+
+    it('should handle both objective and searchQueries', async () => {
+      const tool = ParallelConnectorConfig.tools.SEARCH as MCPToolDefinition;
+
+      const actual = await tool.handler(
+        {
+          objective: 'AI research',
+          searchQueries: ['machine learning', 'neural networks'],
+          maxResults: 10,
+        },
+        createMockContextWithCredentials()
+      );
+
+      expect(actual).toContain('Found 2 search results');
+      expect(actual).toContain('Test Result 1');
+      expect(actual).toContain('Test Result 2');
     });
   });
 });

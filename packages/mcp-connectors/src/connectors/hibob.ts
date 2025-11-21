@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface HiBobEmployee {
   id: string;
@@ -142,304 +141,189 @@ class HiBobClient {
   }
 }
 
-export const HiBobCredentialsSchema = z.object({
-  serviceUserId: z.string().describe('serviceUserId value'),
-  serviceUserToken: z.string().describe('serviceUserToken value'),
-});
-
-export type HiBobCredentials = z.infer<typeof HiBobCredentialsSchema>;
-
-export const HibobConnectorMetadata = {
-  key: 'hibob',
+export const HiBobConnectorConfig = mcpConnectorConfig({
   name: 'HiBob',
-  description: 'HR management platform',
+  key: 'hibob',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/hibob/filled/svg',
-  examplePrompt: 'View employee data from HiBob',
-  categories: ['hr', 'people-management'],
-  credentialsSchema: HiBobCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+  credentials: z.object({
+    serviceUserId: z
+      .string()
+      .describe(
+        'HiBob Service User ID :: 1234567890 : https://apidocs.hibob.com/docs/api-service-users'
+      ),
+    serviceUserToken: z.string().describe('HiBob Service User Token :: 1234567890'),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Submit a vacation request for next week and check my current tasks and assignments.',
+  tools: (tool) => ({
+    PEOPLE_SEARCH: tool({
+      name: 'hibob_people_search',
+      description: 'Search for employees in HiBob using advanced filters',
+      schema: z.object({
+        fields: z
+          .array(z.string())
+          .optional()
+          .describe('List of field paths to return for each employee'),
+        filters: z
+          .array(
+            z.object({
+              fieldPath: z
+                .string()
+                .describe('Field path (e.g., "root.id", "root.email")'),
+              operator: z.string().describe('Operator (e.g., "equals")'),
+              values: z.array(z.string()).describe('Values to filter by'),
+            })
+          )
+          .optional()
+          .describe('Filters to apply to the search'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.searchPeople(args.fields, args.filters);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to search people: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
 
-export function createHiBobServer(credentials: HiBobCredentials): McpServer {
-  const server = new McpServer({
-    name: 'HiBob',
-    version: '1.0.0',
-  });
+    GET_EMPLOYEE_FIELDS: tool({
+      name: 'hibob_get_employee_fields',
+      description: 'Get metadata about all employee fields from HiBob',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.getEmployeeFields();
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to get employee fields: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
 
-  server.tool(
-    'hibob_people_search',
-    'Search for employees in HiBob using advanced filters',
-    {
-      fields: z
-        .array(z.string())
-        .optional()
-        .describe('List of field paths to return for each employee'),
-      filters: z
-        .array(
-          z.object({
-            fieldPath: z.string().describe('Field path (e.g., "root.id", "root.email")'),
-            operator: z.string().describe('Operator (e.g., "equals")'),
-            values: z.array(z.string()).describe('Values to filter by'),
+    UPDATE_EMPLOYEE: tool({
+      name: 'hibob_update_employee',
+      description: 'Update specific fields in an employee record in HiBob',
+      schema: z.object({
+        employeeId: z.string().describe('Employee ID'),
+        fields: z
+          .record(z.unknown())
+          .describe(
+            'Object with field paths as keys and values to update (e.g., {"root.firstName": "NewName"})'
+          ),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.updateEmployee(args.employeeId, args.fields);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to update employee: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    GET_TIMEOFF_POLICY_TYPES: tool({
+      name: 'hibob_get_timeoff_policy_types',
+      description: 'Get a list of all timeoff policy type names from HiBob',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.getTimeoffPolicyTypes();
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to get timeoff policy types: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+
+    SUBMIT_TIMEOFF_REQUEST: tool({
+      name: 'hibob_submit_timeoff_request',
+      description: 'Submit a new time off request for an employee in HiBob',
+      schema: z.object({
+        employeeId: z.string().describe('The HiBob employee ID'),
+        requestDetails: z
+          .object({
+            type: z.string().describe('The time off type (e.g., "Holiday")'),
+            requestRangeType: z.literal('days').describe('Must be "days"'),
+            startDatePortion: z.literal('all_day').describe('Must be "all_day"'),
+            endDatePortion: z.literal('all_day').describe('Must be "all_day"'),
+            startDate: z.string().describe('Start date in YYYY-MM-DD format'),
+            endDate: z.string().describe('End date in YYYY-MM-DD format'),
+            days: z.number().optional().describe('Number of days requested'),
+            reason: z.string().optional().describe('Reason for the request'),
+            comment: z.string().optional().describe('Additional comments'),
+            halfDay: z.boolean().optional().describe('If the request is for a half day'),
+            policyType: z.string().optional().describe('Policy type name'),
+            reasonCode: z
+              .string()
+              .optional()
+              .describe('Reason code if required by policy'),
           })
-        )
-        .optional()
-        .describe('Filters to apply to the search'),
-    },
-    async (args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.searchPeople(args.fields, args.filters);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to search people: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+          .describe('The request details'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.submitTimeoffRequest(
+            args.employeeId,
+            args.requestDetails
+          );
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to submit timeoff request: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
 
-  server.tool(
-    'hibob_get_employee_fields',
-    'Get metadata about all employee fields from HiBob',
-    {},
-    async (_args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.getEmployeeFields();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get employee fields: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+    CREATE_EMPLOYEE: tool({
+      name: 'hibob_create_employee',
+      description: 'Create a new employee record in HiBob',
+      schema: z.object({
+        fields: z
+          .record(z.unknown())
+          .describe(
+            'Dictionary of employee fields to set (must include site and startDate which are mandatory)'
+          ),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.createEmployee(args.fields);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to create employee: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
 
-  server.tool(
-    'hibob_update_employee',
-    'Update specific fields in an employee record in HiBob',
-    {
-      employeeId: z.string().describe('Employee ID'),
-      fields: z
-        .record(z.unknown())
-        .describe(
-          'Object with field paths as keys and values to update (e.g., {"root.firstName": "NewName"})'
-        ),
-    },
-    async (args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.updateEmployee(args.employeeId, args.fields);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update employee: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'hibob_get_timeoff_policy_types',
-    'Get a list of all timeoff policy type names from HiBob',
-    {},
-    async (_args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.getTimeoffPolicyTypes();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get timeoff policy types: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'hibob_submit_timeoff_request',
-    'Submit a new time off request for an employee in HiBob',
-    {
-      employeeId: z.string().describe('The HiBob employee ID'),
-      requestDetails: z
-        .object({
-          type: z.string().describe('The time off type (e.g., "Holiday")'),
-          requestRangeType: z.literal('days').describe('Must be "days"'),
-          startDatePortion: z.literal('all_day').describe('Must be "all_day"'),
-          endDatePortion: z.literal('all_day').describe('Must be "all_day"'),
-          startDate: z.string().describe('Start date in YYYY-MM-DD format'),
-          endDate: z.string().describe('End date in YYYY-MM-DD format'),
-          days: z.number().optional().describe('Number of days requested'),
-          reason: z.string().optional().describe('Reason for the request'),
-          comment: z.string().optional().describe('Additional comments'),
-          halfDay: z.boolean().optional().describe('If the request is for a half day'),
-          policyType: z.string().optional().describe('Policy type name'),
-          reasonCode: z.string().optional().describe('Reason code if required by policy'),
-        })
-        .describe('The request details'),
-    },
-    async (args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.submitTimeoffRequest(
-          args.employeeId,
-          args.requestDetails
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to submit timeoff request: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'hibob_create_employee',
-    'Create a new employee record in HiBob',
-    {
-      fields: z
-        .record(z.unknown())
-        .describe(
-          'Dictionary of employee fields to set (must include site and startDate which are mandatory)'
-        ),
-    },
-    async (args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.createEmployee(args.fields);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create employee: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'hibob_get_employee_tasks',
-    'Get all tasks for a specific employee in HiBob',
-    {
-      employeeId: z.string().describe('The HiBob employee ID'),
-    },
-    async (args) => {
-      try {
-        const client = new HiBobClient(
-          credentials.serviceUserId,
-          credentials.serviceUserToken
-        );
-        const result = await client.getEmployeeTasks(args.employeeId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get employee tasks: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+    GET_EMPLOYEE_TASKS: tool({
+      name: 'hibob_get_employee_tasks',
+      description: 'Get all tasks for a specific employee in HiBob',
+      schema: z.object({
+        employeeId: z.string().describe('The HiBob employee ID'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { serviceUserId, serviceUserToken } = await context.getCredentials();
+          const client = new HiBobClient(serviceUserId, serviceUserToken);
+          const result = await client.getEmployeeTasks(args.employeeId);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to get employee tasks: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

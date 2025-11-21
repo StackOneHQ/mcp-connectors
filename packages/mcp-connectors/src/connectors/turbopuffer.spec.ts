@@ -1,8 +1,9 @@
+import type { MCPToolDefinition } from '@stackone/mcp-config-types';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { describe, expect, it } from 'vitest';
-import { extractToolsFromServer } from '../__mocks__/server-tools';
-import { createTurbopufferServer } from './turbopuffer';
+import { describe, expect, it, type vi } from 'vitest';
+import { createMockConnectorContext } from '../__mocks__/context';
+import { TurbopufferConnectorConfig } from './turbopuffer';
 
 interface CapturedWriteRequest {
   upsert_rows: Array<{
@@ -28,12 +29,15 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools
+          .LIST_NAMESPACES as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
         });
-        const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.turbopuffer_list_namespaces?.handler({});
+
+        const actual = await tool.handler({}, mockContext);
 
         server.close();
 
@@ -51,12 +55,15 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools
+          .LIST_NAMESPACES as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
         });
-        const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.turbopuffer_list_namespaces?.handler({});
+
+        const actual = await tool.handler({}, mockContext);
 
         server.close();
 
@@ -73,12 +80,15 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools
+          .LIST_NAMESPACES as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'invalid-key',
           openaiApiKey: 'test-openai-key',
         });
-        const tools = extractToolsFromServer(mcpServer);
-        const actual = await tools.turbopuffer_list_namespaces?.handler({});
+
+        const actual = await tool.handler({}, mockContext);
 
         server.close();
 
@@ -118,19 +128,25 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools.VECTOR_SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
+        });
+        (mockContext.getSetup as ReturnType<typeof vi.fn>).mockResolvedValue({
           embeddingModel: 'text-embedding-3-large',
           includeAttributes: ['page_content', 'metadata'],
         });
-        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_vector_search?.handler({
-          query: 'test query',
-          namespace: 'docs',
-          top_k: 5,
-        });
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+            namespace: 'docs',
+            top_k: 5,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -157,19 +173,25 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools.VECTOR_SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
+        });
+        (mockContext.getSetup as ReturnType<typeof vi.fn>).mockResolvedValue({
           embeddingModel: 'text-embedding-3-large',
           includeAttributes: ['page_content', 'metadata'],
         });
-        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_vector_search?.handler({
-          query: 'test query',
-          namespace: 'docs',
-          top_k: 5,
-        });
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+            namespace: 'docs',
+            top_k: 5,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -186,19 +208,25 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools.VECTOR_SEARCH as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'invalid-openai-key',
+        });
+        (mockContext.getSetup as ReturnType<typeof vi.fn>).mockResolvedValue({
           embeddingModel: 'text-embedding-3-large',
           includeAttributes: ['page_content', 'metadata'],
         });
-        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_vector_search?.handler({
-          query: 'test query',
-          namespace: 'docs',
-          top_k: 5,
-        });
+        const actual = await tool.handler(
+          {
+            query: 'test query',
+            namespace: 'docs',
+            top_k: 5,
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -228,22 +256,29 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools
+          .WRITE_DOCUMENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
+        });
+        (mockContext.getSetup as ReturnType<typeof vi.fn>).mockResolvedValue({
           embeddingModel: 'text-embedding-3-large',
         });
-        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_write_documents?.handler({
-          namespace: 'docs',
-          documents: [
-            {
-              page_content: 'This is test content',
-              metadata: { source: 'test.md', author: 'test' },
-            },
-          ],
-        });
+        const actual = await tool.handler(
+          {
+            namespace: 'docs',
+            documents: [
+              {
+                page_content: 'This is test content',
+                metadata: { source: 'test.md', author: 'test' },
+              },
+            ],
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -287,21 +322,28 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools
+          .WRITE_DOCUMENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
+        });
+        (mockContext.getSetup as ReturnType<typeof vi.fn>).mockResolvedValue({
           embeddingModel: 'text-embedding-3-large',
         });
-        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_write_documents?.handler({
-          namespace: 'docs',
-          documents: [
-            {
-              page_content: 'Content without metadata',
-            },
-          ],
-        });
+        const actual = await tool.handler(
+          {
+            namespace: 'docs',
+            documents: [
+              {
+                page_content: 'Content without metadata',
+              },
+            ],
+          },
+          mockContext
+        );
 
         server.close();
 
@@ -330,21 +372,28 @@ describe('#TurbopufferConnector', () => {
         );
         server.listen();
 
-        const mcpServer = createTurbopufferServer({
+        const tool = TurbopufferConnectorConfig.tools
+          .WRITE_DOCUMENTS as MCPToolDefinition;
+        const mockContext = createMockConnectorContext();
+        (mockContext.getCredentials as ReturnType<typeof vi.fn>).mockResolvedValue({
           apiKey: 'test-api-key',
           openaiApiKey: 'test-openai-key',
+        });
+        (mockContext.getSetup as ReturnType<typeof vi.fn>).mockResolvedValue({
           embeddingModel: 'text-embedding-3-large',
         });
-        const tools = extractToolsFromServer(mcpServer);
 
-        const actual = await tools.turbopuffer_write_documents?.handler({
-          namespace: 'nonexistent',
-          documents: [
-            {
-              page_content: 'Test content',
-            },
-          ],
-        });
+        const actual = await tool.handler(
+          {
+            namespace: 'nonexistent',
+            documents: [
+              {
+                page_content: 'Test content',
+              },
+            ],
+          },
+          mockContext
+        );
 
         server.close();
 

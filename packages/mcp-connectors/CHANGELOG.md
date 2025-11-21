@@ -1,37 +1,5 @@
 # Changelog
 
-## [0.0.24](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.23...mcp-connectors-v0.0.24) (2025-11-21)
-
-
-### Features
-
-* add pnpm workspace catalog for centralised dependency management ([#196](https://github.com/StackOneHQ/mcp-connectors/issues/196)) ([c46601a](https://github.com/StackOneHQ/mcp-connectors/commit/c46601a930da33bf3bbb0346e35ff1a1c10945a0))
-* add Zod credentials schemas to all connector metadata ([#188](https://github.com/StackOneHQ/mcp-connectors/issues/188)) ([741cea9](https://github.com/StackOneHQ/mcp-connectors/commit/741cea9f9cf56105a1372f53c45aed3dbffe3619))
-
-
-### Bug Fixes
-
-* build ([d677c4e](https://github.com/StackOneHQ/mcp-connectors/commit/d677c4ebafb54acf2e3b06cc985cf89cfddd8168))
-
-## [0.0.23](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.22...mcp-connectors-v0.0.23) (2025-11-12)
-
-
-### Features
-
-* add connector metadata exports ([#182](https://github.com/StackOneHQ/mcp-connectors/issues/182)) ([91e4834](https://github.com/StackOneHQ/mcp-connectors/commit/91e48349f0e71d4e651927dca2f046be918fd841))
-
-## [0.0.22](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.21...mcp-connectors-v0.0.22) (2025-10-17)
-
-
-### Features
-
-* remove @stackone/mcp-config-types and migrate to native MCP SDK ([#175](https://github.com/StackOneHQ/mcp-connectors/issues/175)) ([2a31911](https://github.com/StackOneHQ/mcp-connectors/commit/2a31911dd0d1efdc3e8409b405607c0de1890079))
-
-
-### Bug Fixes
-
-* remove mcp-config-types package from GitHub workflows and documentation ([#178](https://github.com/StackOneHQ/mcp-connectors/issues/178)) ([b404a0b](https://github.com/StackOneHQ/mcp-connectors/commit/b404a0bcb518038f4b03463ed050b6a30e86e9b0))
-
 ## [0.0.21](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.20...mcp-connectors-v0.0.21) (2025-10-13)
 
 

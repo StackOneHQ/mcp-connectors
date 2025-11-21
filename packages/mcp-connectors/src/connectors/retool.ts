@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface RetoolUser {
   id: string;
@@ -517,812 +516,501 @@ class RetoolClient {
   }
 }
 
-export const RetoolCredentialsSchema = z.object({
-  apiToken: z.string().describe('API token for authentication'),
-  baseUrl: z.string().describe('Base URL of the instance').optional(),
-});
-
-export type RetoolCredentials = z.infer<typeof RetoolCredentialsSchema>;
-
-export const RetoolConnectorMetadata = {
-  key: 'retool',
+export const RetoolConnectorConfig = mcpConnectorConfig({
   name: 'Retool',
-  description: 'Internal tool builder',
+  key: 'retool',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/retool/filled/svg',
-  examplePrompt: 'Query Retool resources',
-  categories: ['internal-tools', 'development'],
-  credentialsSchema: RetoolCredentialsSchema,
-} as const satisfies ConnectorMetadata;
-
-export function createRetoolServer(credentials: RetoolCredentials): McpServer {
-  const server = new McpServer({
-    name: 'Retool',
-    version: '1.0.0',
-  });
-
-  const client = new RetoolClient(credentials.apiToken, credentials.baseUrl);
-
-  server.tool(
-    'retool_list_users',
-    'List all users in the organization',
-    {
-      limit: z.number().default(50).describe('Maximum number of users to return'),
-    },
-    async (args) => {
-      try {
-        const users = await client.getUsers(args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(users, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list users: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_get_user',
-    'Get detailed information about a specific user',
-    {
-      userId: z.string().describe('User ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const user = await client.getUser(args.userId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get user: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_create_user',
-    'Create a new user in the organization',
-    {
-      email: z.string().email().describe('User email address'),
-      firstName: z.string().optional().describe('User first name'),
-      lastName: z.string().optional().describe('User last name'),
-      isAdmin: z.boolean().optional().describe('Whether the user should be an admin'),
-      metadata: z.record(z.unknown()).optional().describe('Additional user metadata'),
-    },
-    async (args) => {
-      try {
-        const user = await client.createUser(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create user: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_update_user',
-    'Update an existing user',
-    {
-      userId: z.string().describe('User ID to update'),
-      firstName: z.string().optional().describe('New first name'),
-      lastName: z.string().optional().describe('New last name'),
-      isAdmin: z.boolean().optional().describe('Whether the user should be an admin'),
-      metadata: z.record(z.unknown()).optional().describe('Updated user metadata'),
-    },
-    async (args) => {
-      try {
-        const { userId, ...updateData } = args;
-        const user = await client.updateUser(userId, updateData);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(user, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update user: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_delete_user',
-    'Delete a user from the organization',
-    {
-      userId: z.string().describe('User ID to delete'),
-    },
-    async (args) => {
-      try {
-        const result = await client.deleteUser(args.userId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to delete user: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_list_groups',
-    'List all groups in the organization',
-    {
-      limit: z.number().default(50).describe('Maximum number of groups to return'),
-    },
-    async (args) => {
-      try {
-        const groups = await client.getGroups(args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(groups, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list groups: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_get_group',
-    'Get detailed information about a specific group',
-    {
-      groupId: z.string().describe('Group ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const group = await client.getGroup(args.groupId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(group, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get group: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_create_group',
-    'Create a new group in the organization',
-    {
-      name: z.string().describe('Group name'),
-      description: z.string().optional().describe('Group description'),
-      members: z
-        .array(z.string())
-        .optional()
-        .describe('Array of user IDs to add as members'),
-    },
-    async (args) => {
-      try {
-        const group = await client.createGroup(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(group, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create group: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_update_group',
-    'Update an existing group',
-    {
-      groupId: z.string().describe('Group ID to update'),
-      name: z.string().optional().describe('New group name'),
-      description: z.string().optional().describe('New group description'),
-      members: z
-        .array(z.string())
-        .optional()
-        .describe('Array of user IDs to set as group members'),
-    },
-    async (args) => {
-      try {
-        const { groupId, ...updateData } = args;
-        const group = await client.updateGroup(groupId, updateData);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(group, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update group: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_delete_group',
-    'Delete a group from the organization',
-    {
-      groupId: z.string().describe('Group ID to delete'),
-    },
-    async (args) => {
-      try {
-        const result = await client.deleteGroup(args.groupId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to delete group: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_list_folders',
-    'List all folders in the organization',
-    {
-      limit: z.number().default(50).describe('Maximum number of folders to return'),
-    },
-    async (args) => {
-      try {
-        const folders = await client.getFolders(args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(folders, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list folders: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_create_folder',
-    'Create a new folder',
-    {
-      name: z.string().describe('Folder name'),
-      parentId: z.string().optional().describe('Parent folder ID'),
-    },
-    async (args) => {
-      try {
-        const folder = await client.createFolder(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(folder, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_list_apps',
-    'List all apps in the organization or in a specific folder',
-    {
-      folderId: z.string().optional().describe('Filter apps by folder ID'),
-      limit: z.number().default(50).describe('Maximum number of apps to return'),
-    },
-    async (args) => {
-      try {
-        const apps = await client.getApps(args.folderId, args.limit);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(apps, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list apps: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_get_app_permissions',
-    'Get permissions for a specific app',
-    {
-      appId: z.string().describe('App ID to get permissions for'),
-    },
-    async (args) => {
-      try {
-        const permissions = await client.getAppPermissions(args.appId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(permissions, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get app permissions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_get_folder_permissions',
-    'Get permissions for a specific folder',
-    {
-      folderId: z.string().describe('Folder ID to get permissions for'),
-    },
-    async (args) => {
-      try {
-        const permissions = await client.getFolderPermissions(args.folderId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(permissions, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get folder permissions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_update_app_permissions',
-    'Update permissions for a specific app',
-    {
-      appId: z.string().describe('App ID to update permissions for'),
-      permissions: z
-        .array(
-          z.object({
-            subjectId: z.string().describe('User or group ID'),
-            subjectType: z.enum(['user', 'group']).describe('Type of subject'),
-            accessLevel: z
-              .enum(['viewer', 'editor', 'admin'])
-              .describe('Access level to grant'),
-          })
-        )
-        .describe('Array of permission updates'),
-    },
-    async (args) => {
-      try {
-        const permissions = await client.updateAppPermissions(
-          args.appId,
-          args.permissions
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(permissions, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update app permissions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_list_custom_component_libraries',
-    'List all custom component libraries in the organization',
-    {},
-    async () => {
-      try {
-        const libraries = await client.getCustomComponentLibraries();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(libraries, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list custom component libraries: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_get_custom_component_library',
-    'Get detailed information about a specific custom component library',
-    {
-      libraryId: z.string().describe('Library ID to retrieve'),
-    },
-    async (args) => {
-      try {
-        const library = await client.getCustomComponentLibrary(args.libraryId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(library, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get custom component library: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_create_custom_component_library',
-    'Create a new custom component library',
-    {
-      name: z.string().describe('Library name'),
-      description: z.string().optional().describe('Library description'),
-    },
-    async (args) => {
-      try {
-        const library = await client.createCustomComponentLibrary(args);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(library, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create custom component library: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_update_custom_component_library',
-    'Update an existing custom component library',
-    {
-      libraryId: z.string().describe('Library ID to update'),
-      name: z.string().optional().describe('New library name'),
-      description: z.string().optional().describe('New library description'),
-    },
-    async (args) => {
-      try {
-        const { libraryId, ...updateData } = args;
-        const library = await client.updateCustomComponentLibrary(libraryId, updateData);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(library, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to update custom component library: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_delete_custom_component_library',
-    'Delete a custom component library',
-    {
-      libraryId: z.string().describe('Library ID to delete'),
-    },
-    async (args) => {
-      try {
-        const result = await client.deleteCustomComponentLibrary(args.libraryId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to delete custom component library: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_list_custom_component_revisions',
-    'List all revisions for a custom component library',
-    {
-      libraryId: z.string().describe('Library ID to get revisions for'),
-      limit: z.number().default(50).describe('Maximum number of revisions to return'),
-    },
-    async (args) => {
-      try {
-        const revisions = await client.getCustomComponentRevisions(
-          args.libraryId,
-          args.limit
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(revisions, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list custom component revisions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_create_custom_component_revision',
-    'Create a new revision for a custom component library',
-    {
-      libraryId: z.string().describe('Library ID to create revision for'),
-      version: z.string().describe('Revision version (e.g., "1.0.0")'),
-      description: z.string().optional().describe('Revision description'),
-      files: z
-        .array(
-          z.object({
-            name: z.string().describe('File name (e.g., "index.js", "package.json")'),
-            content: z.string().describe('File content'),
-          })
-        )
-        .describe('Array of files to include in this revision'),
-    },
-    async (args) => {
-      try {
-        const { libraryId, ...revisionData } = args;
-        const revision = await client.createCustomComponentRevision(
-          libraryId,
-          revisionData
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(revision, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to create custom component revision: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'retool_get_custom_component_revision_files',
-    'Get files for a specific custom component library revision',
-    {
-      libraryId: z.string().describe('Library ID'),
-      revisionId: z.string().describe('Revision ID to get files for'),
-    },
-    async (args) => {
-      try {
-        const files = await client.getCustomComponentRevisionFiles(
-          args.libraryId,
-          args.revisionId
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(files, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get custom component revision files: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+  credentials: z.object({
+    apiToken: z
+      .string()
+      .describe(
+        'Retool API access token from Settings > API. Requires appropriate scopes for the operations you want to perform :: rta_1234567890abcdef'
+      ),
+    baseUrl: z
+      .string()
+      .optional()
+      .describe(
+        'Base URL for self-hosted Retool instances (e.g., https://retool.example.com/api/v2). Leave empty for Retool Cloud'
+      ),
+  }),
+  setup: z.object({}),
+  description:
+    'Retool is a low-code platform for building internal tools. This connector allows you to manage users, groups, folders, apps, permissions, and custom component libraries programmatically.',
+  examplePrompt:
+    'List all users in my organization, create a new group called "Marketing Team" with specific members, check the permissions for a specific app, and manage custom component libraries by listing existing ones and creating a new library called "UI Components".',
+  tools: (tool) => ({
+    LIST_USERS: tool({
+      name: 'retool_list_users',
+      description: 'List all users in the organization',
+      schema: z.object({
+        limit: z.number().default(50).describe('Maximum number of users to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const users = await client.getUsers(args.limit);
+          return JSON.stringify(users, null, 2);
+        } catch (error) {
+          return `Failed to list users: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_USER: tool({
+      name: 'retool_get_user',
+      description: 'Get detailed information about a specific user',
+      schema: z.object({
+        userId: z.string().describe('User ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const user = await client.getUser(args.userId);
+          return JSON.stringify(user, null, 2);
+        } catch (error) {
+          return `Failed to get user: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_USER: tool({
+      name: 'retool_create_user',
+      description: 'Create a new user in the organization',
+      schema: z.object({
+        email: z.string().email().describe('User email address'),
+        firstName: z.string().optional().describe('User first name'),
+        lastName: z.string().optional().describe('User last name'),
+        isAdmin: z.boolean().optional().describe('Whether the user should be an admin'),
+        metadata: z.record(z.unknown()).optional().describe('Additional user metadata'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const user = await client.createUser(args);
+          return JSON.stringify(user, null, 2);
+        } catch (error) {
+          return `Failed to create user: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_USER: tool({
+      name: 'retool_update_user',
+      description: 'Update an existing user',
+      schema: z.object({
+        userId: z.string().describe('User ID to update'),
+        firstName: z.string().optional().describe('New first name'),
+        lastName: z.string().optional().describe('New last name'),
+        isAdmin: z.boolean().optional().describe('Whether the user should be an admin'),
+        metadata: z.record(z.unknown()).optional().describe('Updated user metadata'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const { userId, ...updateData } = args;
+          const user = await client.updateUser(userId, updateData);
+          return JSON.stringify(user, null, 2);
+        } catch (error) {
+          return `Failed to update user: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DELETE_USER: tool({
+      name: 'retool_delete_user',
+      description: 'Delete a user from the organization',
+      schema: z.object({
+        userId: z.string().describe('User ID to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const result = await client.deleteUser(args.userId);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to delete user: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_GROUPS: tool({
+      name: 'retool_list_groups',
+      description: 'List all groups in the organization',
+      schema: z.object({
+        limit: z.number().default(50).describe('Maximum number of groups to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const groups = await client.getGroups(args.limit);
+          return JSON.stringify(groups, null, 2);
+        } catch (error) {
+          return `Failed to list groups: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_GROUP: tool({
+      name: 'retool_get_group',
+      description: 'Get detailed information about a specific group',
+      schema: z.object({
+        groupId: z.string().describe('Group ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const group = await client.getGroup(args.groupId);
+          return JSON.stringify(group, null, 2);
+        } catch (error) {
+          return `Failed to get group: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_GROUP: tool({
+      name: 'retool_create_group',
+      description: 'Create a new group in the organization',
+      schema: z.object({
+        name: z.string().describe('Group name'),
+        description: z.string().optional().describe('Group description'),
+        members: z
+          .array(z.string())
+          .optional()
+          .describe('Array of user IDs to add as members'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const group = await client.createGroup(args);
+          return JSON.stringify(group, null, 2);
+        } catch (error) {
+          return `Failed to create group: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_GROUP: tool({
+      name: 'retool_update_group',
+      description: 'Update an existing group',
+      schema: z.object({
+        groupId: z.string().describe('Group ID to update'),
+        name: z.string().optional().describe('New group name'),
+        description: z.string().optional().describe('New group description'),
+        members: z
+          .array(z.string())
+          .optional()
+          .describe('Array of user IDs to set as group members'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const { groupId, ...updateData } = args;
+          const group = await client.updateGroup(groupId, updateData);
+          return JSON.stringify(group, null, 2);
+        } catch (error) {
+          return `Failed to update group: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DELETE_GROUP: tool({
+      name: 'retool_delete_group',
+      description: 'Delete a group from the organization',
+      schema: z.object({
+        groupId: z.string().describe('Group ID to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const result = await client.deleteGroup(args.groupId);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to delete group: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_FOLDERS: tool({
+      name: 'retool_list_folders',
+      description: 'List all folders in the organization',
+      schema: z.object({
+        limit: z.number().default(50).describe('Maximum number of folders to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const folders = await client.getFolders(args.limit);
+          return JSON.stringify(folders, null, 2);
+        } catch (error) {
+          return `Failed to list folders: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_FOLDER: tool({
+      name: 'retool_create_folder',
+      description: 'Create a new folder',
+      schema: z.object({
+        name: z.string().describe('Folder name'),
+        parentId: z.string().optional().describe('Parent folder ID'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const folder = await client.createFolder(args);
+          return JSON.stringify(folder, null, 2);
+        } catch (error) {
+          return `Failed to create folder: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_APPS: tool({
+      name: 'retool_list_apps',
+      description: 'List all apps in the organization or in a specific folder',
+      schema: z.object({
+        folderId: z.string().optional().describe('Filter apps by folder ID'),
+        limit: z.number().default(50).describe('Maximum number of apps to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const apps = await client.getApps(args.folderId, args.limit);
+          return JSON.stringify(apps, null, 2);
+        } catch (error) {
+          return `Failed to list apps: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_APP_PERMISSIONS: tool({
+      name: 'retool_get_app_permissions',
+      description: 'Get permissions for a specific app',
+      schema: z.object({
+        appId: z.string().describe('App ID to get permissions for'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const permissions = await client.getAppPermissions(args.appId);
+          return JSON.stringify(permissions, null, 2);
+        } catch (error) {
+          return `Failed to get app permissions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_FOLDER_PERMISSIONS: tool({
+      name: 'retool_get_folder_permissions',
+      description: 'Get permissions for a specific folder',
+      schema: z.object({
+        folderId: z.string().describe('Folder ID to get permissions for'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const permissions = await client.getFolderPermissions(args.folderId);
+          return JSON.stringify(permissions, null, 2);
+        } catch (error) {
+          return `Failed to get folder permissions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_APP_PERMISSIONS: tool({
+      name: 'retool_update_app_permissions',
+      description: 'Update permissions for a specific app',
+      schema: z.object({
+        appId: z.string().describe('App ID to update permissions for'),
+        permissions: z
+          .array(
+            z.object({
+              subjectId: z.string().describe('User or group ID'),
+              subjectType: z.enum(['user', 'group']).describe('Type of subject'),
+              accessLevel: z
+                .enum(['viewer', 'editor', 'admin'])
+                .describe('Access level to grant'),
+            })
+          )
+          .describe('Array of permission updates'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const permissions = await client.updateAppPermissions(
+            args.appId,
+            args.permissions
+          );
+          return JSON.stringify(permissions, null, 2);
+        } catch (error) {
+          return `Failed to update app permissions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_CUSTOM_COMPONENT_LIBRARIES: tool({
+      name: 'retool_list_custom_component_libraries',
+      description: 'List all custom component libraries in the organization',
+      schema: z.object({}),
+      handler: async (_, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const libraries = await client.getCustomComponentLibraries();
+          return JSON.stringify(libraries, null, 2);
+        } catch (error) {
+          return `Failed to list custom component libraries: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_CUSTOM_COMPONENT_LIBRARY: tool({
+      name: 'retool_get_custom_component_library',
+      description: 'Get detailed information about a specific custom component library',
+      schema: z.object({
+        libraryId: z.string().describe('Library ID to retrieve'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const library = await client.getCustomComponentLibrary(args.libraryId);
+          return JSON.stringify(library, null, 2);
+        } catch (error) {
+          return `Failed to get custom component library: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_CUSTOM_COMPONENT_LIBRARY: tool({
+      name: 'retool_create_custom_component_library',
+      description: 'Create a new custom component library',
+      schema: z.object({
+        name: z.string().describe('Library name'),
+        description: z.string().optional().describe('Library description'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const library = await client.createCustomComponentLibrary(args);
+          return JSON.stringify(library, null, 2);
+        } catch (error) {
+          return `Failed to create custom component library: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    UPDATE_CUSTOM_COMPONENT_LIBRARY: tool({
+      name: 'retool_update_custom_component_library',
+      description: 'Update an existing custom component library',
+      schema: z.object({
+        libraryId: z.string().describe('Library ID to update'),
+        name: z.string().optional().describe('New library name'),
+        description: z.string().optional().describe('New library description'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const { libraryId, ...updateData } = args;
+          const library = await client.updateCustomComponentLibrary(
+            libraryId,
+            updateData
+          );
+          return JSON.stringify(library, null, 2);
+        } catch (error) {
+          return `Failed to update custom component library: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    DELETE_CUSTOM_COMPONENT_LIBRARY: tool({
+      name: 'retool_delete_custom_component_library',
+      description: 'Delete a custom component library',
+      schema: z.object({
+        libraryId: z.string().describe('Library ID to delete'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const result = await client.deleteCustomComponentLibrary(args.libraryId);
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to delete custom component library: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_CUSTOM_COMPONENT_REVISIONS: tool({
+      name: 'retool_list_custom_component_revisions',
+      description: 'List all revisions for a custom component library',
+      schema: z.object({
+        libraryId: z.string().describe('Library ID to get revisions for'),
+        limit: z.number().default(50).describe('Maximum number of revisions to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const revisions = await client.getCustomComponentRevisions(
+            args.libraryId,
+            args.limit
+          );
+          return JSON.stringify(revisions, null, 2);
+        } catch (error) {
+          return `Failed to list custom component revisions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    CREATE_CUSTOM_COMPONENT_REVISION: tool({
+      name: 'retool_create_custom_component_revision',
+      description: 'Create a new revision for a custom component library',
+      schema: z.object({
+        libraryId: z.string().describe('Library ID to create revision for'),
+        version: z.string().describe('Revision version (e.g., "1.0.0")'),
+        description: z.string().optional().describe('Revision description'),
+        files: z
+          .array(
+            z.object({
+              name: z.string().describe('File name (e.g., "index.js", "package.json")'),
+              content: z.string().describe('File content'),
+            })
+          )
+          .describe('Array of files to include in this revision'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const { libraryId, ...revisionData } = args;
+          const revision = await client.createCustomComponentRevision(
+            libraryId,
+            revisionData
+          );
+          return JSON.stringify(revision, null, 2);
+        } catch (error) {
+          return `Failed to create custom component revision: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_CUSTOM_COMPONENT_REVISION_FILES: tool({
+      name: 'retool_get_custom_component_revision_files',
+      description: 'Get files for a specific custom component library revision',
+      schema: z.object({
+        libraryId: z.string().describe('Library ID'),
+        revisionId: z.string().describe('Revision ID to get files for'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiToken, baseUrl } = await context.getCredentials();
+          const client = new RetoolClient(apiToken, baseUrl);
+          const files = await client.getCustomComponentRevisionFiles(
+            args.libraryId,
+            args.revisionId
+          );
+          return JSON.stringify(files, null, 2);
+        } catch (error) {
+          return `Failed to get custom component revision files: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});

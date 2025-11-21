@@ -1,6 +1,5 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
 interface FalResult {
   images: Array<{
@@ -46,102 +45,98 @@ class SimpleFalClient implements FalClient {
   }
 }
 
-export const FalCredentialsSchema = z.object({
-  apiKey: z.string().describe('API key for authentication'),
-});
-
-export type FalCredentials = z.infer<typeof FalCredentialsSchema>;
-
-export const FalConnectorMetadata = {
+export const FalConnectorConfig = mcpConnectorConfig({
+  name: 'FAL.ai',
   key: 'fal',
-  name: 'Fal',
-  description: 'AI model inference platform',
   version: '1.0.0',
   logo: 'https://stackone-logos.com/api/fal/filled/svg',
-  examplePrompt: 'Run AI models with Fal',
-  categories: ['ai', 'ml'],
-  credentialsSchema: FalCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+  credentials: z.object({
+    apiKey: z
+      .string()
+      .describe(
+        'FAL.ai API Key from https://fal.ai/dashboard/keys :: fal_1234567890abcdefghijklmnopqrstuvwxyz'
+      ),
+  }),
+  setup: z.object({}),
+  examplePrompt:
+    'Generate a high-quality image of "a futuristic city skyline at sunset with flying cars" using the FLUX model, then upscale it to 4x resolution.',
+  tools: (tool) => ({
+    GENERATE_IMAGE: tool({
+      name: 'fal_generate_image',
+      description: 'Generate images using FAL.ai models like FLUX, SDXL, and others',
+      schema: z.object({
+        model: z
+          .string()
+          .default('fal-ai/flux-schnell')
+          .describe(
+            'Model to use (e.g., fal-ai/flux-schnell, fal-ai/flux-dev, stability-ai/stable-diffusion-xl-base-1-0)'
+          ),
+        prompt: z.string().describe('Text description of the image to generate'),
+        image_size: z
+          .enum([
+            'square_hd',
+            'square',
+            'portrait_4_3',
+            'portrait_16_9',
+            'landscape_4_3',
+            'landscape_16_9',
+          ])
+          .default('square_hd')
+          .describe('Image aspect ratio and size'),
+        num_inference_steps: z
+          .number()
+          .min(1)
+          .max(50)
+          .default(4)
+          .describe('Number of denoising steps (more steps = higher quality but slower)'),
+        guidance_scale: z
+          .number()
+          .min(0)
+          .max(20)
+          .default(3.5)
+          .describe(
+            'How closely to follow the prompt (higher = more adherence to prompt)'
+          ),
+        num_images: z
+          .number()
+          .min(1)
+          .max(4)
+          .default(1)
+          .describe('Number of images to generate'),
+        enable_safety_checker: z
+          .boolean()
+          .default(true)
+          .describe('Enable NSFW content detection'),
+        seed: z.number().optional().describe('Random seed for reproducible results'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new SimpleFalClient(apiKey);
 
-export function createFalServer(credentials: FalCredentials): McpServer {
-  const server = new McpServer({
-    name: 'FAL.ai',
-    version: '1.0.0',
-  });
+          const input = {
+            prompt: args.prompt,
+            image_size: args.image_size,
+            num_inference_steps: args.num_inference_steps,
+            guidance_scale: args.guidance_scale,
+            num_images: args.num_images,
+            enable_safety_checker: args.enable_safety_checker,
+            ...(args.seed && { seed: args.seed }),
+          };
 
-  server.tool(
-    'fal_generate_image',
-    'Generate images using FAL.ai models like FLUX, SDXL, and others',
-    {
-      model: z
-        .string()
-        .default('fal-ai/flux-schnell')
-        .describe(
-          'Model to use (e.g., fal-ai/flux-schnell, fal-ai/flux-dev, stability-ai/stable-diffusion-xl-base-1-0)'
-        ),
-      prompt: z.string().describe('Text description of the image to generate'),
-      image_size: z
-        .enum([
-          'square_hd',
-          'square',
-          'portrait_4_3',
-          'portrait_16_9',
-          'landscape_4_3',
-          'landscape_16_9',
-        ])
-        .default('square_hd')
-        .describe('Image aspect ratio and size'),
-      num_inference_steps: z
-        .number()
-        .min(1)
-        .max(50)
-        .default(4)
-        .describe('Number of denoising steps (more steps = higher quality but slower)'),
-      guidance_scale: z
-        .number()
-        .min(0)
-        .max(20)
-        .default(3.5)
-        .describe('How closely to follow the prompt (higher = more adherence to prompt)'),
-      num_images: z
-        .number()
-        .min(1)
-        .max(4)
-        .default(1)
-        .describe('Number of images to generate'),
-      enable_safety_checker: z
-        .boolean()
-        .default(true)
-        .describe('Enable NSFW content detection'),
-      seed: z.number().optional().describe('Random seed for reproducible results'),
-    },
-    async (args) => {
-      try {
-        const client = new SimpleFalClient(credentials.apiKey);
+          const result = await client.run(args.model, { input });
 
-        const input = {
-          prompt: args.prompt,
-          image_size: args.image_size,
-          num_inference_steps: args.num_inference_steps,
-          guidance_scale: args.guidance_scale,
-          num_images: args.num_images,
-          enable_safety_checker: args.enable_safety_checker,
-          ...(args.seed && { seed: args.seed }),
-        };
+          // Format response with image URLs and metadata
+          const imageResults = result.images.map((image, index) => ({
+            url: image.url,
+            width: image.width,
+            height: image.height,
+            content_type: image.content_type,
+            index: index + 1,
+          }));
 
-        const result = await client.run(args.model, { input });
-
-        // Format response with image URLs and metadata
-        const imageResults = result.images.map((image, index) => ({
-          url: image.url,
-          width: image.width,
-          height: image.height,
-          content_type: image.content_type,
-          index: index + 1,
-        }));
-
-        // Return as formatted JSON string
-        const response = `## Image Generation Results
+          // Return as formatted JSON string
+          return `## Image Generation Results
 
 **Model:** ${args.model}
 **Prompt:** "${args.prompt}"
@@ -162,60 +157,48 @@ ${imageResults
 - Seed: ${result.seed || 'random'}
 - NSFW Detected: ${result.nsfw_content_detected ? 'Yes' : 'No'}
 - Generation Time: ${
-          result.timings
-            ? Object.entries(result.timings)
-                .map(([k, v]) => `${k}: ${v}s`)
-                .join(', ')
-            : 'N/A'
-        }
+            result.timings
+              ? Object.entries(result.timings)
+                  .map(([k, v]) => `${k}: ${v}s`)
+                  .join(', ')
+              : 'N/A'
+          }
 
 **Image URLs for direct access:**
 ${imageResults.map((img) => img.url).join('\n')}`;
+        } catch (error) {
+          return `Failed to generate image: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: response,
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to generate image: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
+    UPSCALE_IMAGE: tool({
+      name: 'fal_upscale_image',
+      description: 'Upscale images using FAL.ai Real-ESRGAN model',
+      schema: z.object({
+        image_url: z.string().url().describe('URL of the image to upscale'),
+        scale: z.number().min(1).max(4).default(2).describe('Upscaling factor (1-4x)'),
+        model: z
+          .string()
+          .default('fal-ai/real-esrgan')
+          .describe('Upscaling model to use'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { apiKey } = await context.getCredentials();
+          const client = new SimpleFalClient(apiKey);
 
-  server.tool(
-    'fal_upscale_image',
-    'Upscale images using FAL.ai Real-ESRGAN model',
-    {
-      image_url: z.string().url().describe('URL of the image to upscale'),
-      scale: z.number().min(1).max(4).default(2).describe('Upscaling factor (1-4x)'),
-      model: z.string().default('fal-ai/real-esrgan').describe('Upscaling model to use'),
-    },
-    async (args) => {
-      try {
-        const client = new SimpleFalClient(credentials.apiKey);
+          const input = {
+            image: args.image_url,
+            scale: args.scale,
+          };
 
-        const input = {
-          image: args.image_url,
-          scale: args.scale,
-        };
+          const result = await client.run(args.model, { input });
 
-        const result = await client.run(args.model, { input });
+          if (result.images && result.images.length > 0) {
+            const upscaledImage = result.images[0];
 
-        if (result.images && result.images.length > 0) {
-          const upscaledImage = result.images[0];
-
-          const response = `## Image Upscaling Results
+            return `## Image Upscaling Results
 
 **Original Image:** ${args.image_url}
 **Upscaling Factor:** ${args.scale}x
@@ -227,111 +210,88 @@ ${imageResults.map((img) => img.url).join('\n')}`;
 - Type: ${upscaledImage?.content_type}
 
 **Direct Image URL:** ${upscaledImage?.url}`;
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: response,
-              },
-            ],
-          };
+          }
+          return 'No upscaled image was generated.';
+        } catch (error) {
+          return `Failed to upscale image: ${error instanceof Error ? error.message : String(error)}`;
         }
-        return {
-          content: [
+      },
+    }),
+
+    LIST_MODELS: tool({
+      name: 'fal_list_models',
+      description: 'List available FAL.ai models for image generation and processing',
+      schema: z.object({
+        category: z
+          .enum(['image-generation', 'image-upscaling', 'image-editing', 'all'])
+          .default('all')
+          .describe('Filter models by category'),
+      }),
+      handler: async (args, _context) => {
+        // Static list of popular FAL models
+        const models = {
+          'image-generation': [
             {
-              type: 'text',
-              text: 'No upscaled image was generated.',
+              id: 'fal-ai/flux-schnell',
+              name: 'FLUX Schnell',
+              description: 'Fast high-quality image generation',
+              speed: 'Very Fast',
+            },
+            {
+              id: 'fal-ai/flux-dev',
+              name: 'FLUX Dev',
+              description: 'High-quality image generation with more control',
+              speed: 'Fast',
+            },
+            {
+              id: 'stability-ai/stable-diffusion-xl-base-1-0',
+              name: 'Stable Diffusion XL',
+              description: 'Popular general-purpose image generation',
+              speed: 'Medium',
+            },
+            {
+              id: 'fal-ai/aura-flow',
+              name: 'Aura Flow',
+              description: 'Artistic style image generation',
+              speed: 'Medium',
+            },
+          ],
+          'image-upscaling': [
+            {
+              id: 'fal-ai/real-esrgan',
+              name: 'Real-ESRGAN',
+              description: 'High-quality image upscaling',
+              speed: 'Fast',
+            },
+          ],
+          'image-editing': [
+            {
+              id: 'fal-ai/instruct-pix2pix',
+              name: 'InstructPix2Pix',
+              description: 'Edit images using text instructions',
+              speed: 'Medium',
             },
           ],
         };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to upscale image: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
 
-  server.tool(
-    'fal_list_models',
-    'List available FAL.ai models for image generation and processing',
-    {
-      category: z
-        .enum(['image-generation', 'image-upscaling', 'image-editing', 'all'])
-        .default('all')
-        .describe('Filter models by category'),
-    },
-    async (args) => {
-      // Static list of popular FAL models
-      const models = {
-        'image-generation': [
-          {
-            id: 'fal-ai/flux-schnell',
-            name: 'FLUX Schnell',
-            description: 'Fast high-quality image generation',
-            speed: 'Very Fast',
-          },
-          {
-            id: 'fal-ai/flux-dev',
-            name: 'FLUX Dev',
-            description: 'High-quality image generation with more control',
-            speed: 'Fast',
-          },
-          {
-            id: 'stability-ai/stable-diffusion-xl-base-1-0',
-            name: 'Stable Diffusion XL',
-            description: 'Popular general-purpose image generation',
-            speed: 'Medium',
-          },
-          {
-            id: 'fal-ai/aura-flow',
-            name: 'Aura Flow',
-            description: 'Artistic style image generation',
-            speed: 'Medium',
-          },
-        ],
-        'image-upscaling': [
-          {
-            id: 'fal-ai/real-esrgan',
-            name: 'Real-ESRGAN',
-            description: 'High-quality image upscaling',
-            speed: 'Fast',
-          },
-        ],
-        'image-editing': [
-          {
-            id: 'fal-ai/instruct-pix2pix',
-            name: 'InstructPix2Pix',
-            description: 'Edit images using text instructions',
-            speed: 'Medium',
-          },
-        ],
-      };
+        let selectedModels: Array<{
+          id: string;
+          name: string;
+          description: string;
+          speed: string;
+        }> = [];
 
-      let selectedModels: Array<{
-        id: string;
-        name: string;
-        description: string;
-        speed: string;
-      }> = [];
+        if (args.category === 'all') {
+          selectedModels = [
+            ...models['image-generation'],
+            ...models['image-upscaling'],
+            ...models['image-editing'],
+          ];
+        } else {
+          selectedModels = models[args.category] || [];
+        }
 
-      if (args.category === 'all') {
-        selectedModels = [
-          ...models['image-generation'],
-          ...models['image-upscaling'],
-          ...models['image-editing'],
-        ];
-      } else {
-        selectedModels = models[args.category] || [];
-      }
-
-      const response = `## Available FAL.ai Models
+        const response = `## Available FAL.ai Models
 
 **Category:** ${args.category}
 **Total Models:** ${selectedModels.length}
@@ -349,16 +309,8 @@ ${selectedModels
 
 **Usage:** Use the model ID in the \`model\` parameter when calling image generation tools.`;
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: response,
-          },
-        ],
-      };
-    }
-  );
-
-  return server;
-}
+        return response;
+      },
+    }),
+  }),
+});

@@ -1,26 +1,12 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { mcpConnectorConfig } from '@stackone/mcp-config-types';
 import { z } from 'zod';
-import type { ConnectorMetadata } from '../types/metadata';
 
-export const AwsCredentialsSchema = z.object({
-  accessKeyId: z.string().describe('AWS access key ID'),
-  secretAccessKey: z.string().describe('AWS secret access key'),
-  region: z.string().describe('AWS region'),
-  sessionToken: z.string().describe('AWS session token').optional(),
-});
-
-export type AwsCredentials = z.infer<typeof AwsCredentialsSchema>;
-
-export const AwsConnectorMetadata = {
-  key: 'aws',
-  name: 'AWS',
-  description: 'Amazon Web Services cloud platform',
-  version: '1.0.0',
-  logo: 'https://stackone-logos.com/api/aws/filled/svg',
-  examplePrompt: 'List my AWS resources',
-  categories: ['cloud', 'infrastructure'],
-  credentialsSchema: AwsCredentialsSchema,
-} as const satisfies ConnectorMetadata;
+interface AwsCredentials {
+  accessKeyId: string;
+  secretAccessKey: string;
+  region: string;
+  sessionToken?: string;
+}
 
 interface EC2Response {
   reservationSet?: Array<{
@@ -749,321 +735,283 @@ class AwsClient {
   }
 }
 
-export function createAwsServer(credentials: AwsCredentials): McpServer {
-  const server = new McpServer({
-    name: 'AWS',
-    version: '1.0.0',
-  });
-
-  server.tool(
-    'aws_list_ec2_instances',
-    'List all EC2 instances in the specified region',
-    {},
-    async () => {
-      try {
-        const client = new AwsClient(credentials);
-        const instances = await client.listEC2Instances();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(instances, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list EC2 instances: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_get_ec2_instance',
-    'Get details of a specific EC2 instance',
-    {
-      instanceId: z.string().describe('The EC2 instance ID'),
-    },
-    async (args) => {
-      try {
-        const client = new AwsClient(credentials);
-        const instance = await client.getEC2Instance(args.instanceId);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(instance, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get EC2 instance: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_list_s3_buckets',
-    'List all S3 buckets in the account',
-    {},
-    async () => {
-      try {
-        const client = new AwsClient(credentials);
-        const buckets = await client.listS3Buckets();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(buckets, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list S3 buckets: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_list_s3_objects',
-    'List objects in an S3 bucket',
-    {
-      bucketName: z.string().describe('The S3 bucket name'),
-      prefix: z.string().optional().describe('Filter objects by prefix'),
-      maxKeys: z.number().default(100).describe('Maximum number of objects to return'),
-    },
-    async (args) => {
-      try {
-        const client = new AwsClient(credentials);
-        const objects = await client.listS3Objects(
-          args.bucketName,
-          args.prefix,
-          args.maxKeys
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(objects, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list S3 objects: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_list_lambda_functions',
-    'List all Lambda functions in the specified region',
-    {},
-    async () => {
-      try {
-        const client = new AwsClient(credentials);
-        const functions = await client.listLambdaFunctions();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(functions, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to list Lambda functions: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_get_lambda_function',
-    'Get details of a specific Lambda function',
-    {
-      functionName: z.string().describe('The Lambda function name or ARN'),
-    },
-    async (args) => {
-      try {
-        const client = new AwsClient(credentials);
-        const func = await client.getLambdaFunction(args.functionName);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(func, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get Lambda function: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_invoke_lambda_function',
-    'Invoke a Lambda function with optional payload',
-    {
-      functionName: z.string().describe('The Lambda function name or ARN'),
-      payload: z
-        .record(z.any())
-        .optional()
-        .describe('JSON payload to send to the function'),
-    },
-    async (args) => {
-      try {
-        const client = new AwsClient(credentials);
-        const result = await client.invokeLambdaFunction(args.functionName, args.payload);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to invoke Lambda function: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_get_cloudwatch_metrics',
-    'Get CloudWatch metrics for monitoring',
-    {
-      namespace: z.string().describe('CloudWatch namespace (e.g., AWS/EC2, AWS/Lambda)'),
-      metricName: z.string().describe('Name of the metric to retrieve'),
-      dimensions: z
-        .array(
-          z.object({
-            Name: z.string(),
-            Value: z.string(),
-          })
-        )
-        .optional()
-        .describe('Metric dimensions for filtering'),
-      startTime: z.string().optional().describe('Start time (ISO 8601 format)'),
-      endTime: z.string().optional().describe('End time (ISO 8601 format)'),
-    },
-    async (args) => {
-      try {
-        const client = new AwsClient(credentials);
-        const metrics = await client.getCloudWatchMetrics(
-          args.namespace,
-          args.metricName,
-          args.dimensions,
-          args.startTime,
-          args.endTime
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(metrics, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get CloudWatch metrics: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  server.tool(
-    'aws_get_cost_and_usage',
-    'Get AWS cost and usage information',
-    {
-      startTime: z.string().optional().describe('Start date (YYYY-MM-DD format)'),
-      endTime: z.string().optional().describe('End date (YYYY-MM-DD format)'),
-      granularity: z
-        .enum(['DAILY', 'MONTHLY', 'HOURLY'])
-        .default('DAILY')
-        .describe('Time granularity'),
-    },
-    async (args) => {
-      try {
-        const client = new AwsClient(credentials);
-        const costData = await client.getCostAndUsage(
-          args.startTime,
-          args.endTime,
-          args.granularity
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(costData, null, 2),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to get cost and usage: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  return server;
-}
+export const AwsConnectorConfig = mcpConnectorConfig({
+  name: 'AWS',
+  key: 'aws',
+  version: '1.0.0',
+  logo: 'https://stackone-logos.com/api/amazon-redshift/filled/svg',
+  credentials: z.object({
+    accessKeyId: z.string().describe('AWS Access Key ID :: AKIAIOSFODNN7EXAMPLE'),
+    secretAccessKey: z
+      .string()
+      .describe('AWS Secret Access Key :: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'),
+    sessionToken: z
+      .string()
+      .optional()
+      .describe(
+        'AWS Session Token (for temporary credentials) :: AQoDYXdzEJr...<remainder of session token>'
+      ),
+  }),
+  setup: z.object({
+    region: z
+      .string()
+      .default('us-east-1')
+      .describe('AWS region (e.g., us-east-1, eu-west-1) :: us-east-1'),
+  }),
+  examplePrompt:
+    'List all my EC2 instances in the us-east-1 region, check my S3 buckets, and show me the cost breakdown for the last 30 days.',
+  tools: (tool) => ({
+    LIST_EC2_INSTANCES: tool({
+      name: 'aws_list_ec2_instances',
+      description: 'List all EC2 instances in the specified region',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const instances = await client.listEC2Instances();
+          return JSON.stringify(instances, null, 2);
+        } catch (error) {
+          return `Failed to list EC2 instances: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_EC2_INSTANCE: tool({
+      name: 'aws_get_ec2_instance',
+      description: 'Get details of a specific EC2 instance',
+      schema: z.object({
+        instanceId: z.string().describe('The EC2 instance ID'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const instance = await client.getEC2Instance(args.instanceId);
+          return JSON.stringify(instance, null, 2);
+        } catch (error) {
+          return `Failed to get EC2 instance: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_S3_BUCKETS: tool({
+      name: 'aws_list_s3_buckets',
+      description: 'List all S3 buckets in the account',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const buckets = await client.listS3Buckets();
+          return JSON.stringify(buckets, null, 2);
+        } catch (error) {
+          return `Failed to list S3 buckets: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_S3_OBJECTS: tool({
+      name: 'aws_list_s3_objects',
+      description: 'List objects in an S3 bucket',
+      schema: z.object({
+        bucketName: z.string().describe('The S3 bucket name'),
+        prefix: z.string().optional().describe('Filter objects by prefix'),
+        maxKeys: z.number().default(100).describe('Maximum number of objects to return'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const objects = await client.listS3Objects(
+            args.bucketName,
+            args.prefix,
+            args.maxKeys
+          );
+          return JSON.stringify(objects, null, 2);
+        } catch (error) {
+          return `Failed to list S3 objects: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    LIST_LAMBDA_FUNCTIONS: tool({
+      name: 'aws_list_lambda_functions',
+      description: 'List all Lambda functions in the specified region',
+      schema: z.object({}),
+      handler: async (_args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const functions = await client.listLambdaFunctions();
+          return JSON.stringify(functions, null, 2);
+        } catch (error) {
+          return `Failed to list Lambda functions: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_LAMBDA_FUNCTION: tool({
+      name: 'aws_get_lambda_function',
+      description: 'Get details of a specific Lambda function',
+      schema: z.object({
+        functionName: z.string().describe('The Lambda function name or ARN'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const func = await client.getLambdaFunction(args.functionName);
+          return JSON.stringify(func, null, 2);
+        } catch (error) {
+          return `Failed to get Lambda function: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    INVOKE_LAMBDA_FUNCTION: tool({
+      name: 'aws_invoke_lambda_function',
+      description: 'Invoke a Lambda function with optional payload',
+      schema: z.object({
+        functionName: z.string().describe('The Lambda function name or ARN'),
+        payload: z
+          .record(z.any())
+          .optional()
+          .describe('JSON payload to send to the function'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const result = await client.invokeLambdaFunction(
+            args.functionName,
+            args.payload
+          );
+          return JSON.stringify(result, null, 2);
+        } catch (error) {
+          return `Failed to invoke Lambda function: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_CLOUDWATCH_METRICS: tool({
+      name: 'aws_get_cloudwatch_metrics',
+      description: 'Get CloudWatch metrics for monitoring',
+      schema: z.object({
+        namespace: z
+          .string()
+          .describe('CloudWatch namespace (e.g., AWS/EC2, AWS/Lambda)'),
+        metricName: z.string().describe('Name of the metric to retrieve'),
+        dimensions: z
+          .array(
+            z.object({
+              Name: z.string(),
+              Value: z.string(),
+            })
+          )
+          .optional()
+          .describe('Metric dimensions for filtering'),
+        startTime: z.string().optional().describe('Start time (ISO 8601 format)'),
+        endTime: z.string().optional().describe('End time (ISO 8601 format)'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const metrics = await client.getCloudWatchMetrics(
+            args.namespace,
+            args.metricName,
+            args.dimensions,
+            args.startTime,
+            args.endTime
+          );
+          return JSON.stringify(metrics, null, 2);
+        } catch (error) {
+          return `Failed to get CloudWatch metrics: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+    GET_COST_AND_USAGE: tool({
+      name: 'aws_get_cost_and_usage',
+      description: 'Get AWS cost and usage information',
+      schema: z.object({
+        startTime: z.string().optional().describe('Start date (YYYY-MM-DD format)'),
+        endTime: z.string().optional().describe('End date (YYYY-MM-DD format)'),
+        granularity: z
+          .enum(['DAILY', 'MONTHLY', 'HOURLY'])
+          .default('DAILY')
+          .describe('Time granularity'),
+      }),
+      handler: async (args, context) => {
+        try {
+          const { accessKeyId, secretAccessKey, sessionToken } =
+            await context.getCredentials();
+          const { region } = await context.getSetup();
+          const client = new AwsClient({
+            accessKeyId,
+            secretAccessKey,
+            region,
+            sessionToken,
+          });
+          const costData = await client.getCostAndUsage(
+            args.startTime,
+            args.endTime,
+            args.granularity
+          );
+          return JSON.stringify(costData, null, 2);
+        } catch (error) {
+          return `Failed to get cost and usage: ${error instanceof Error ? error.message : String(error)}`;
+        }
+      },
+    }),
+  }),
+});
