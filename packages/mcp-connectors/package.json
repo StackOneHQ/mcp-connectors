@@ -6,10 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "bun": "./src/index.ts",
-      "default": "./dist/index.js"
-    },
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
   "type": "module",
@@ -25,14 +22,14 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "@1password/connect": "^1.4.2",
-    "@linear/sdk": "^55.0.0",
-    "@modelcontextprotocol/sdk": "^1.0.4",
-    "@orama/orama": "^3.1.11",
-    "node-html-parser": "^7.0.1",
-    "openai": "^5.12.1",
-    "zod": "^3.25",
-    "modal": "^0.3.19"
+    "@1password/connect": "catalog:prod",
+    "@linear/sdk": "catalog:prod",
+    "@modelcontextprotocol/sdk": "catalog:prod",
+    "@orama/orama": "catalog:prod",
+    "modal": "catalog:prod",
+    "node-html-parser": "catalog:prod",
+    "openai": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "repository": {
     "type": "git",
@@ -56,5 +53,20 @@
       ".": "./dist/index.js",
       "./package.json": "./package.json"
     }
-  }
+  },
+  "devEngines": {
+    "runtime": [
+      {
+        "name": "node",
+        "version": "^24.11.0",
+        "onFail": "download"
+      },
+      {
+        "name": "bun",
+        "version": "^1.3.2",
+        "onFail": "download"
+      }
+    ]
+  },
+  "devDependencies": {}
 }
