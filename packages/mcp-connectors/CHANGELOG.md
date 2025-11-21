@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.25](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.24...mcp-connectors-v0.0.25) (2025-11-21)
+
+
+### Bug Fixes
+
+* version ([#201](https://github.com/StackOneHQ/mcp-connectors/issues/201)) ([590a47d](https://github.com/StackOneHQ/mcp-connectors/commit/590a47d1117364a3f6fa46a90daf2ad543707584))
+
+
+### Reverts
+
+* to 994240fe ([#197](https://github.com/StackOneHQ/mcp-connectors/issues/197)) ([2d6208f](https://github.com/StackOneHQ/mcp-connectors/commit/2d6208f46825075df0ae2489b5a0a53e86240cc0))
+
 ## [0.0.24](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-connectors-v0.0.23...mcp-connectors-v0.0.24) (2025-11-21)
 
 
