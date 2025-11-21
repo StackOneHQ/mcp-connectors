@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "build": "tsdown",
-    "prepack": "bun run build",
+    "prepack": "bun run build && clean-pkg-json",
     "typecheck": "tsgo --noEmit"
   },
   "keywords": [
@@ -29,6 +29,7 @@
     "@types/bun": "catalog:dev",
     "@types/treeify": "catalog:dev",
     "@typescript/native-preview": "catalog:dev",
+    "clean-pkg-json": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "unplugin-unused": "catalog:dev"

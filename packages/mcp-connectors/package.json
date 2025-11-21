@@ -67,5 +67,6 @@
         "onFail": "download"
       }
     ]
-  }
+  },
+  "devDependencies": {}
 }
