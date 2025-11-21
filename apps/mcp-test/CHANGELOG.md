@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.8...mcp-test-v0.0.9) (2025-11-21)
+
+
+### Reverts
+
+* to 994240fe ([#197](https://github.com/StackOneHQ/mcp-connectors/issues/197)) ([2d6208f](https://github.com/StackOneHQ/mcp-connectors/commit/2d6208f46825075df0ae2489b5a0a53e86240cc0))
+
 ## [0.0.8](https://github.com/StackOneHQ/mcp-connectors/compare/mcp-test-v0.0.7...mcp-test-v0.0.8) (2025-11-21)
 
 
