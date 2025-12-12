@@ -19,7 +19,6 @@ import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { GraphyConnectorConfig } from './connectors/graphy';
 import { HiBobConnectorConfig } from './connectors/hibob';
-import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
@@ -30,6 +29,7 @@ import { NotionConnectorConfig } from './connectors/notion';
 import { OnePasswordConnectorConfig } from './connectors/onepassword';
 import { ParallelConnectorConfig } from './connectors/parallel';
 import { PerplexityConnectorConfig } from './connectors/perplexity';
+import { PokemonConnectorConfig } from './connectors/pokemon';
 import { PostHogConnectorConfig } from './connectors/posthog';
 import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
@@ -72,7 +72,6 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
   HiBobConnectorConfig,
-  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -85,6 +84,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PokemonConnectorConfig,
   PostHogConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
@@ -125,7 +125,6 @@ export {
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
   HiBobConnectorConfig,
-  HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -138,6 +137,7 @@ export {
   OnePasswordConnectorConfig,
   ParallelConnectorConfig,
   PerplexityConnectorConfig,
+  PokemonConnectorConfig,
   PostHogConnectorConfig,
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
@@ -155,5 +155,6 @@ export {
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+};
   ZapierConnectorConfig,
 };
