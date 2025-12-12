@@ -35,6 +35,7 @@ import { ProducthuntConnectorConfig } from './connectors/producthunt';
 import { LogfireConnectorConfig } from './connectors/pydantic-logfire';
 import { PylonConnectorConfig } from './connectors/pylon';
 import { ReplicateConnectorConfig } from './connectors/replicate';
+import { ResendConnectorConfig } from './connectors/resend';
 import { RetoolConnectorConfig } from './connectors/retool';
 import { RideWithGPSConnectorConfig } from './connectors/ridewithgps';
 import { SequentialThinkingConnectorConfig } from './connectors/sequential-thinking';
@@ -89,6 +90,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  ResendConnectorConfig,
   RetoolConnectorConfig,
   RideWithGPSConnectorConfig,
   SequentialThinkingConnectorConfig,
@@ -142,6 +144,7 @@ export {
   ProducthuntConnectorConfig,
   PylonConnectorConfig,
   ReplicateConnectorConfig,
+  ResendConnectorConfig,
   RetoolConnectorConfig,
   RideWithGPSConnectorConfig,
   SequentialThinkingConnectorConfig,
