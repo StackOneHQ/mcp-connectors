@@ -30,7 +30,7 @@
         "mcp-test": "./dist/index.js",
       },
       "dependencies": {
-        "@anthropic-ai/claude-code": "2.0.67",
+        "@anthropic-ai/claude-agent-sdk": "0.1.67",
         "@faker-js/faker": "^10.0.0",
         "@modelcontextprotocol/sdk": "^1.17.5",
         "chalk": "^5.6.2",
@@ -93,7 +93,7 @@
   "packages": {
     "@1password/connect": ["@1password/connect@1.4.2", "", { "dependencies": { "axios": "^1.10.0", "debug": "^4.4.1", "lodash.clonedeep": "^4.5.0", "slugify": "^1.6.6", "uuid": "^9.0.1" } }, "sha512-CxcDQIr76nloWwGWRrmz/U7DuU65WKrN/yarq45LrC3L6b/pC7bZyskvougadG32fRwBieLJX143lTI8T1bAtQ=="],
 
-    "@anthropic-ai/claude-code": ["@anthropic-ai/claude-code@2.0.67", "", { "optionalDependencies": { "@img/sharp-darwin-arm64": "^0.33.5", "@img/sharp-darwin-x64": "^0.33.5", "@img/sharp-linux-arm": "^0.33.5", "@img/sharp-linux-arm64": "^0.33.5", "@img/sharp-linux-x64": "^0.33.5", "@img/sharp-linuxmusl-arm64": "^0.33.5", "@img/sharp-linuxmusl-x64": "^0.33.5", "@img/sharp-win32-x64": "^0.33.5" }, "bin": { "claude": "cli.js" } }, "sha512-ze3/6SekyAUE+onUjYAKuF/7Qv/FVdOCtnQfT6IpURwf/sWYPIvtbtwYTE9QXROxKHMSj57nWIe/bI3eWGgKfA=="],
+    "@anthropic-ai/claude-agent-sdk": ["@anthropic-ai/claude-agent-sdk@0.1.67", "", { "optionalDependencies": { "@img/sharp-darwin-arm64": "^0.33.5", "@img/sharp-darwin-x64": "^0.33.5", "@img/sharp-linux-arm": "^0.33.5", "@img/sharp-linux-arm64": "^0.33.5", "@img/sharp-linux-x64": "^0.33.5", "@img/sharp-linuxmusl-arm64": "^0.33.5", "@img/sharp-linuxmusl-x64": "^0.33.5", "@img/sharp-win32-x64": "^0.33.5" }, "peerDependencies": { "zod": "^3.24.1" } }, "sha512-SPeMOfBeQ4Q6BcTRGRyMzaSEzKja3w8giZn6xboab02rPly5KQmgDK0wNerUntPe+xyw7c01xdu5K/pjZXq0dw=="],
 
     "@babel/generator": ["@babel/generator@7.28.3", "", { "dependencies": { "@babel/parser": "^7.28.3", "@babel/types": "^7.28.2", "@jridgewell/gen-mapping": "^0.3.12", "@jridgewell/trace-mapping": "^0.3.28", "jsesc": "^3.0.2" } }, "sha512-3lSpxGgvnmZznmBkCRnVREPUFJv2wrv9iAoFDvADJc0ypmdOxdUtcLeBgBJ6zE0PMeTKnxeQzyk0xTBq4Ep7zw=="],
 

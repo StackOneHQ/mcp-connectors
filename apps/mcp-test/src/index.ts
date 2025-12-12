@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
-import { type McpServerConfig, query } from '@anthropic-ai/claude-code';
+import { type McpServerConfig, query } from '@anthropic-ai/claude-agent-sdk';
 import { cli, define } from 'gunshi';
 import { description, version } from '../package.json';
 import { discoverTools } from './discover-tools';
