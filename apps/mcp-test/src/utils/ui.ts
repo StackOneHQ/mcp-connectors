@@ -1,4 +1,4 @@
-import type { SDKAssistantMessage, SDKUserMessage } from '@anthropic-ai/claude-code';
+import type { SDKAssistantMessage, SDKUserMessage } from '@anthropic-ai/claude-agent-sdk';
 import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
 import treeify, { type TreeObject } from 'treeify';
