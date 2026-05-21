@@ -2,10 +2,28 @@
   <img src="./docs/assets/logo.png" alt="Disco Logo" width="400" />
 
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+  [![Status](https://img.shields.io/badge/status-archived-red.svg)](#-archived--deprecated)
   [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-connectors.svg)](https://badge.fury.io/js/@stackone%2Fmcp-connectors)
   [![npm version](https://badge.fury.io/js/@stackone%2Fmcp-config-types.svg)](https://badge.fury.io/js/@stackone%2Fmcp-config-types)
 
-> Pre-built MCP connectors for popular SaaS tools - powers [disco.dev](https://disco.dev)
+</div>
+
+## ⚠️ Archived / Deprecated
+
+**This repository is archived and no longer actively maintained.**
+
+For the current StackOne experience, please use the following instead:
+
+- **[stackone.com](https://stackone.com)** — Access **300+ MCPs for free**, with zero setup.
+- **[discode.stackone.com](https://discode.stackone.com)** — Try **Disco Code**, our code mode as a service product.
+
+The content below is preserved for historical reference only.
+
+---
+
+<div align="center">
+
+> Pre-built MCP connectors for popular SaaS tools
 
 </div>
 
@@ -32,9 +50,7 @@ This monorepo contains two packages built with TypeScript and Zod:
 
 ### For End Users
 
-The MCP connectors in this repo power [**disco.dev**](https://disco.dev) - the easiest way to connect your favourite tools to your favourite AI applications using the Model Context Protocol.
-
-Go to [disco.dev](https://disco.dev) to get started with zero setup.
+> **Note:** This repository is archived. For the latest StackOne experience, go to [**stackone.com**](https://stackone.com) for 300+ MCPs for free, or try [**discode.stackone.com**](https://discode.stackone.com) for our code mode as a service product.
 
 ### For Developers
 
@@ -133,4 +149,4 @@ The typing in this package is heavily inspired by the [AI SDK by Vercel](https:/
 
 ---
 
-**Built by [StackOne](https://stackone.com) • Powers [disco.dev](https://disco.dev)**
+**Built by [StackOne](https://stackone.com)** • Archived — see [stackone.com](https://stackone.com) for 300+ MCPs, or [discode.stackone.com](https://discode.stackone.com) for Disco Code.
