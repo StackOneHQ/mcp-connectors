@@ -20,6 +20,7 @@ import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/g
 import { GraphyConnectorConfig } from './connectors/graphy';
 import { HiBobConnectorConfig } from './connectors/hibob';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
+import { iNaturalistConnectorConfig } from './connectors/inaturalist';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
 import { LangsmithConnectorConfig } from './connectors/langsmith';
@@ -73,6 +74,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GraphyConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
+  iNaturalistConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
@@ -126,6 +128,7 @@ export {
   GraphyConnectorConfig,
   HiBobConnectorConfig,
   HubSpotConnectorConfig,
+  iNaturalistConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
   JiraConnectorConfig,
