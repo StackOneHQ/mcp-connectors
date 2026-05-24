@@ -50,6 +50,7 @@ import { TodoListConnectorConfig } from './connectors/todolist';
 import { TurbopufferConnectorConfig } from './connectors/turbopuffer';
 import { WandbConnectorConfig } from './connectors/wandb';
 import { XeroConnectorConfig } from './connectors/xero';
+import { YouTubeConnectorConfig } from './connectors/youtube';
 import { ZapierConnectorConfig } from './connectors/zapier';
 
 export const Connectors: readonly MCPConnectorConfig[] = [
@@ -102,6 +103,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+  YouTubeConnectorConfig,
   ZapierConnectorConfig,
 ] as const;
 
@@ -155,5 +157,6 @@ export {
   TurbopufferConnectorConfig,
   WandbConnectorConfig,
   XeroConnectorConfig,
+  YouTubeConnectorConfig,
   ZapierConnectorConfig,
 };
