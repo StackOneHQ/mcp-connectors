@@ -19,6 +19,7 @@ import { GoogleDriveConnectorConfig } from './connectors/google-drive';
 import { googleMapsConnector as GoogleMapsConnectorConfig } from './connectors/google-maps';
 import { GraphyConnectorConfig } from './connectors/graphy';
 import { HiBobConnectorConfig } from './connectors/hibob';
+import { HStacksConnectorConfig } from './connectors/hstacks';
 import { HubSpotConnectorConfig } from './connectors/hubspot';
 import { IncidentConnectorConfig } from './connectors/incident';
 import { JiraConnectorConfig } from './connectors/jira';
@@ -72,6 +73,7 @@ export const Connectors: readonly MCPConnectorConfig[] = [
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
   HiBobConnectorConfig,
+  HStacksConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
@@ -125,6 +127,7 @@ export {
   GoogleMapsConnectorConfig,
   GraphyConnectorConfig,
   HiBobConnectorConfig,
+  HStacksConnectorConfig,
   HubSpotConnectorConfig,
   IncidentConnectorConfig,
   FirefliesConnectorConfig,
